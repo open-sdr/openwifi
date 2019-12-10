@@ -5,7 +5,7 @@
 
 This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Detailed architecture](https://github.com/open-sdr/openwifi/tree/master/doc)]
 
-[Demo [video](https://users.ugent.be/~xjiao/openwifi.mp4)]. [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
+[Demo [video](https://youtu.be/NpjEaszd5u4). [Video download](https://users.ugent.be/~xjiao/openwifi-low.mp4)]   [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
 
 Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opensource license, please contact Filip.Louagie@UGent.be. Openwifi project also leverages some 3rd party modules. It is your duty to check and follow licenses of those modules according to your purpose. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions.
 
