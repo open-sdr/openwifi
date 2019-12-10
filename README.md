@@ -3,9 +3,9 @@
 
 **openwifi:** Linux mac80211 compatiable full-stack Wi-Fi design based on SDR (Software Defined Radio).
 
-This repository includes Linux driver and software. [openwifi-hw](https://github.ugent.be/xjiao/openwifi-hw) repository has the FPGA design. [[Detailed architecture](https://github.ugent.be/xjiao/openwifi/tree/master/doc)]
+This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Detailed architecture](https://github.com/open-sdr/openwifi/tree/master/doc)]
 
-[Demo [video](https://drive.google.com/file/d/1Qk-MEHkK_9yL_KPv--4MCJhLoGzE2N5W/view?usp=sharing)]. [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
+[Demo [video](https://users.ugent.be/~xjiao/openwifi.mp4)]. [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
 
 Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opensource license, please contact Filip.Louagie@UGent.be. Openwifi project also leverages some 3rd party modules. It is your duty to check and follow licenses of those modules according to your purpose. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions.
 
@@ -38,7 +38,7 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
         
 **Quick start:** (Example instructions are verified on Ubuntu 16/18)
 
-* Download pre-built [openwifi Linux img file](https://users.ugent.be/~xjiao/). Burn the img file to a 16G SD card:
+* Download pre-built [openwifi Linux img file](https://users.ugent.be/~xjiao/openwifi-1.0.0-ghent.zip). Burn the img file to a 16G SD card:
 
 ```
 sudo dd bs=4M if=openwifi-zc706-v000.img of=/dev/mmcblk0
@@ -87,7 +87,7 @@ iwlist sdr0 scan
         SENDaddr: 00040050
         reg  val: 34be0123
         (If the last number of reg val is always 3, that means the Viterbi decoder stops working)
-* Real-time control/config via sdrctl (time slice config, etc), please find the [doc](https://github.ugent.be/xjiao/openwifi/tree/master/doc).
+* Real-time control/config via sdrctl (time slice config, etc), please go to openwifi/doc.
 
 **Build openwifi Linux img based on openwifi FPGA and driver:**
 
