@@ -1,0 +1,6 @@
+[submodule "adi-linux"]
+	path = adi-linux
+	url = https://github.com/analogdevicesinc/linux.git
+[submodule "openwifi-hw"]
+	path = openwifi-hw
+	url = git@github.com:open-sdr/openwifi-hw.git
