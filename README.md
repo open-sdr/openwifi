@@ -141,7 +141,7 @@ source $XILINX_DIR/Vivado/2017.4/settings64.sh
 (u-boot-zc70x.elf is included in the original Analog Devices Linux img)
 ```
 * Download [2017_R1-2018_01_29.img.xz](http://swdownloads.analog.com/cse/2017_R1-2018_01_29.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it into a SD card via your PC.
-* Mount SD card BOOT/rootfs partitions to SDCARD_DIR directory of your PC (If it is mounted automatically, find the directory). Then copy built files to SD card via your PC. (You can also update files over ftp/ssh after your full system runs. Please check user_space/sdcard_boot_update.sh and set your ftp root directory to openwifi repository in your PC):
+* Mount SD card BOOT/rootfs partitions to SDCARD_DIR directory of your PC (If it is mounted automatically, find the directory). Then copy built files to SD card via your PC. (You can also update files over ftp/ssh after your full system runs. Please check next section. Read carefully user_space/sdcard_boot_update.sh and set your ftp root directory to $OPENWIFI_DIR in your PC):
 
 ```
 export SDCARD_DIR=sdcard_mount_point
@@ -205,15 +205,28 @@ Disable update (long time hang) on boot or ssh session:
   sudo chmod -x /etc/update-motd.d/90-updates-available
   sudo chmod -x /etc/update-motd.d/91-release-upgrade
 
-reboot the board, and set proper IP of the connected PC, then from the PC:
+reboot the board, and set proper IP (192.168.10.1) of the connected PC, then from the PC:
 ssh roo@192.168.10.122
 (password: openwifi)
-
-Access the board disk from PC: Ubuntu "File manager --> Connect to Server...", input: sftp://root@192.168.10.122/root
-
-./wgd.sh remote
-(Above command updates files from your PC and brings up sdr0. Make sure set ftp root directory to openwifi repository in your PC)
 ```
+* Make on board file update easier:
+  * Option 1: Access the board disk/rootfs from Ubuntu PC: "File manager --> Connect to Server...", input: sftp://root@192.168.10.122/root . Then you can operate files on board like normal files on your disk. To update files that need to be in boot partition (BOOT.BIN, uImage and devicetree.dtb), you can transfer those files to rootfs firstly, then on board:
+  
+         mount /dev/mmcblk0p1 /sdcard
+         (Create /sdcard directory firstly if it doesn't exist)
+         cp file /sdcard
+         cd /sdcard
+         sync
+         cd /
+         umount /sdcard
+         (Remember to power cycle the board)
+  * Option 2: Setup [ftp server](https://help.ubuntu.com/lts/serverguide/ftp-server.html) on PC, allow anonymous and change ftp root directory to $OPENWIFI_DIR. Then on board:
+  
+        ./sdcard_boot_update.sh
+        (Above command downloads uImage, BOOT.BIN and devicetree.dtb, then copy them into boot partition. Remember to power cycle)
+        ./wgd.sh remote
+        (Above command downloads driver files, and brings up sdr0)
+
 **Compile user_space/sdrctl_src on the board** ("On the board" means that you login to the board via ssh)
 
 ```
