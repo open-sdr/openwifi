@@ -98,6 +98,7 @@ iwlist sdr0 scan
 git submodule init openwifi-hw
 git submodule update openwifi-hw
 cd openwifi-hw
+git checkout master
 git pull
 ```
 * Build Linux kernel and modules:
