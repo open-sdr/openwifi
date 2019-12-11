@@ -81,7 +81,7 @@ iwlist sdr0 scan
         wpa_supplicant -i sdr0 -c wpa-connect.conf
         (Wait for connection done, then open another ssh terminal)
         dhclient sdr0
-        (Wait for its donw, then you should have connection)
+        (Wait for its done, then you should have connection)
         
 * ***Note***: If openwifi stops working after ~2 hours, it means the evaluation license of Xilinx Viterbi decoder has expired. You need to power cycle the board. Run this command several times on board to confirm:
   
