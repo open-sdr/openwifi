@@ -31,9 +31,9 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
 
 **Supported SDR platforms:**
 
-* zc706 (Xilinx) + fmcomms2 (Analog Devices)
+* zc706 (Xilinx) + fmcomms2/fmcomms4 (Analog Devices)
 * On roadmap: ADRV9361-Z7035/ADRV9364-Z7020 + ADRV1CRR-BOB (Analog Devices)
-* On roadmap: zcu102 (Xilinx) + fmcomms2/ADRV9371 (Analog Devices)
+* On roadmap: zcu102 (Xilinx) + fmcomms2/fmcomms4/ADRV9371 (Analog Devices)
 * Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
         
 **Quick start:** (Example instructions are verified on Ubuntu 16/18)
@@ -41,11 +41,11 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
 * Download pre-built [openwifi Linux img file](https://users.ugent.be/~xjiao/openwifi-1.0.0-ghent.zip). Burn the img file to a 16G SD card:
 
 ```
-sudo dd bs=4M if=openwifi-zc706-v000.img of=/dev/mmcblk0
+sudo dd bs=4M if=openwifi-1.0.0-ghent.img of=/dev/mmcblk0
 (mmcblk0 is the dev name of sdcard in Linux. Make sure you use the correct one in your situation!)
 (Above command takes a while)
 ```
-* Connect RX/TX antenna to RX1A/TX2A ports of your zc706+fmcomms2 platform, and make two antennas orthogonal to each other for good isolation. Config zc706 to SD card boot mode by switches (Read zc706 board spec on internet). Insert the SD card to zc706.
+* Connect RX/TX antenna to RX1A/TX2A ports of your zc706+fmcomms2 platform, and make two antennas orthogonal to each other for good isolation. Config zc706 to SD card boot mode by switches (Read zc706 board spec on internet). Insert the SD card to zc706. (For fmcomms4/ad9364, you may connect antennas to TXA/RXA)
 
 * Connect the board to PC. (PC IP address should be 192.168.10.1). Power on the board. Then from PC:
 
@@ -55,12 +55,13 @@ ssh root@192.168.10.122
 cd openwifi
 service network-manager stop
 ./wgd.sh
+(For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
 ifconfig sdr0 up
 iwlist sdr0 scan
 (you should see the Wi-Fi scan result)
 ```
-* Setup openwifi hotspot over topology: client -- (sdr0)|zc706|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
-  * Enable IPv4 IP forwarding on both zc706 and PC
+* Setup openwifi hotspot over topology: client -- (sdr0)|board|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
+  * Enable IPv4 **IP forwarding** on both **board** and **PC**
   * Then, on board:
 
         ifconfig sdr0 192.168.13.1
@@ -75,6 +76,7 @@ iwlist sdr0 scan
 * Connect openwifi to another hotspot. Terminate hostapd, edit wpa-connect.conf properly, then:
         
         ./wgd.sh
+        (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
         route del default gw 192.168.10.1
         wpa_supplicant -i sdr0 -c wpa-connect.conf
         (Wait for connection done, then open another ssh terminal)
@@ -178,6 +180,7 @@ depmod
 modprobe mac80211
 cd openwifi
 ./wgd.sh
+(For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
 (Wait for the completion)
 ifconfig
 (You should see sdr0 interface)
@@ -226,51 +229,58 @@ ssh roo@192.168.10.122
         (Above command downloads uImage, BOOT.BIN and devicetree.dtb, then copy them into boot partition. Remember to power cycle)
         ./wgd.sh remote
         (Above command downloads driver files, and brings up sdr0)
+        (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
 
-**Compile user_space/sdrctl_src on the board** ("On the board" means that you login to the board via ssh)
+**Compile sdrctl on the board** ("On the board" means that you login to the board via ssh)
 
 ```
 sudo apt-get install libnl-3-dev
 sudo apt-get install libnl-genl-3-dev
+(Please find next section to see how to connect board to internet via your PC)
 (or find out .deb files by above commands and copy .deb to the board, if you do not have internet)
 
-copy user_space/sdrctl_src to the board, then on the board:
+copy $OPENWIFI_DIR/user_space/sdrctl_src to the board, then on the board:
 cd sdrctl_src
 chmod +x version.sh
 make
 ```
 **Internet config**
+* Connect board to internet. Topology: board|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
+  * Enable IPv4 **IP forwarding** on both **board** and **PC**
+  * On board:
+  ```
+  route add default gw 192.168.10.1
+  ```
+  * On PC. After this your board should have internet via NAT through your PC.
 
-* Topology: client -- (sdr0)|zc706|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
-* Enable IPv4 IP forwarding on both zc706 and PC
-* On PC. After this your board should have internet via NAT through your PC.
+  ```
+  sudo iptables -t nat -A POSTROUTING -o ethY -j MASQUERADE
+  ```
+* Setup AP for Wi-Fi client. Topology: client -- (sdr0)|board|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
+  * On board: Install dhcp server preparing for serving your openwifi clients via hostapd.
 
-```
-sudo iptables -t nat -A POSTROUTING -o ethY -j MASQUERADE
-```
-* On board: Install dhcp server preparing for serving your openwifi clients via hostapd.
+  ```
+  sudo apt-get install isc-dhcp-server
+  sudo apt-get install Haveged
+  sudo apt-get install hostapd
+  ```
+  * Put user_space/dhcpd.conf into (overwrite) /etc/dhcp/dhcpd.conf on board.
+  * On board: 
 
-```
-sudo apt-get install isc-dhcp-server
-sudo apt-get install Haveged
-```
-* Put user_space/dhcpd.conf into (overwrite) /etc/dhcp/dhcpd.conf on board.
+  ```
+  cd openwifi
+  service network-manager stop
+  ./wgd.sh
+  (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
+  ifconfig sdr0 up
+  ifconfig sdr0 192.168.13.1
+  route add default gw 192.168.10.1
+  service isc-dhcp-server restart
+  hostapd hostapd-openwifi.conf
+  ```
+  * On PC:
 
-* On board: 
-
-```
-cd openwifi
-service network-manager stop
-./wgd.sh
-ifconfig sdr0 up
-ifconfig sdr0 192.168.13.1
-route add default gw 192.168.10.1
-service isc-dhcp-server restart
-hostapd hostapd-openwifi.conf
-```
-* On PC:
-
-```
-sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
-```
-* Now you can connect openwifi hotspot from your phone/laptop and access internet.
+  ```
+  sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
+  ```
+  * Now you can connect openwifi hotspot from your phone/laptop and access internet.
