@@ -93,8 +93,8 @@ iwlist sdr0 scan
 
 **Build openwifi Linux img based on openwifi FPGA and driver:**
 
-* Install Vivado/SDK 2017.4.1.
-* Get necessary FPGA files from openwifi-hw repository.
+* Install Vivado/SDK 2017.4.1 (If you don't need to re-compile FPGA, WebPack version without license is enough)
+* Get pre-built FPGA files from openwifi-hw repository.
 
 ```
 git submodule init openwifi-hw
