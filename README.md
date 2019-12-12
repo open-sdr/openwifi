@@ -236,7 +236,7 @@ ssh roo@192.168.10.122
 ```
 sudo apt-get install libnl-3-dev
 sudo apt-get install libnl-genl-3-dev
-(Please find next section to see how to connect board to internet via your PC)
+(Please find the next section to see how to connect board to the internet via your PC)
 (or find out .deb files by above commands and copy .deb to the board, if you do not have internet)
 
 copy $OPENWIFI_DIR/user_space/sdrctl_src to the board, then on the board:
@@ -283,4 +283,4 @@ make
   ```
   sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
   ```
-  * Now you can connect openwifi hotspot from your phone/laptop and access internet.
+  * Now you can connect openwifi hotspot from your phone/laptop and access the internet.
