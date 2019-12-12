@@ -1,12 +1,12 @@
-# openwifi domument
+# openwifi document
 <img src="./openwifi-detail.jpg" width="1100">
 
 Above figure shows software and hardware/FPGA modules that compose the openwifi design. The module name is equal/similar to the source code file name. Driver modules source code are in openwifi/driver/. FPGA modules source code are in openwifi-hw repository. The user space tool sdrctl source code are in openwifi/user_space/sdrctl_src/.
 
 - [driver and software overall principle](#driver-and-software-overall-principle)
+- [sdrctl command](#sdrctl-command)
 - [rx packet flow and filtering config](#rx-packet-flow-and-filtering-config)
 - [tx packet flow and config](#tx-packet-flow-and-config)
-- [sdrctl command](#sdrctl-command)
 
 ## driver and software overall principle
 
@@ -32,7 +32,9 @@ openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 
 Above APIs are called actively by upper layer. When they are called, the driver (sdr.c) will do necessary job over SDR platform. If necessary the driver will call other component drivers (tx_intf_api/rx_intf_api/openofdm_tx_api/openofdm_rx_api/xpu_api) for helping.
 
-For receiving packet from the air, FPGA will raise interrupt (if the frame filtering rule allows) to Linux, then the funcion openwifi_rx_interrupt() of openwifi driver (sdr.c) will be triggered. In that function, ieee80211_rx_irqsafe() API is used to give the packet to upper layer.
+For receiving a packet from the air, FPGA will raise interrupt (if the frame filtering rule allows) to Linux, then the function openwifi_rx_interrupt() of openwifi driver (sdr.c) will be triggered. In that function, ieee80211_rx_irqsafe() API is used to give the packet to upper layer.
+
+The packet sending is initiated by upper layer. After the packet is sent by the driver to FPGA, the upper layer will expect a sending report from the driver. Each time FPGA send a packet, an interrupt will be raised to Linux and trigger openwifi_tx_interrupt(). This function will report the sending result (fail? succeed? number of retransmissions, etc.) to upper layer via ieee80211_tx_status_irqsafe() API.
 
 ## sdrctl command
 
@@ -45,11 +47,11 @@ sdrctl dev sdr0 set para_name value
 ```
 para_name|meaning|example
 ---------|-------|----
-addr0|target MAC addres of tx slice 0|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
+addr0|target MAC address of tx slice 0|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
 slice_total0|tx slice 0 cycle length in us|for length 50ms, you set 49999
 slice_start0|tx slice 0 cycle start time in us|for start at 10ms, you set 10000
 slice_end0|  tx slice 0 cycle end   time in us|for end   at 40ms, you set 39999
-addr1|target MAC addres of tx slice 1|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
+addr1|target MAC address of tx slice 1|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
 slice_total1|tx slice 1 cycle length in us|for length 50ms, you set 49999
 slice_start1|tx slice 1 cycle start time in us|for start at 10ms, you set 10000
 slice_end1|  tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
@@ -121,7 +123,7 @@ reg_idx|meaning|example
 2|TSF timer low  32bit write|only write this register won't trigger the TSF timer reload. should use together with register for high 32bit
 3|TSF timer high 32bit write|falling edge of MSB will trigger the TSF timer reload, which means write '1' then '0' to MSB
 4|band and channel number setting|see enum openwifi_band in hw_def.h. it will be set automatically by Linux. normally you shouldn't set it
-11|max number of retransmission in FPGA|normally number of retransmission controled by Linux in real-time. If you write non-zeros value to this register, it will override Linux real-time setting
+11|max number of retransmission in FPGA|normally number of retransmissions controlled by Linux in real-time. If you write non-zeros value to this register, it will override Linux real-time setting
 19|CSMA enable/disable|3758096384(0xe0000000): disable, 3:enable
 20|tx slice 0 cycle length in us|for length 50ms, you set 49999
 21|tx slice 0 cycle start time in us|for start at 10ms, you set 10000
@@ -139,7 +141,42 @@ reg_idx|meaning|example
 
 ## rx packet flow and filtering config
 
+When FPGA received a packet, no matter the FCS/CRC is correct or not it will raise interrupt to Linux if the frame filtering full is met. openwifi_rx_interrupt() function in sdr.c will be triggered to do necessary operation and give the content to upper layer (Linux mac80211 subsystem).
 
+- frame filtering
+
+Because the FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c, you may not have all packet type you want even if you put your sdr0 to sniffing mode. But you do have the chance to do so by changing the filter_flag in openwifi_configure_filter() to override the frame filtering in FPGA with MONITOR_ALL. The filter_flag together with HIGH_PRIORITY_DISCARD_FLAG finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering.
+
+- main rx interrupt operations in openwifi_rx_interrupt()
+  - get raw content from DMA buffer. When Linux receives interrupt from FPGA rx_intf module, that means the content has been ready in Linux DMA buffer
+  - parse extra information inserted by FPGA in the DMA buffer
+    - TSF timer value
+    - raw RSSI value that will be converted to actual RSSI in dBm by different correction in different band
+    - packet length and MCS
+    - FCS is valid or not
+  - send packet content and necessary extra information to upper layer via ieee80211_rx_irqsafe()
 
 ## tx packet flow and config
 
+Linux mac80211 subsystem calls openwifi_tx() to initiate a packet sending. 
+
+- main operations in openwifi_tx()
+  - get necessary information from the packet header (struct ieee80211_hdr) for future FPGA configuration use
+    - packet length and MCS
+    - unicast or broadcast? does it need ACK? how many retransmissions are needed to be done by FPGA in case ACK is not received in time?
+    - which time slice in FPGA the packet should go?
+    - should RTS-CTS be used? (Send RTS and wait for CTS before actually send the data packet)
+    - should CTS-to-self be used? (Send CTS-to-self packet before sending the data packet. You can force this on by force_use_cts_protect = true;)
+    - should a sequence number be set for this packet?
+  - generate SIGNAL field according to length and MCS information. Insert it before the packet for the future openofdm_tx use
+  - generate FPGA/PHY sequence number (priv->phy_tx_sn) for internal use (between Linux and FPGA)
+  - config FPGA register according to the above information to make sure FPGA do correct service according to the packet specific requirement.
+  - fire DMA transmission from Linux to one of FPGA tx queues. The packet may not be sent immediately if there are still some packets in FPGA tx queue (FPGA does the queue packet transmission according to channel and low MAC state)
+    
+Each time when FPGA send a packet, an interrupt will be raised to Linux reporting the packet sending result. This interrupt handler is openwifi_tx_interrupt().
+
+- main operations in openwifi_tx_interrupt()
+  - get necessary information from the FPGA of the packet just sent
+    - packet length and sequence number
+    - packet sending result: packet is sent successfully (FPGA receive ACK for this packet) or not. How many retransmissions are used for the packet sending (in case FPGA doesn't receive ACK for several times)
+  - send above information to upper layer (Linux mac80211 subsystem) via ieee80211_tx_status_irqsafe()
