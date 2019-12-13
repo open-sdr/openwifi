@@ -7,6 +7,7 @@ Above figure shows software and hardware/FPGA modules that compose the openwifi 
 - [sdrctl command](#sdrctl-command)
 - [rx packet flow and filtering config](#rx-packet-flow-and-filtering-config)
 - [tx packet flow and config](#tx-packet-flow-and-config)
+- [debug methods](#debug-methods)
 
 ## driver and software overall principle
 
@@ -180,3 +181,52 @@ Each time when FPGA send a packet, an interrupt will be raised to Linux reportin
     - packet length and sequence number
     - packet sending result: packet is sent successfully (FPGA receive ACK for this packet) or not. How many retransmissions are used for the packet sending (in case FPGA doesn't receive ACK for several times)
   - send above information to upper layer (Linux mac80211 subsystem) via ieee80211_tx_status_irqsafe()
+
+## debug methods
+
+### dmesg
+
+To debug/see the basic driver behaviour, you could use dmesg command in Linux. openwifi driver prints normal tx/rx packet information when a packet is sent or received. The driver also prints WARNING information if it feels something abnormal happens. You can search "printk" in sdr.c to see all the printing points.
+
+- tx printing example
+
+      sdr,sdr openwifi_tx:  116bytes 48M FC0208 DI002c addr1/2/3:b827ebe65f1e/66554433224c/66554433224c SC1df0 flag40000012 retry2 ack1 q0 sn1075 R/CTS 00 1M 0us wr/rd 19/19
+  - printing from sdr driver, openwifi_tx function.
+  - 116bytes: packet size (length field in SIGNAL) is 116 bytes.
+  - 48M: MCS (rate field in SIGNAL) is 48Mbps.
+  - FC0208: Frame Control field 0x0208, which means type data, subtype data, to DS 0, from DS 1 (a packet from AP to client).
+  - DI002c: Duration/ID field 0x002c. How many us this packet will occupy the channel (including waiting for ACK).
+  - addr1/2/3: address fields. Target MAC address b827ebe65f1e, source MAC address 66554433224c (openwifi).
+  - SC1df0: Sequence Control field 0x1df0, which means that the driver inserts sequence number 0x1df0 to the packet under request of upper layer.
+  - flag40000012: flags field from upper layer struct ieee80211_tx_info (first fragment? need ACK? need sequence number insertion? etc.). Here is 0x40000012.
+  - retry2: upper layer tells us the maximum number of retransmissions for this packet is 2.
+  - ack1: upper layer tells us this packet needs ACK.
+  - q0: the packet goes to FPGA queue 0.
+  - sn1075: PHY/FPGA sequence number 1075. This is different from Sequence Control asked by upper layer. This is for cross check between FPGA/interrupt and driver.
+  - R/CTS 00: upper layer believes this packet doesn't need RTS/CTS mechanism (Because the packet size is below the RTS threshold).
+  - 1M 0us: if RTS/CTS is asked to be used by upper layer, it should use xM rate and Xus duration.
+  - wr/rd 19/19: the write/read index of buffer (shared buffer between the active openwifi_tx and background openwifi_tx_interrupt).
+  
+- rx printing example
+
+      sdr,sdr openwifi_rx_interrupt: 120bytes ht0 54M FC0108 DI002c addr1/2/3:66554433224c/b827ebe65f1e/66554433224c SCcf20 fcs1 sn117 i117 -36dBm
+  - printing from sdr driver, openwifi_rx_interrupt function.
+  - 120bytes: packet size (length field in SIGNAL) is 120 bytes.
+  - ht0: this is non-ht packet.
+  - 54M:  MCS (rate field in SIGNAL) is 54Mbps.
+  - FC0108: Frame Control field 0x0208, which means type data, subtype data, to DS 1, from DS 0 (a packet client to openwifi AP).
+  - DI002c: Duration/ID field 0x002c. How many us this packet will occupy the channel (including waiting for ACK).
+  - addr1/2/3: address fields. Target MAC address 66554433224c (openwifi), source MAC address b827ebe65f1e.
+  - SCcf20: Sequence Control field 0x1df0, which means that the packet includes sequence number 0xcf20 (under request of upper layer of the peer).
+  - fcs1: FCS/CRC is OK.
+  - sn117: HY/FPGA sequence number 117. This is different from Sequence Control asked by upper layer. This is for cross check between FPGA/interrupt and driver.
+  - i117: current rx packet DMA buffer index 117.
+  - -36dBm: signal strength of this received packet.
+
+### native Linux tools
+
+For protocol, many native Linux tools you still could rely on. Such as tcpdump.
+
+### FPGA
+
+For FPGA itself, FPGA developer could use Xilinx ILA tools to spy on FPGA signals. 
