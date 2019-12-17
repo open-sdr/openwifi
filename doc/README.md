@@ -139,6 +139,7 @@ reg_idx|meaning|example
 31|openwifi MAC address high 32bit|check XPU_REG_MAC_ADDR_write in sdr.c to see how we set MAC address to FPGA when NIC start
 58|TSF runtime value low  32bit|read only
 59|TSF runtime value high 32bit|read only
+63|version information|read only
 
 ## rx packet flow and filtering config
 
