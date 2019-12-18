@@ -15,7 +15,7 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
 
 * 802.11a/g; 802.11n MCS 0~7; 20MHz
 * Mode tested: Ad-hoc; Station; AP
-* DCF (CSMA/CA) low MAC layer in FPGA
+* DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)
 * Configurable channel access priority parameters:
   * duration of RTS/CTS, CTS-to-self
   * SIFS/DIFS/xIFS/slot-time/CW/etc
