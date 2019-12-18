@@ -1,7 +1,7 @@
 # openwifi document
 <img src="./openwifi-detail.jpg" width="1100">
 
-Above figure shows software and hardware/FPGA modules that compose the openwifi design. The module name is equal/similar to the source code file name. Driver modules source code are in openwifi/driver/. FPGA modules source code are in openwifi-hw repository. The user space tool sdrctl source code are in openwifi/user_space/sdrctl_src/.
+Above figure shows software and hardware/FPGA modules that compose the openwifi design. The module name is equal/similar to the source code file name. Driver module source codes are in openwifi/driver/. FPGA module source codes are in openwifi-hw repository. The user space tool sdrctl source code are in openwifi/user_space/sdrctl_src/.
 
 - [driver and software overall principle](#driver-and-software-overall-principle)
 - [sdrctl command](#sdrctl-command)
@@ -11,7 +11,7 @@ Above figure shows software and hardware/FPGA modules that compose the openwifi 
 
 ## driver and software overall principle
 
-[Linux mac80211 subsystem](https://www.kernel.org/doc/html/v4.16/driver-api/80211/mac80211.html), as a part of [Linux wireless](https://wireless.wiki.kernel.org/en/developers/documentation/mac80211) defines a set of APIs ([ieee80211_ops](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#c.ieee80211_ops)) to rule the Wi-Fi chip driver behavior. SoftMAC Wi-Fi chip driver implements (part of) APIs. That is why Linux can support so many types of Wi-Fi chip.
+[Linux mac80211 subsystem](https://www.kernel.org/doc/html/v4.16/driver-api/80211/mac80211.html), as a part of [Linux wireless](https://wireless.wiki.kernel.org/en/developers/documentation/mac80211), defines a set of APIs ([ieee80211_ops](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#c.ieee80211_ops)) to rule the Wi-Fi chip driver behavior. SoftMAC Wi-Fi chip driver implements (subset of) those APIs. That is why Linux can support so many Wi-Fi chips of different chip vendors.
 
 openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 -	**tx**. It is called when upper layer has a packet to send
@@ -31,15 +31,15 @@ openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 -	**set_rts_threshold**. It is called when upper layer wants to change the threshold (packet length) for turning on RTS mechanism
 -	**testmode_cmd**. It is called when upper layer has test command for us. [sdrctl command](#sdrctl-command) message is handled by this function.
 
-Above APIs are called actively by upper layer. When they are called, the driver (sdr.c) will do necessary job over SDR platform. If necessary the driver will call other component drivers (tx_intf_api/rx_intf_api/openofdm_tx_api/openofdm_rx_api/xpu_api) for helping.
+Above APIs are called by upper layer (Linux mac80211 subsystem). When they are called, the driver (sdr.c) will do necessary job over SDR platform. If necessary, the driver will call other component drivers, like tx_intf_api/rx_intf_api/openofdm_tx_api/openofdm_rx_api/xpu_api, for helping.
 
-For receiving a packet from the air, FPGA will raise interrupt (if the frame filtering rule allows) to Linux, then the function openwifi_rx_interrupt() of openwifi driver (sdr.c) will be triggered. In that function, ieee80211_rx_irqsafe() API is used to give the packet to upper layer.
+After receiving a packet from the air, FPGA will raise interrupt (if the frame filtering rule allows) to Linux, then the function openwifi_rx_interrupt() of openwifi driver (sdr.c) will be triggered. In that function, ieee80211_rx_irqsafe() API is used to give the packet and related information (timestamp, rssi, etc) to upper layer.
 
-The packet sending is initiated by upper layer. After the packet is sent by the driver to FPGA, the upper layer will expect a sending report from the driver. Each time FPGA send a packet, an interrupt will be raised to Linux and trigger openwifi_tx_interrupt(). This function will report the sending result (fail? succeed? number of retransmissions, etc.) to upper layer via ieee80211_tx_status_irqsafe() API.
+The packet sending is initiated by upper layer. After the packet is sent by the driver over FPGA, the upper layer will expect a sending report from the driver. Each time FPGA sends a packet, an interrupt will be raised to Linux and trigger openwifi_tx_interrupt(). This function will report the sending result (fail? succeed? number of retransmissions, etc.) to upper layer via ieee80211_tx_status_irqsafe() API.
 
 ## sdrctl command
 
-Besides the Linux native Wi-Fi control programs, such as ifconfig/iw/iwconfig/iwlist/wpa_supplicant/hostapd/etc, openwifi offers a user space tool sdrctl to access openwifi specific functionalities. sdrctl is implemented as nl80211 testmode command and communicates with openwifi driver (function openwifi_testmode_cmd in sdr.c) via Linux nl80211--cfg80211--mac80211 path 
+Besides the Linux native Wi-Fi control programs, such as ifconfig/iw/iwconfig/iwlist/wpa_supplicant/hostapd/etc, openwifi offers a user space tool sdrctl to access openwifi specific functionalities. sdrctl is implemented as nl80211 testmode command and communicates with openwifi driver (function openwifi_testmode_cmd() in sdr.c) via Linux nl80211--cfg80211--mac80211 path 
 
 ### get and set a parameter
 ```
@@ -143,17 +143,17 @@ reg_idx|meaning|example
 
 ## rx packet flow and filtering config
 
-When FPGA received a packet, no matter the FCS/CRC is correct or not it will raise interrupt to Linux if the frame filtering full is met. openwifi_rx_interrupt() function in sdr.c will be triggered to do necessary operation and give the content to upper layer (Linux mac80211 subsystem).
+After FPGA receives a packet, no matter the FCS/CRC is correct or not it will raise interrupt to Linux if the frame filtering rule allows. openwifi_rx_interrupt() function in sdr.c will be triggered to do necessary operation and give the information to upper layer (Linux mac80211 subsystem).
 
 - frame filtering
 
-Because the FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c, you may not have all packet type you want even if you put your sdr0 to sniffing mode. But you do have the chance to do so by changing the filter_flag in openwifi_configure_filter() to override the frame filtering in FPGA with MONITOR_ALL. The filter_flag together with HIGH_PRIORITY_DISCARD_FLAG finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering.
+Because the FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c, you may not have all packet type you want even if you put your sdr0 to sniffing mode. But you do have the chance to capture any types of packet by changing the filter_flag in openwifi_configure_filter() to override the frame filtering in FPGA with MONITOR_ALL. The filter_flag together with HIGH_PRIORITY_DISCARD_FLAG finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering.
 
 - main rx interrupt operations in openwifi_rx_interrupt()
-  - get raw content from DMA buffer. When Linux receives interrupt from FPGA rx_intf module, that means the content has been ready in Linux DMA buffer
+  - get raw content from DMA buffer. When Linux receives interrupt from FPGA rx_intf module, the content has been ready in Linux DMA buffer
   - parse extra information inserted by FPGA in the DMA buffer
     - TSF timer value
-    - raw RSSI value that will be converted to actual RSSI in dBm by different correction in different band
+    - raw RSSI value that will be converted to actual RSSI in dBm by different correction in different bands/channels
     - packet length and MCS
     - FCS is valid or not
   - send packet content and necessary extra information to upper layer via ieee80211_rx_irqsafe()
@@ -165,22 +165,22 @@ Linux mac80211 subsystem calls openwifi_tx() to initiate a packet sending.
 - main operations in openwifi_tx()
   - get necessary information from the packet header (struct ieee80211_hdr) for future FPGA configuration use
     - packet length and MCS
-    - unicast or broadcast? does it need ACK? how many retransmissions are needed to be done by FPGA in case ACK is not received in time?
+    - unicast or broadcast? does it need ACK? how many retransmissions at most are allowed to be tried by FPGA in case ACK is not received in time?
     - which time slice in FPGA the packet should go?
     - should RTS-CTS be used? (Send RTS and wait for CTS before actually send the data packet)
     - should CTS-to-self be used? (Send CTS-to-self packet before sending the data packet. You can force this on by force_use_cts_protect = true;)
     - should a sequence number be set for this packet?
-  - generate SIGNAL field according to length and MCS information. Insert it before the packet for the future openofdm_tx use
-  - generate FPGA/PHY sequence number (priv->phy_tx_sn) for internal use (between Linux and FPGA)
-  - config FPGA register according to the above information to make sure FPGA do correct service according to the packet specific requirement.
+  - generate SIGNAL field according to length and MCS information. Insert it before the packet for the future openofdm_tx FPGA module use
+  - generate FPGA/PHY sequence number (priv->phy_tx_sn) for internal use (cross check between Linux and FPGA)
+  - config FPGA register according to the above information to make sure FPGA do correct actions according to the packet specific requirement.
   - fire DMA transmission from Linux to one of FPGA tx queues. The packet may not be sent immediately if there are still some packets in FPGA tx queue (FPGA does the queue packet transmission according to channel and low MAC state)
     
-Each time when FPGA send a packet, an interrupt will be raised to Linux reporting the packet sending result. This interrupt handler is openwifi_tx_interrupt().
+Each time when FPGA sends a packet, an interrupt will be raised to Linux reporting the packet sending result. This interrupt handler is openwifi_tx_interrupt().
 
 - main operations in openwifi_tx_interrupt()
-  - get necessary information from the FPGA of the packet just sent
-    - packet length and sequence number
-    - packet sending result: packet is sent successfully (FPGA receive ACK for this packet) or not. How many retransmissions are used for the packet sending (in case FPGA doesn't receive ACK for several times)
+  - get necessary information/status of the packet just sent by FPGA
+    - packet length and sequence number to capture abnormal situation (cross checking between Linux and FPGA)
+    - packet sending result: packet is sent successfully (FPGA receives ACK for this packet) or not. How many retransmissions are used for the packet sending (in case FPGA doesn't receive ACK in time, FPGA will do retransmission immediately)
   - send above information to upper layer (Linux mac80211 subsystem) via ieee80211_tx_status_irqsafe()
 
 ## debug methods
@@ -230,4 +230,4 @@ For protocol, many native Linux tools you still could rely on. Such as tcpdump.
 
 ### FPGA
 
-For FPGA itself, FPGA developer could use Xilinx ILA tools to spy on FPGA signals. 
+For FPGA itself, FPGA developer could use Xilinx ILA tools to analyze FPGA signals. Spying on those state machines in xpu/tx_intf/rx_intf would be very helpful for understanding/debugging Wi-Fi low level funtionalities.
