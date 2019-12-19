@@ -138,7 +138,7 @@ dtc -I dts -O dtb -o devicetree.dtb devicetree.dts
 
 ```
 cd $OPENWIFI_DIR/kernel_boot
-source $XILINX_DIR/Vivado/2017.4/settings64.sh
+source $XILINX_DIR/SDK/2017.4/settings64.sh
 ./build_boot_bin.sh ../openwifi-hw/zc706_fmcs2/sdk/system_top_hw_platform_0/system.hdf u-boot-zc70x.elf
 (u-boot-zc70x.elf is included in the original Analog Devices Linux img)
 ```
