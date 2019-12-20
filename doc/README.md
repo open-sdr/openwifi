@@ -39,14 +39,16 @@ The packet sending is initiated by upper layer. After the packet is sent by the 
 
 ## sdrctl command
 
-Besides the Linux native Wi-Fi control programs, such as ifconfig/iw/iwconfig/iwlist/wpa_supplicant/hostapd/etc, openwifi offers a user space tool sdrctl to access openwifi specific functionalities. sdrctl is implemented as nl80211 testmode command and communicates with openwifi driver (function openwifi_testmode_cmd() in sdr.c) via Linux nl80211--cfg80211--mac80211 path 
+Besides the Linux native Wi-Fi control programs, such as ifconfig/iw/iwconfig/iwlist/wpa_supplicant/hostapd/etc, openwifi offers a user space tool sdrctl to access openwifi specific functionalities, such as time sharing of the interface between two network slices, you may find more details of the slicing mechanism [here](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html#sdr-tx-time-slicing).
+
+sdrctl is implemented as nl80211 testmode command and communicates with openwifi driver (function openwifi_testmode_cmd() in sdr.c) via Linux nl80211--cfg80211--mac80211 path 
 
 ### get and set a parameter
 ```
 sdrctl dev sdr0 get para_name
 sdrctl dev sdr0 set para_name value 
 ```
-para_name|meaning|example
+para_name|meaning|comment
 ---------|-------|----
 addr0|target MAC address of tx slice 0|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
 slice_total0|tx slice 0 cycle length in us|for length 50ms, you set 49999
@@ -62,64 +64,65 @@ slice_end1|  tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
 sdrctl dev sdr0 get reg module_name reg_idx
 sdrctl dev sdr0 set reg module_name reg_idx reg_value 
 ```
-module_name drv_rx/drv_tx/drv_xpu refer to driver modules. Related registers are defined in sdr.h (drv_rx_reg_val/drv_tx_reg_val/drv_xpu_reg_val)
+module_name refers to the name of driver modules, can be drv_rx/drv_tx/drv_xpu. Related registers are defined in sdr.h (drv_rx_reg_val/drv_tx_reg_val/drv_xpu_reg_val)
 
 module_name rf/rx_intf/tx_intf/rx/tx/xpu refer to RF (ad9xxx front-end) and FPGA (rx_intf/tx_intf/openofdm_rx/openofdm_tx/xpu) modules. Related register addresses are defined in hw_def.h.
 
 module_name: drv_rx
+In the *comment* column, you may get a list of *decimalvalue(0xhexvalue):explanation* for a register, only use the *decimalvalue* or *hexvalue* in the sdrctl command.  
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
 1|rx antenna selection|0:rx1, 1:rx2. After this command, you should down and up sdr0 by ifconfig, but not reload sdr0 driver via ./wgd.sh
 
 module_name: drv_tx
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
 0|override Linux rate control of tx unicast data packet|4:6M, 5:9M, 6:12M, 7:18M, 8:24M, 9:36M, 10:48M, 11:54M
 1|tx antenna selection|0:tx1, 1:tx2. After this command, you should down and up sdr0 by ifconfig, but not reload sdr0 driver via ./wgd.sh
 
 module_name: drv_xpu
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
-x|x|x
+x|x|to be defined
 
 module_name: rf
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
-x|x|x
+x|x|to be defined
 
 module_name: rx_intf
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
 2|enable/disable rx interrupt|256(0x100):disable, 0:enable
 
 module_name: tx_intf
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
 13|tx I/Q digital gain before DUC|current optimal value: 237
 14|enable/disable tx interrupt|196672(0x30040):disable, 64(0x40):enable
 
 module_name: rx
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
 20|history of PHY rx state|read only. If the last digit readback is always 3, it means the Viterbi decoder stops working
 
 module_name: tx
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
 1|pilot scrambler initial state|lowest 7 bits are used. 0x7E by default in openofdm_tx.c
 2|data  scrambler initial state|lowest 7 bits are used. 0x7F by default in openofdm_tx.c
 
 module_name: xpu
 
-reg_idx|meaning|example
+reg_idx|meaning|comment
 -------|-------|----
 2|TSF timer low  32bit write|only write this register won't trigger the TSF timer reload. should use together with register for high 32bit
 3|TSF timer high 32bit write|falling edge of MSB will trigger the TSF timer reload, which means write '1' then '0' to MSB
