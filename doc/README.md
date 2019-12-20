@@ -22,7 +22,7 @@ openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 -	**config**. It is called when upper layer wants to change channel/frequency (like the scan operation)
 -	**bss_info_changed**. It is called when upper layer believe some BSS parameters need to be changed (BSSID, TX power, beacon interval, etc)
 -	**conf_tx**. It is called when upper layer needs to config/change some tx parameters (AIFS, CW_MIN, CW_MAX, TXOP, etc)
--	**prepare_multicast**. 
+-	**prepare_multicast**. It is called when upper layer needs to prepare multicast, currently only a empty function hook is present.
 -	**configure_filter**. It is called when upper layer wants to config/change the [frame filtering](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#frame-filtering) rule in FPGA.
 -	**rfkill_poll**. It is called when upper layer wants to know the RF status (ON/OFF).
 -	**get_tsf**. It is called when upper layer wants to get 64bit FPGA timer value (TSF - Timing synchronization function) 
@@ -31,11 +31,11 @@ openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 -	**set_rts_threshold**. It is called when upper layer wants to change the threshold (packet length) for turning on RTS mechanism
 -	**testmode_cmd**. It is called when upper layer has test command for us. [sdrctl command](#sdrctl-command) message is handled by this function.
 
-Above APIs are called by upper layer (Linux mac80211 subsystem). When they are called, the driver (sdr.c) will do necessary job over SDR platform. If necessary, the driver will call other component drivers, like tx_intf_api/rx_intf_api/openofdm_tx_api/openofdm_rx_api/xpu_api, for helping.
+Above APIs are called by upper layer (Linux mac80211 subsystem). When they are called, the driver (sdr.c) will do necessary job over SDR platform. If necessary, the driver will call other component drivers, like tx_intf_api/rx_intf_api/openofdm_tx_api/openofdm_rx_api/xpu_api, for help.
 
 After receiving a packet from the air, FPGA will raise interrupt (if the frame filtering rule allows) to Linux, then the function openwifi_rx_interrupt() of openwifi driver (sdr.c) will be triggered. In that function, ieee80211_rx_irqsafe() API is used to give the packet and related information (timestamp, rssi, etc) to upper layer.
 
-The packet sending is initiated by upper layer. After the packet is sent by the driver over FPGA, the upper layer will expect a sending report from the driver. Each time FPGA sends a packet, an interrupt will be raised to Linux and trigger openwifi_tx_interrupt(). This function will report the sending result (fail? succeed? number of retransmissions, etc.) to upper layer via ieee80211_tx_status_irqsafe() API.
+The packet sending is initiated by upper layer. After the packet is sent by the driver over FPGA to the air, the upper layer will expect a sending report from the driver. Each time FPGA sends a packet, an interrupt will be raised to Linux and trigger openwifi_tx_interrupt(). This function will report the sending result (failed? succeeded? number of retransmissions, etc.) to upper layer via ieee80211_tx_status_irqsafe() API.
 
 ## sdrctl command
 
