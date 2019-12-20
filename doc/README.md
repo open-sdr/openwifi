@@ -64,9 +64,9 @@ slice_end1|  tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
 sdrctl dev sdr0 get reg module_name reg_idx
 sdrctl dev sdr0 set reg module_name reg_idx reg_value 
 ```
-module_name refers to the name of driver modules, can be drv_rx/drv_tx/drv_xpu. Related registers are defined in sdr.h (drv_rx_reg_val/drv_tx_reg_val/drv_xpu_reg_val)
+module_name refers to the name of driver functionality, can be drv_rx/drv_tx/drv_xpu. Related registers are defined in sdr.h (drv_rx_reg_val/drv_tx_reg_val/drv_xpu_reg_val)
 
-module_name rf/rx_intf/tx_intf/rx/tx/xpu refer to RF (ad9xxx front-end) and FPGA (rx_intf/tx_intf/openofdm_rx/openofdm_tx/xpu) modules. Related register addresses are defined in hw_def.h.
+module_name rf/rx_intf/tx_intf/rx/tx/xpu refer to RF (ad9xxx front-end) and FPGA modules (rx_intf/tx_intf/openofdm_rx/openofdm_tx/xpu). Related register addresses are defined in hw_def.h.
 
 module_name: drv_rx
 In the *comment* column, you may get a list of *decimalvalue(0xhexvalue):explanation* for a register, only use the *decimalvalue* or *hexvalue* in the sdrctl command.  
