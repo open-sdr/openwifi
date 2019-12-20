@@ -69,7 +69,8 @@ module_name refers to the name of driver functionality, can be drv_rx/drv_tx/drv
 module_name rf/rx_intf/tx_intf/rx/tx/xpu refer to RF (ad9xxx front-end) and FPGA modules (rx_intf/tx_intf/openofdm_rx/openofdm_tx/xpu). Related register addresses are defined in hw_def.h.
 
 module_name: drv_rx
-In the *comment* column, you may get a list of *decimalvalue(0xhexvalue):explanation* for a register, only use the *decimalvalue* or *hexvalue* in the sdrctl command.  
+
+(In the **comment** column, you may get a list of **decimalvalue(0xhexvalue):explanation** for a register, only use the **decimalvalue** in the sdrctl command)
 
 reg_idx|meaning|comment
 -------|-------|----
