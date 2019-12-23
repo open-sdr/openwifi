@@ -23,7 +23,7 @@ openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 -	**bss_info_changed**. It is called when upper layer believe some BSS parameters need to be changed (BSSID, TX power, beacon interval, etc)
 -	**conf_tx**. It is called when upper layer needs to config/change some tx parameters (AIFS, CW_MIN, CW_MAX, TXOP, etc)
 -	**prepare_multicast**. It is called when upper layer needs to prepare multicast, currently only a empty function hook is present.
--	**configure_filter**. It is called when upper layer wants to config/change the [frame filtering](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#frame-filtering) rule in FPGA.
+-	**configure_filter**. It is called when upper layer wants to config/change the [frame filtering](#tx-packet-flow-and-config) rule in FPGA.
 -	**rfkill_poll**. It is called when upper layer wants to know the RF status (ON/OFF).
 -	**get_tsf**. It is called when upper layer wants to get 64bit FPGA timer value (TSF - Timing synchronization function) 
 -	**set_tsf**. It is called when upper layer wants to set 64bit FPGA timer value
@@ -136,7 +136,7 @@ reg_idx|meaning|comment
 23|tx slice 1 cycle length in us|for length 50ms, you set 49999
 24|tx slice 1 cycle start time in us|for start at 10ms, you set 10000
 25|tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
-27|FPGA packet filter config|check openwifi_configure_filter in sdr.c. also: https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#frame-filtering
+27|FPGA packet filter config|check openwifi_configure_filter in sdr.c. also [mac80211 frame filtering](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#frame-filtering)
 28|BSSID address low  32bit for BSSID filtering|normally it is set by Linux in real-time automatically
 29|BSSID address high 32bit for BSSID filtering|normally it is set by Linux in real-time automatically
 30|openwifi MAC address low  32bit|
@@ -151,7 +151,7 @@ After FPGA receives a packet, no matter the FCS/CRC is correct or not it will ra
 
 - frame filtering
 
-Because the FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c, you may not have all packet type you want even if you put your sdr0 to sniffing mode. But you do have the chance to capture any types of packet by changing the filter_flag in openwifi_configure_filter() to override the frame filtering in FPGA with MONITOR_ALL. The filter_flag together with HIGH_PRIORITY_DISCARD_FLAG finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering.
+Because the FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c, you may not have all packet type you want even if you put your sdr0 to sniffing mode. But you do have the chance to capture any types of packet by changing the filter_flag in openwifi_configure_filter() to override the frame filtering in FPGA with **MONITOR_ALL**. The filter_flag together with **HIGH_PRIORITY_DISCARD_FLAG** finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering.
 
 - main rx interrupt operations in openwifi_rx_interrupt()
   - get raw content from DMA buffer. When Linux receives interrupt from FPGA rx_intf module, the content has been ready in Linux DMA buffer
