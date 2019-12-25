@@ -5,7 +5,7 @@
 
 This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Detailed architecture](https://github.com/open-sdr/openwifi/tree/master/doc)]
 
-[Demo [video](https://youtu.be/NpjEaszd5u4). Video [download](https://users.ugent.be/~xjiao/openwifi-low-aac.mp4)]   [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
+[Demo [video](https://youtu.be/NpjEaszd5u4) and video [download](https://users.ugent.be/~xjiao/openwifi-low-aac.mp4)]   [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)] [[Cite openwifi project](#cite-openwifi-project)]
 
 Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opensource license, please contact Filip.Louagie@UGent.be. Openwifi project also leverages some 3rd party modules. It is your duty to check and follow licenses of those modules according to your purpose. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions.
 
@@ -286,3 +286,15 @@ make
   sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
   ```
   * Now you can connect openwifi hotspot from your phone/laptop and access the internet.
+
+## cite openwifi project
+
+Any use of openwifi project which results in a publication should include a citation via (bibtex example):
+```
+@electronic{openwifigithub,
+            author = {Xianjun, Jiao and Wei, Liu and Michael, Mehari},
+            title = {open-source IEEE802.11/Wi-Fi baseband chip/FPGA design},
+            url = {https://github.com/open-sdr/openwifi},
+            year = {2019},
+}
+```
