@@ -175,11 +175,14 @@ sync
 * Insert the SD card to the board, power on and run serial console (such as minicom) from a PC via USB-UART cable to the board. After booting completes, in the PC serial console:
 
 ```
-ln -s /lib/modules/4.14.0-g4220d5d24c6c /lib/modules/4.14.0-g4220d5d
-(in case some Linux use short hash)
 depmod
 (Ignore the error messages)
 modprobe mac80211
+(if you get error like: could not open moddep file 'lib/modules/4.14.0XXXYYYZZZ/modules.dep.bin', you could make a symbol link and modprobe again)
+ln -s /lib/modules/4.14.0-g4220d5d24c6c /lib/modules/4.14.0XXXYYYZZZ
+depmod
+modprobe mac80211
+
 cd openwifi
 ./wgd.sh
 (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
