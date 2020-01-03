@@ -125,6 +125,7 @@ module_name: xpu
 
 reg_idx|meaning|comment
 -------|-------|----
+1|mute rx I/Q when tx|0:mute (default), 1:unmute, which means rx baseband will receive our own tx signal. Rx packet and tx packet (such as ACK) can be monitored in FPGA for timing analysis
 2|TSF timer low  32bit write|only write this register won't trigger the TSF timer reload. should use together with register for high 32bit
 3|TSF timer high 32bit write|falling edge of MSB will trigger the TSF timer reload, which means write '1' then '0' to MSB
 4|band and channel number setting|see enum openwifi_band in hw_def.h. it will be set automatically by Linux. normally you shouldn't set it
