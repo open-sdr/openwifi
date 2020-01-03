@@ -1311,7 +1311,6 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
 				     unsigned int *total_flags,
 				     u64 multicast)
 {
-	struct openwifi_priv *priv = dev->priv;
 	u32 filter_flag;
 
 	(*total_flags) &= SDR_SUPPORTED_FILTERS;
@@ -1322,14 +1321,16 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
 	filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO);
 	//filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|MONITOR_ALL); // all pkt will be delivered to arm
 
-	if (priv->vif[0]->type == NL80211_IFTYPE_MONITOR)
+	//if (priv->vif[0]->type == NL80211_IFTYPE_MONITOR)
+	if ((filter_flag&0xf0) == 0xf0) //FIF_BCN_PRBRESP_PROMISC/FIF_CONTROL/FIF_OTHER_BSS/FIF_PSPOLL are set means monitor mode	
 		filter_flag = (filter_flag|MONITOR_ALL);
+	else
+		filter_flag = (filter_flag&(~MONITOR_ALL));
 
-	if ( (priv->vif[0]->type == NL80211_IFTYPE_STATION) && !(filter_flag&FIF_BCN_PRBRESP_PROMISC) )
+	if ( !(filter_flag&FIF_BCN_PRBRESP_PROMISC) )
 		filter_flag = (filter_flag|MY_BEACON);
 
-	if (priv->vif[0]->type == NL80211_IFTYPE_AP)
-		filter_flag = (filter_flag|FIF_PSPOLL);
+	filter_flag = (filter_flag|FIF_PSPOLL);
 
 	xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag|HIGH_PRIORITY_DISCARD_FLAG);
 	//xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag); //do not discard any pkt
