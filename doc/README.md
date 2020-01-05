@@ -207,7 +207,7 @@ Then not difficult to find out how to change the frequency range in SDR_2GHZ_CH0
 
 ### supported channel
 
-The supported channel list is defined in openwifi_2GHz_channels and openwifi_5GHz_channels in sdr.h. If you change the number of supported channels, make sure you also change the array size of the following two fields in the struct openwifi_priv:
+The supported channel list is defined in openwifi_2GHz_channels and openwifi_5GHz_channels in sdr.h. If you change the number of supported channels, make sure you also change the frequency range in sdr_regd accordingly and also array size of the following two fields in the struct openwifi_priv:
 ```
 struct ieee80211_channel channels_2GHz[14];
 struct ieee80211_channel channels_5GHz[11];
