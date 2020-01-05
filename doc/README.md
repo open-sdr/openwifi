@@ -7,6 +7,7 @@ Above figure shows software and hardware/FPGA modules that compose the openwifi 
 - [sdrctl command](#sdrctl-command)
 - [rx packet flow and filtering config](#rx-packet-flow-and-filtering-config)
 - [tx packet flow and config](#tx-packet-flow-and-config)
+- [regulation and frequency config](#regulation-and-frequency-config)
 - [debug methods](#debug-methods)
 
 ## driver and software overall principle
@@ -152,7 +153,7 @@ After FPGA receives a packet, no matter the FCS/CRC is correct or not it will ra
 
 - frame filtering
 
-Because the FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c, you may not have all packet type you want even if you put your sdr0 to sniffing mode. But you do have the chance to capture any types of packet by changing the filter_flag in openwifi_configure_filter() to override the frame filtering in FPGA with **MONITOR_ALL**. The filter_flag together with **HIGH_PRIORITY_DISCARD_FLAG** finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering.
+The FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c. The filter_flag together with **HIGH_PRIORITY_DISCARD_FLAG** finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering. Openwifi has the capability to capture all received packets even if the CRC is bad. You just need to set the NIC to monitor mode by iwconfig command (check monitor_ch.sh in user_space directory). In monitor mode, openwifi_configure_filter() will set **MONITOR_ALL** to the frame filtering module pkt_filter_ctl.v in FPGA. This makes sure transfer all received packets to Linux mac80211 via rx interrupt. 
 
 - main rx interrupt operations in openwifi_rx_interrupt()
   - get raw content from DMA buffer. When Linux receives interrupt from FPGA rx_intf module, the content has been ready in Linux DMA buffer
@@ -187,6 +188,39 @@ Each time when FPGA sends a packet, an interrupt will be raised to Linux reporti
     - packet length and sequence number to capture abnormal situation (cross checking between Linux and FPGA)
     - packet sending result: packet is sent successfully (FPGA receives ACK for this packet) or not. How many retransmissions are used for the packet sending (in case FPGA doesn't receive ACK in time, FPGA will do retransmission immediately)
   - send above information to upper layer (Linux mac80211 subsystem) via ieee80211_tx_status_irqsafe()
+
+## regulation and frequency config
+
+SDR is a powerful tool for research. It is the user's duty to align with local spectrum regulation.
+
+This section explains how openwifi config the frequency/channel range and change it in real-time. After knowing the mechanism, you can try to extend frequency/channel by yourself.
+
+### frequency range
+
+When openwifi driver is loaded, openwifi_dev_probe() will be executed. Following two lines configure the frequency range:
+```
+dev->wiphy->regulatory_flags = xxx
+wiphy_apply_custom_regulatory(dev->wiphy, &sdr_regd);
+```
+sdr_regd is the predefined variable in sdr.h. You can search the definition/meaning of its type: struct ieee80211_regdomain. 
+Then not difficult to find out how to change the frequency range in SDR_2GHZ_CH01_14 and SDR_5GHZ_CH36_64.
+
+### supported channel
+
+The supported channel list is defined in openwifi_2GHz_channels and openwifi_5GHz_channels in sdr.h. If you change the number of supported channels, make sure you also change the array size of the following two fields in the struct openwifi_priv:
+```
+struct ieee80211_channel channels_2GHz[14];
+struct ieee80211_channel channels_5GHz[11];
+```
+Finally, the supported channel list is transferred to Linux mac80211 when openwifi driver is loaded by following two lines in openwifi_dev_probe():
+```
+dev->wiphy->bands[NL80211_BAND_2GHZ] = &(priv->band_2GHz);
+dev->wiphy->bands[NL80211_BAND_5GHZ] = &(priv->band_5GHz);
+```
+
+### real-time channel setting
+
+Linux mac80211 (struct ieee80211_ops openwifi_ops in sdr.c) uses the "config" API to configure channel frequency and some other parameters in real-time (such as during scanning or channel setting by iwconfig). It is hooked to openwifi_config() in sdr.c, and supports only frequency setting currently. The real execution of frequency setting falls to ad9361_rf_set_channel() via the "set_chan" field of struct openwifi_rf_ops ad9361_rf_ops in sdr.c. Besides tuning RF front-end (AD9361), the ad9361_rf_set_channel() also handles RSSI compensation for different frequencies and different configurations (SIFS, etc) of FPGA for different bands.
 
 ## debug methods
 
