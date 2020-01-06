@@ -84,14 +84,17 @@ iwlist sdr0 scan
         (Wait for connection done, then open another ssh terminal)
         dhclient sdr0
         (Wait for its done, then you should have connection)
-        
+
+* Real-time control/config via sdrctl (time slice config, etc), please go to openwifi/doc.
+
+* ***Note***: The files (BOOT.BIN, drivers, etc) in pre-built SD card img might not have the latest bug-fixes/features. Check related section in this README on how to generate them and update them if needed.
+
 * ***Note***: If openwifi stops working after ~2 hours, it means the evaluation license of Xilinx Viterbi decoder has expired. You need to power cycle the board. Run this command several times on board to confirm:
   
         root@analog:~/openwifi# ./sdrctl dev sdr0 get reg rx 20
         SENDaddr: 00040050
         reg  val: 34be0123
         (If the last number of reg val is always 3, that means the Viterbi decoder stops working)
-* Real-time control/config via sdrctl (time slice config, etc), please go to openwifi/doc.
 
 **Build openwifi Linux img based on openwifi FPGA and driver:**
 
