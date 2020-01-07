@@ -327,7 +327,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	u8 *pdata_tmp, fcs_ok, phy_rx_sn_hw, target_buf_idx;
 	s8 signal;
 	u16 rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0;
-	bool content_ok = false;
+	bool content_ok = false, len_overflow = false;
 	struct dma_tx_state state;
 	static u8 target_buf_idx_old = 0xFF;
 
@@ -347,7 +347,9 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	tsft_high =    (*((u32*)(pdata_tmp+4 )));
 	rssi_val =     (*((u16*)(pdata_tmp+8 )));
 	len =          (*((u16*)(pdata_tmp+12)));
-	//len_new = (((len>>3) + ((len&0x7)!=0))<<3);
+
+	len_overflow = (len>(RX_BD_BUF_SIZE-16)?true:false);
+
 	rate_idx =     (*((u16*)(pdata_tmp+14)));
 
 	// fc_di =        (*((u32*)(pdata_tmp+16)));
@@ -371,16 +373,16 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	if (len>=28)
 		sc = hdr->seq_ctrl;
 
-	fcs_ok =       (*(( u8*)(pdata_tmp+16+len-1)));
+	fcs_ok = ( len_overflow?0:(*(( u8*)(pdata_tmp+16+len-1))) );
 
+	//phy_rx_sn_hw = (fcs_ok&(NUM_RX_BD-1));
 	phy_rx_sn_hw = (fcs_ok&0x7f);//0x7f is FPGA limitation
 	dma_driver_buf_idx_mod = (state.residue&0x7f);
-	//phy_rx_sn_hw = (fcs_ok&(NUM_RX_BD-1));
 	fcs_ok = ((fcs_ok&0x80)!=0);
 	ht_flag = ((rate_idx&0x10)!=0);
 	rate_idx = (rate_idx&0xF);
 
-	if ( (len>=14 && len<=8191) && (rate_idx>=8 && rate_idx<=15)) {
+	if ( (len>=14 && (!len_overflow)) && (rate_idx>=8 && rate_idx<=15)) {
 		// if ( phy_rx_sn_hw!=dma_driver_buf_idx_mod) {
 		// 	printk("%s openwifi_rx_interrupt: WARNING sn %d next buf_idx %d!\n", sdr_compatible_str,phy_rx_sn_hw,dma_driver_buf_idx_mod);
 		// }
@@ -395,11 +397,12 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		signal = -128;
 	else
 		signal = rssi_val - priv->rssi_correction;
+
 	if (addr1_low32!=0xffffffff && addr1_high16!=0xffff)
-	printk("%s openwifi_rx_interrupt:%4dbytes ht%d %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d sn%d i%d %ddBm\n", sdr_compatible_str,
-	len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control,hdr->duration_id, 
-	reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
-	sc,fcs_ok, phy_rx_sn_hw,dma_driver_buf_idx_mod,signal);
+		printk("%s openwifi_rx_interrupt:%4dbytes ht%d %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d sn%d i%d %ddBm\n", sdr_compatible_str,
+			len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control,hdr->duration_id, 
+			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
+			sc,fcs_ok, phy_rx_sn_hw,dma_driver_buf_idx_mod,signal);
 
 	// priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
 	if (content_ok) {
@@ -664,9 +667,12 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		rate_hw_value = priv->drv_tx_reg_val[0];
 		
 	// check current packet belonging to which slice/hw-queue
-	for (i=0; i<MAX_NUM_HW_QUEUE; i++) {
-		if ( priv->dest_mac_addr_queue_map[i] == addr1_low32 && ( !addr_flag ) ) {
-			break;
+	i=0;
+	if (fc_type==2 && fc_subtype==0 && (!addr_flag)) {
+		for (; i<MAX_NUM_HW_QUEUE; i++) {
+			if ( priv->dest_mac_addr_queue_map[i] == addr1_low32 ) {
+				break;
+			}
 		}
 	}
 	queue_idx = i;
@@ -696,8 +702,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		cts_duration = traffic_pkt_duration + sifs + pkt_need_ack*(sifs+ack_duration);
 	}
 
-	//if (addr1_low32!=0xffffffff && addr1_high16!=0xffff)
-	if ( !addr_flag ) {
+	if ( !addr_flag ) 
 		printk("%s openwifi_tx: %4dbytes %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retry%d ack%d q%d sn%04d R/CTS %d%d %dM %dus wr/rd %d/%d\n", sdr_compatible_str,
 			len_mac_pdu, wifi_rate_all[rate_hw_value],frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
@@ -709,7 +714,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		// 	info->status.rates[1].idx,info->status.rates[1].count,info->status.rates[1].flags,
 		// 	info->status.rates[2].idx,info->status.rates[2].count,info->status.rates[2].flags,
 		// 	info->status.rates[3].idx,info->status.rates[3].count,info->status.rates[3].flags);
-	}
 
 // this is 11b stuff
 //	if (info->flags&IEEE80211_TX_RC_USE_SHORT_PREAMBLE)
@@ -922,15 +926,11 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	// // xpu_api->XPU_REG_CSMA_CFG_write(3); // cw_min
 	// xpu_api->XPU_REG_CSMA_CFG_write(3);
 
-	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( (1200<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030-238)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
+	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030-238)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030)<<16)|0 );//now our tx send out I/Q immediately
 
-	//xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200)<<16) | 400 );//2.4GHz
-	//xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200)<<16) | 400 );//5GHz
-
-	// // value from openwifi-pre0 csma_test branch
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200)<<16) | 200 );//2.4GHz
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200)<<16) | 200 );//5GHz
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200 + 300)<<16) | 200 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200 + 300)<<16) | 200 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*200)<<16)|(10*200) );//high 16bit 5GHz; low 16 bit 2.4GHz
 	

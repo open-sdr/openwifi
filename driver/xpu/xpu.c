@@ -388,13 +388,11 @@ static inline u32 hw_init(enum xpu_mode mode){
 	//xpu_api->XPU_REG_CSMA_CFG_write(3); //normal CSMA
 	xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); //high priority
 
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030-238)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
-	//xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200)<<16) | 400 );//2.4GHz
-	//xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200)<<16) | 400 );//5GHz
-	
-	// // value from openwifi-preo csma_test
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+6)*200)<<16) | 200 );//2.4GHz, still need to find out why sometimes the PI in ad-hoc 2.4GHz mode give ack so slow: 18us
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2)*200)<<16) | 200 );//5GHz
+	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030-238)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030)<<16)|0 );//now our tx send out I/Q immediately
+
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200 + 300)<<16) | 200 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200 + 300)<<16) | 200 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
 	printk("%s hw_init err %d\n", xpu_compatible_str, err);
 	return(err);
