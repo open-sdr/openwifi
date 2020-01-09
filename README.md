@@ -293,6 +293,30 @@ make
   ```
   * Now you can connect openwifi hotspot from your phone/laptop and access the internet.
 
+**Connecting a client to openwifi AP in 2.4GHz**
+
+Openwifi only applies OFDM as its modulation scheme and as a result, it is not backward compatible with 802.11b clients or modes of operation. This is usually the case during beacon transmission, connection establishment, and robust communication.
+
+As a solution to this problem, openwifi can be fully controlled only if communicating with APs/clients instantiated using hostapd/wpa_supplicant userspace programs respectively.
+
+For hostapd program, 802.11b rates can be suppressed using configuration commands (i.e. supported_rates, basic_rates) and an example configuration file is provided (i.e. hostapd-openwifi.conf). One small caveat to this one comes from fullMAC Wi-Fi cards as they must implement the *NL80211_TXRATE_LEGACY* NetLink handler at the device driver level.
+
+On the other hand, the wpa_supplicant program on the client side (commercial Wi-Fi dongle/board) cannot suppress 802.11b rates out of the box in 2.4GHz band, so there will be an issue when connecting openwifi (OFDM only). A patched wpa_supplicant should be used at the client side.
+
+```
+cd openwifi/user_space
+wget http://w1.fi/releases/wpa_supplicant-2.1.tar.gz
+tar xzvf wpa_supplicant-2.1.tar.gz
+patch -d wpa_supplicant-2.1/src/drivers/ < driver_nl80211.patch
+cd wpa_supplicant-2.1/wpa_supplicant/
+cp defconfig .config
+sed -i 's/#CONFIG_LIBNL32.*/CONFIG_LIBNL32=y/g' .config
+make -j16
+sudo make install
+cd ../../
+rm -r wpa_supplicant-2.1/ wpa_supplicant-2.1.tar.gz
+```
+
 ## cite openwifi project
 
 Any use of openwifi project which results in a publication should include a citation via (bibtex example):

@@ -1,0 +1,19 @@
+--- wpa_supplicant-2.1/src/drivers/driver_nl80211.c	2014-02-04 12:23:35.000000000 +0100
++++ driver_nl80211.c	2020-01-09 09:11:35.943884000 +0100
+@@ -5903,6 +5903,8 @@
+ 	    wpa_driver_nl80211_set_mode(bss, nlmode) < 0)
+ 		return -1;
+ 
++	nl80211_disable_11b_rates(drv, drv->ifindex, 1);
++
+ retry:
+ 	msg = nlmsg_alloc();
+ 	if (!msg)
+@@ -8625,6 +8627,7 @@
+ 	}
+ 
+ 	nl80211_mark_disconnected(drv);
++	nl80211_disable_11b_rates(drv, drv->ifindex, 1);
+ 
+ 	msg = nlmsg_alloc();
+ 	if (!msg)
