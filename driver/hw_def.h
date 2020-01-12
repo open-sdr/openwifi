@@ -9,7 +9,7 @@ enum openwifi_band {
 	BAND_5_0GHZ,
 	BAND_5_8GHZ,
 	BAND_5_9GHZ,
-	BAND_60GHZ,
+	BAND_6_0GHZ,
 };
 
 // ------------------------------------tx interface----------------------------------------
