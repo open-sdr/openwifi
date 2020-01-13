@@ -33,9 +33,9 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
 
 **Supported SDR platforms:**
 
-* zc706 (Xilinx) + fmcomms2/fmcomms4 (Analog Devices)
+* zc706 (Xilinx) + fmcomms2/3/4 (Analog Devices)
 * On roadmap: ADRV9361-Z7035/ADRV9364-Z7020 + ADRV1CRR-BOB (Analog Devices)
-* On roadmap: zcu102 (Xilinx) + fmcomms2/fmcomms4/ADRV9371 (Analog Devices)
+* On roadmap: zcu102 (Xilinx) + fmcomms2/3/4/ADRV9371 (Analog Devices)
 * Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
         
 **Quick start:** (Example instructions are verified on Ubuntu 16/18)
@@ -47,7 +47,7 @@ sudo dd bs=4M if=openwifi-1.0.0-ghent.img of=/dev/mmcblk0
 (mmcblk0 is the dev name of sdcard in Linux. Make sure you use the correct one in your situation!)
 (Above command takes a while)
 ```
-* Connect RX/TX antenna to RX1A/TX2A ports of your zc706+fmcomms2 platform, and make two antennas orthogonal to each other for good isolation. Config zc706 to SD card boot mode by switches (Read zc706 board spec on internet). Insert the SD card to zc706. (For fmcomms4/ad9364, you may connect antennas to TXA/RXA)
+* Connect RX/TX antenna to RX1A/TX2A ports of your zc706+fmcomms2/3 platform, and make two antennas orthogonal to each other for good isolation. Config zc706 to SD card boot mode by switches (Read zc706 board spec on internet). Insert the SD card to zc706. (For fmcomms4/ad9364, you may connect antennas to TXA/RXA)
 
 * Connect the board to PC. (PC IP address should be 192.168.10.1). Power on the board. Then from PC:
 
