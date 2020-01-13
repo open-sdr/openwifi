@@ -252,6 +252,7 @@ cd sdrctl_src
 chmod +x version.sh
 make
 ```
+
 **Internet config**
 * Connect board to internet. Topology: board|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
   * Enable IPv4 **IP forwarding** on both **board** and **PC**
