@@ -33,11 +33,19 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
 
 **Supported SDR platforms:**
 
-* zc706 (Xilinx) + fmcomms2/3/4 (Analog Devices)
-* On roadmap: ADRV9361-Z7035/ADRV9364-Z7020 + ADRV1CRR-BOB (Analog Devices)
-* On roadmap: zcu102 (Xilinx) + fmcomms2/3/4/ADRV9371 (Analog Devices)
+board_name|actual boards used|status
+-------|-------|----
+zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|done
+adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|ongoing
+adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|ongoing
+adrv9364z7020|ADRV9364Z7020 SOM + ADRV1CRR-BOB carrier board|future
+zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|future
+zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|future
+
+* board_name is used to identify FPGA design in openwifi-hw/boards/
 * Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
-        
+* zc706_fmcs2 is taken as example for following operations.
+
 **Quick start:** (Example instructions are verified on Ubuntu 16/18)
 
 * Download pre-built [openwifi Linux img file](https://users.ugent.be/~xjiao/openwifi-1.0.0-ghent.zip). Burn the img file to a 16G SD card:
@@ -47,7 +55,7 @@ sudo dd bs=4M if=openwifi-1.0.0-ghent.img of=/dev/mmcblk0
 (mmcblk0 is the dev name of sdcard in Linux. Make sure you use the correct one in your situation!)
 (Above command takes a while)
 ```
-* Connect RX/TX antenna to RX1A/TX2A ports of your zc706+fmcomms2/3 platform, and make two antennas orthogonal to each other for good isolation. Config zc706 to SD card boot mode by switches (Read zc706 board spec on internet). Insert the SD card to zc706. (For fmcomms4/ad9364, you may connect antennas to TXA/RXA)
+* Connect RX/TX antenna to RX1A/TX2A ports of fmcomms2/3(For fmcomms4/ad9364, you may connect antennas to TXA/RXA), and make two antennas orthogonal to each other for good isolation. Config the board to SD card boot mode by switches (Read the board spec on internet). Insert the SD card to the board. 
 
 * Connect the board to PC. (PC IP address should be 192.168.10.1). Power on the board. Then from PC:
 
@@ -144,7 +152,7 @@ dtc -I dts -O dtb -o devicetree.dtb devicetree.dts
 ```
 cd $OPENWIFI_DIR/kernel_boot
 source $XILINX_DIR/SDK/2017.4/settings64.sh
-./build_boot_bin.sh ../openwifi-hw/zc706_fmcs2/sdk/system_top_hw_platform_0/system.hdf u-boot-zc70x.elf
+./build_boot_bin.sh ../openwifi-hw/boards/zc706_fmcs2/sdk/system_top_hw_platform_0/system.hdf u-boot-zc70x.elf
 (u-boot-zc70x.elf is included in the original Analog Devices Linux img)
 ```
 * Download [2017_R1-2018_01_29.img.xz](http://swdownloads.analog.com/cse/2017_R1-2018_01_29.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it into a SD card via your PC.
