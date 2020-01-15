@@ -36,33 +36,32 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
 board_name|actual boards used|status
 -------|-------|----
 zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|done
-adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|ongoing
-adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|ongoing
+adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|done. wait for test
+adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|done
 adrv9364z7020|ADRV9364Z7020 SOM + ADRV1CRR-BOB carrier board|future
 zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|future
 zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|future
 
-* board_name is used to identify FPGA design in openwifi-hw/boards/
+* board_name is used to identify FPGA design in openwifi-hw/boards/ and rf script in user_space/rf_init_board_name.sh
 * Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
-* zc706_fmcs2 is taken as example for following operations.
 
 **Quick start:** (Example instructions are verified on Ubuntu 16/18)
 
-* Download pre-built [openwifi Linux img file](https://users.ugent.be/~xjiao/openwifi-1.0.0-ghent.zip). Burn the img file to a 16G SD card:
-
+* Download pre-built [openwifi Linux img file](https://users.ugent.be/~xjiao/openwifi-1.0.0-ghent.zip) (depends on board_name as well). Burn the img file to a 16G SD card:
 ```
 sudo dd bs=4M if=openwifi-1.0.0-ghent.img of=/dev/mmcblk0
 (mmcblk0 is the dev name of sdcard in Linux. Make sure you use the correct one in your situation!)
 (Above command takes a while)
 ```
-* Connect RX/TX antenna to RX1A/TX2A ports of fmcomms2/3(For fmcomms4/ad9364, you may connect antennas to TXA/RXA), and make two antennas orthogonal to each other for good isolation. Config the board to SD card boot mode by switches (Read the board spec on internet). Insert the SD card to the board. 
+* Connect RX/TX antenna to RX1A/TX2A ports(For fmcomms4/ad9364, you may connect antennas to TXA/RXA), and make two antennas orthogonal to each other for good isolation. Config the board to SD card boot mode by switches (Read the board spec on internet). Insert the SD card to the board. 
 
 * Connect the board to PC. (PC IP address should be 192.168.10.1). Power on the board. Then from PC:
-
 ```
 ssh root@192.168.10.122
 (password: openwifi)
 cd openwifi
+cp rf_init_board_name.sh rf_init.sh 
+(If there isn't rf_init.sh, rename your board rf script, such as rf_init_adrv9361z7035.sh, to rf_init.sh for wgd.sh to call)
 service network-manager stop
 ./wgd.sh
 (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
@@ -93,7 +92,7 @@ iwlist sdr0 scan
         dhclient sdr0
         (Wait for its done, then you should have connection)
 
-* Real-time control/config via sdrctl (time slice config, etc), please go to openwifi/doc.
+* Real-time control/config via "sdrctl" (register, time slice config, etc), please go to openwifi/doc.
 
 * ***Note***: The files (BOOT.BIN, drivers, etc) in pre-built SD card img might not have the latest bug-fixes/features. Check related section in this README on how to generate them and update them if needed.
 
@@ -108,7 +107,6 @@ iwlist sdr0 scan
 
 * Install Vivado/SDK 2017.4.1 (If you don't need to re-compile FPGA, WebPack version without license is enough)
 * Get pre-built FPGA files from openwifi-hw repository.
-
 ```
 git submodule init openwifi-hw
 git submodule update openwifi-hw
@@ -117,7 +115,6 @@ git checkout master
 git pull
 ```
 * Build Linux kernel and modules:
-
 ```
 export XILINX_DIR=your_Xilinx_directory
 cd openwifi
@@ -135,32 +132,37 @@ make -j12 UIMAGE_LOADADDR=0x8000 uImage
 make modules
 ```
 * Build openwifi Linux driver modules:
-
 ```
 export OPENWIFI_DIR=your_openwifi_directory
 cd $OPENWIFI_DIR/driver
 ./make_all.sh $XILINX_DIR/SDK/2017.4/ $OPENWIFI_DIR/adi-linux/
 ```
 * Build openwifi Linux devicetree:
-
 ```
-cd $OPENWIFI_DIR/kernel_boot
+export BOARD_NAME=your_board_name
+(Check the board_name in the table of supported SDR platforms)
+cd $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME
 dtc -I dts -O dtb -o devicetree.dtb devicetree.dts
+cp devicetree.dtb $OPENWIFI_DIR/kernel_boot/
 ```
 * Build openwifi BOOT.BIN based on FPGA files generated in openwifi-hw:
-
 ```
 cd $OPENWIFI_DIR/kernel_boot
 source $XILINX_DIR/SDK/2017.4/settings64.sh
-./build_boot_bin.sh ../openwifi-hw/boards/zc706_fmcs2/sdk/system_top_hw_platform_0/system.hdf u-boot-zc70x.elf
-(u-boot-zc70x.elf is included in the original Analog Devices Linux img)
+./build_boot_bin.sh ../openwifi-hw/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf ./boards/$BOARD_NAME/u-boot.elf
+(u-boot.elf is renamed from the compressed file in the board directory of original Analog Devices SD card boot partition)
+```
+* Prepare correct rf_init.sh in host openwifi/user_space
+```
+cd $OPENWIFI_DIR/user_space
+cp rf_init_board_name.sh rf_init.sh 
+(If there isn't rf_init.sh, rename your board rf script, such as rf_init_adrv9361z7035.sh, to rf_init.sh for "wgd.sh remote" to download)
 ```
 * Download [2017_R1-2018_01_29.img.xz](http://swdownloads.analog.com/cse/2017_R1-2018_01_29.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it into a SD card via your PC.
 * Mount SD card BOOT/rootfs partitions to SDCARD_DIR directory of your PC (If it is mounted automatically, find the directory). Then copy built files to SD card via your PC. (You can also update files over ftp/ssh after your full system runs. Please check next section. Read carefully user_space/sdcard_boot_update.sh and set your ftp root directory to $OPENWIFI_DIR in your PC):
-
 ```
 export SDCARD_DIR=sdcard_mount_point
-cp $OPENWIFI_DIR/kernel_boot/devicetree.dtb $SDCARD_DIR/BOOT
+cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/devicetree.dtb $SDCARD_DIR/BOOT
 cp $OPENWIFI_DIR/kernel_boot/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT
 cp $OPENWIFI_DIR/adi-linux/arch/arm/boot/uImage $SDCARD_DIR/BOOT
 cd $SDCARD_DIR/BOOT
@@ -168,12 +170,12 @@ sync
 
 sudo mkdir $SDCARD_DIR/rootfs/root/openwifi
 sudo find $OPENWIFI_DIR/driver -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/root/openwifi/ \;
-sudo cp $OPENWIFI_DIR/user_space/* $SDCARD_DIR/rootfs/root/openwifi/ 
+sudo cp $OPENWIFI_DIR/user_space/* $SDCARD_DIR/rootfs/root/openwifi/ -rf
 
 sudo mkdir $SDCARD_DIR/rootfs/lib/modules
-sudo mkdir $SDCARD_DIR/rootfs/lib/modules/4.14.0-g4220d5d24c6c
-sudo find $OPENWIFI_DIR/adi-linux -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/lib/modules/4.14.0-g4220d5d24c6c/ \;
-sudo rm $SDCARD_DIR/rootfs/lib/modules/4.14.0-g4220d5d24c6c/{axidmatest.ko,xilinx_dma.ko,adi_axi_hdmi.ko,ad9361_drv.ko} -f
+sudo mkdir $SDCARD_DIR/rootfs/lib/modules/4.14.0-g4220d5d
+sudo find $OPENWIFI_DIR/adi-linux -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/lib/modules/4.14.0-g4220d5d/ \;
+sudo rm $SDCARD_DIR/rootfs/lib/modules/4.14.0-g4220d5d/{axidmatest.ko,xilinx_dma.ko,adi_axi_hdmi.ko,ad9361_drv.ko} -f
 
 sudo rm $SDCARD_DIR/rootfs/etc/udev/rules.d/70-persistent-net.rules
 sudo cp $OPENWIFI_DIR/kernel_boot/70-persistent-net.rules $SDCARD_DIR/rootfs/etc/udev/rules.d/
@@ -184,17 +186,18 @@ sync
 **Run Linux and do some post-config:**
 
 * Insert the SD card to the board, power on and run serial console (such as minicom) from a PC via USB-UART cable to the board. After booting completes, in the PC serial console:
-
 ```
 depmod
 (Ignore the error messages)
 modprobe mac80211
 (if you get error like: could not open moddep file 'lib/modules/4.14.0XXXYYYZZZ/modules.dep.bin', you could make a symbol link and modprobe again)
-ln -s /lib/modules/4.14.0-g4220d5d24c6c /lib/modules/4.14.0XXXYYYZZZ
+ln -s /lib/modules/4.14.0-g4220d5d /lib/modules/4.14.0XXXYYYZZZ
 depmod
 modprobe mac80211
 
 cd openwifi
+cp rf_init_board_name.sh rf_init.sh 
+(rename your board rf script, such as rf_init_adrv9361z7035.sh, to rf_init.sh for wgd.sh to call)
 ./wgd.sh
 (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
 (Wait for the completion)
@@ -204,7 +207,6 @@ iwlist sdr0 scan
 (You should see the Wi-Fi scan results)
 ```
 * Config ssh server and ethernet IP address of the board. In the PC serial console:
-
 ```
 passwd
 (ssh server needs a password, such as "openwifi")
@@ -248,7 +250,6 @@ ssh roo@192.168.10.122
         (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
 
 **Compile sdrctl on the board** ("On the board" means that you login to the board via ssh)
-
 ```
 sudo apt-get install libnl-3-dev
 sudo apt-get install libnl-genl-3-dev
@@ -275,7 +276,6 @@ make
   ```
 * Setup AP for Wi-Fi client. Topology: client -- (sdr0)|board|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
   * On board: Install dhcp server preparing for serving your openwifi clients via hostapd.
-
   ```
   sudo apt-get install isc-dhcp-server
   sudo apt-get install Haveged
@@ -283,7 +283,6 @@ make
   ```
   * Put user_space/dhcpd.conf into (overwrite) /etc/dhcp/dhcpd.conf on board.
   * On board: 
-
   ```
   cd openwifi
   service network-manager stop
@@ -296,7 +295,6 @@ make
   hostapd hostapd-openwifi.conf
   ```
   * On PC:
-
   ```
   sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
   ```
@@ -311,7 +309,6 @@ As a solution to this problem, openwifi can be fully controlled only if communic
 For hostapd program, 802.11b rates can be suppressed using configuration commands (i.e. supported_rates, basic_rates) and an example configuration file is provided (i.e. hostapd-openwifi.conf). One small caveat to this one comes from fullMAC Wi-Fi cards as they must implement the *NL80211_TXRATE_LEGACY* NetLink handler at the device driver level.
 
 On the other hand, the wpa_supplicant program on the client side (commercial Wi-Fi dongle/board) cannot suppress 802.11b rates out of the box in 2.4GHz band, so there will be an issue when connecting openwifi (OFDM only). A patched wpa_supplicant should be used at the client side.
-
 ```
 cd openwifi/user_space
 wget http://w1.fi/releases/wpa_supplicant-2.1.tar.gz
