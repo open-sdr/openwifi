@@ -1,16 +1,17 @@
-# openwifi document
+# Openwifi document
 <img src="./openwifi-detail.jpg" width="1100">
 
 Above figure shows software and hardware/FPGA modules that compose the openwifi design. The module name is equal/similar to the source code file name. Driver module source codes are in openwifi/driver/. FPGA module source codes are in openwifi-hw repository. The user space tool sdrctl source code are in openwifi/user_space/sdrctl_src/.
 
-- [driver and software overall principle](#driver-and-software-overall-principle)
+- [Driver and software overall principle](#Driver-and-software-overall-principle)
 - [sdrctl command](#sdrctl-command)
-- [rx packet flow and filtering config](#rx-packet-flow-and-filtering-config)
-- [tx packet flow and config](#tx-packet-flow-and-config)
-- [regulation and frequency config](#regulation-and-frequency-config)
-- [debug methods](#debug-methods)
+- [Rx packet flow and filtering config](#Rx-packet-flow-and-filtering-config)
+- [Tx packet flow and config](#Tx-packet-flow-and-config)
+- [Regulation and channel config](#Regulation-and-channel-config)
+- [Analog and digital frequency design](#Analog-and-digital-frequency-design)
+- [Debug methods](#Debug-methods)
 
-## driver and software overall principle
+## Driver and software overall principle
 
 [Linux mac80211 subsystem](https://www.kernel.org/doc/html/v4.16/driver-api/80211/mac80211.html), as a part of [Linux wireless](https://wireless.wiki.kernel.org/en/developers/documentation/mac80211), defines a set of APIs ([ieee80211_ops](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#c.ieee80211_ops)) to rule the Wi-Fi chip driver behavior. SoftMAC Wi-Fi chip driver implements (subset of) those APIs. That is why Linux can support so many Wi-Fi chips of different chip vendors.
 
@@ -44,7 +45,7 @@ Besides the Linux native Wi-Fi control programs, such as ifconfig/iw/iwconfig/iw
 
 sdrctl is implemented as nl80211 testmode command and communicates with openwifi driver (function openwifi_testmode_cmd() in sdr.c) via Linux nl80211--cfg80211--mac80211 path 
 
-### get and set a parameter
+### Get and set a parameter
 ```
 sdrctl dev sdr0 get para_name
 sdrctl dev sdr0 set para_name value 
@@ -60,7 +61,7 @@ slice_total1|tx slice 1 cycle length in us|for length 50ms, you set 49999
 slice_start1|tx slice 1 cycle start time in us|for start at 10ms, you set 10000
 slice_end1|  tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
 
-### get and set a register of a module
+### Get and set a register of a module
 ```
 sdrctl dev sdr0 get reg module_name reg_idx
 sdrctl dev sdr0 set reg module_name reg_idx reg_value 
@@ -147,7 +148,7 @@ reg_idx|meaning|comment
 59|TSF runtime value high 32bit|read only
 63|version information|read only
 
-## rx packet flow and filtering config
+## Rx packet flow and filtering config
 
 After FPGA receives a packet, no matter the FCS/CRC is correct or not it will raise interrupt to Linux if the frame filtering rule allows. openwifi_rx_interrupt() function in sdr.c will be triggered to do necessary operation and give the information to upper layer (Linux mac80211 subsystem).
 
@@ -164,7 +165,7 @@ The FPGA frame filtering configuration is done in real-time by function openwifi
     - FCS is valid or not
   - send packet content and necessary extra information to upper layer via ieee80211_rx_irqsafe()
 
-## tx packet flow and config
+## Tx packet flow and config
 
 Linux mac80211 subsystem calls openwifi_tx() to initiate a packet sending. 
 
@@ -189,13 +190,13 @@ Each time when FPGA sends a packet, an interrupt will be raised to Linux reporti
     - packet sending result: packet is sent successfully (FPGA receives ACK for this packet) or not. How many retransmissions are used for the packet sending (in case FPGA doesn't receive ACK in time, FPGA will do retransmission immediately)
   - send above information to upper layer (Linux mac80211 subsystem) via ieee80211_tx_status_irqsafe()
 
-## regulation and frequency config
+## Regulation and channel config
 
 SDR is a powerful tool for research. It is the user's duty to align with local spectrum regulation.
 
 This section explains how openwifi config the frequency/channel range and change it in real-time. After knowing the mechanism, you can try to extend frequency/channel by yourself.
 
-### frequency range
+### Frequency range
 
 When openwifi driver is loaded, openwifi_dev_probe() will be executed. Following two lines configure the frequency range:
 ```
@@ -205,7 +206,7 @@ wiphy_apply_custom_regulatory(dev->wiphy, &sdr_regd);
 sdr_regd is the predefined variable in sdr.h. You can search the definition/meaning of its type: struct ieee80211_regdomain. 
 Then not difficult to find out how to change the frequency range in SDR_2GHZ_CH01_14 and SDR_5GHZ_CH36_64.
 
-### supported channel
+### Supported channel
 
 The supported channel list is defined in openwifi_2GHz_channels and openwifi_5GHz_channels in sdr.h. If you change the number of supported channels, make sure you also change the frequency range in sdr_regd accordingly and also array size of the following two fields in the struct openwifi_priv:
 ```
@@ -218,11 +219,21 @@ dev->wiphy->bands[NL80211_BAND_2GHZ] = &(priv->band_2GHz);
 dev->wiphy->bands[NL80211_BAND_5GHZ] = &(priv->band_5GHz);
 ```
 
-### real-time channel setting
+### Real-time channel setting
 
 Linux mac80211 (struct ieee80211_ops openwifi_ops in sdr.c) uses the "config" API to configure channel frequency and some other parameters in real-time (such as during scanning or channel setting by iwconfig). It is hooked to openwifi_config() in sdr.c, and supports only frequency setting currently. The real execution of frequency setting falls to ad9361_rf_set_channel() via the "set_chan" field of struct openwifi_rf_ops ad9361_rf_ops in sdr.c. Besides tuning RF front-end (AD9361), the ad9361_rf_set_channel() also handles RSSI compensation for different frequencies and FPGA configurations (SIFS, etc) for different bands.
 
-## debug methods
+## Analog and digital frequency design
+
+Following figure shows the current openwifi analog and digital frequency design strategy. It combines AD9361's bandwidth, frequency, sampling rate and FPGA's digital down/up converter (ddc_bank_core.bd/duc_bank_core.bd) setting to achieve this example spectrum arrangement.
+
+![](./rf-digital-if-chain-spectrum.jpg)
+
+Above spectrum setting has two benefits:
+- The Tx Lo leakage is suppressed by Rx filter
+- The centered Rx Lo and single channel Rx analog filter leads to more easy/accurate RSSI estimation in FPGA (together with real-time AD9361 AGC gain value accessed via FPGA GPIO)
+
+## Debug methods
 
 ### dmesg
 
@@ -263,7 +274,7 @@ To debug/see the basic driver behaviour, you could use dmesg command in Linux. o
   - i117: current rx packet DMA buffer index 117.
   - -36dBm: signal strength of this received packet.
 
-### native Linux tools
+### Native Linux tools
 
 For protocol, many native Linux tools you still could rely on. Such as tcpdump.
 
