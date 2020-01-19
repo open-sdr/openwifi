@@ -226,12 +226,14 @@ Linux mac80211 (struct ieee80211_ops openwifi_ops in sdr.c) uses the "config" AP
 ## Analog and digital frequency design
 
 Following figure shows the current openwifi analog and digital frequency design strategy. It combines AD9361's bandwidth, frequency, sampling rate and FPGA's digital down/up converter (ddc_bank_core.bd/duc_bank_core.bd) setting to achieve this example spectrum arrangement.
-
 ![](./rf-digital-if-chain-spectrum.jpg)
 
 Above spectrum setting has two benefits:
 - The Tx Lo leakage is suppressed by Rx filter
 - The centered Rx Lo and single channel Rx analog filter leads to more easy/accurate RSSI estimation in FPGA (together with real-time AD9361 AGC gain value accessed via FPGA GPIO)
+
+Following figure shows the detailed configuration point in AD9361, driver (sdr.c/tx_intf.c/rx_intf.c/ad9361.c/etc) and related FPGA modules.
+![](./rf-digital-if-chain-config.jpg)
 
 ## Debug methods
 
