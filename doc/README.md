@@ -225,7 +225,7 @@ Linux mac80211 (struct ieee80211_ops openwifi_ops in sdr.c) uses the "config" AP
 
 ## Analog and digital frequency design
 
-Following figure shows the current openwifi analog and digital frequency design strategy. It combines AD9361's bandwidth, frequency, sampling rate and FPGA's digital down/up converter (ddc_bank_core.bd/duc_bank_core.bd) setting to achieve this example spectrum arrangement.
+Following figure shows the current openwifi analog and digital frequency design strategy. It combines AD9361's bandwidth, frequency, sampling rate and FPGA's digital down/up converter (ddc_bank_core.bd/duc_bank_core.bd) setting to achieve this example spectrum arrangement. Values in the figure are configurable in the openwifi design.
 ![](./rf-digital-if-chain-spectrum.jpg)
 
 Above spectrum setting has two benefits:
