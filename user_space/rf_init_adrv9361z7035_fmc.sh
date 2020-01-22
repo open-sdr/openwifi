@@ -2,7 +2,7 @@
 
 home_dir=$(pwd)
 
-cd /sys/bus/iio/devices/iio:device1
+cd /sys/bus/iio/devices/iio:device3
 
 echo "rx bw"
 cat in_voltage_rf_bandwidth
