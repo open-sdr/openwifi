@@ -102,15 +102,15 @@ fi
 sleep 1
 
 echo "set RF frontend: ant0 rx, ant1 tx"
-if [ $last_input == "remote" ]
-  then
-    rm rf_init.sh
-    sync
-    wget ftp://192.168.10.1/user_space/rf_init.sh
-    sync
-    chmod +x rf_init.sh
-    sync
-fi
+# if [ $last_input == "remote" ]
+#   then
+#     rm rf_init.sh
+#     sync
+#     wget ftp://192.168.10.1/user_space/rf_init.sh
+#     sync
+#     chmod +x rf_init.sh
+#     sync
+# fi
 ./rf_init.sh
 
 #sleep 1
