@@ -70,60 +70,60 @@ module_name refers to the name of driver functionality, can be drv_rx/drv_tx/drv
 
 module_name rf/rx_intf/tx_intf/rx/tx/xpu refer to RF (ad9xxx front-end) and FPGA modules (rx_intf/tx_intf/openofdm_rx/openofdm_tx/xpu). Related register addresses are defined in hw_def.h.
 
-module_name: drv_rx
-
-(In the **comment** column, you may get a list of **decimalvalue(0xhexvalue):explanation** for a register, only use the **decimalvalue** in the sdrctl command)
+module_name: **drv_rx**
 
 reg_idx|meaning|comment
 -------|-------|----
 1|rx antenna selection|0:rx1, 1:rx2. After this command, you should down and up sdr0 by ifconfig, but not reload sdr0 driver via ./wgd.sh
 
-module_name: drv_tx
+(In the **comment** column, you may get a list of **decimalvalue(0xhexvalue):explanation** for a register, only use the **decimalvalue** in the sdrctl command)
+
+module_name: **drv_tx**
 
 reg_idx|meaning|comment
 -------|-------|----
 0|override Linux rate control of tx unicast data packet|4:6M, 5:9M, 6:12M, 7:18M, 8:24M, 9:36M, 10:48M, 11:54M
 1|tx antenna selection|0:tx1, 1:tx2. After this command, you should down and up sdr0 by ifconfig, but not reload sdr0 driver via ./wgd.sh
 
-module_name: drv_xpu
+module_name: **drv_xpu**
 
 reg_idx|meaning|comment
 -------|-------|----
 x|x|to be defined
 
-module_name: rf
+module_name: **rf**
 
 reg_idx|meaning|comment
 -------|-------|----
 x|x|to be defined
 
-module_name: rx_intf
+module_name: **rx_intf**
 
 reg_idx|meaning|comment
 -------|-------|----
 2|enable/disable rx interrupt|256(0x100):disable, 0:enable
 
-module_name: tx_intf
+module_name: **tx_intf**
 
 reg_idx|meaning|comment
 -------|-------|----
 13|tx I/Q digital gain before DUC|current optimal value: 237
 14|enable/disable tx interrupt|196672(0x30040):disable, 64(0x40):enable
 
-module_name: rx
+module_name: **rx**
 
 reg_idx|meaning|comment
 -------|-------|----
 20|history of PHY rx state|read only. If the last digit readback is always 3, it means the Viterbi decoder stops working
 
-module_name: tx
+module_name: **tx**
 
 reg_idx|meaning|comment
 -------|-------|----
 1|pilot scrambler initial state|lowest 7 bits are used. 0x7E by default in openofdm_tx.c
 2|data  scrambler initial state|lowest 7 bits are used. 0x7F by default in openofdm_tx.c
 
-module_name: xpu
+module_name: **xpu**
 
 reg_idx|meaning|comment
 -------|-------|----
