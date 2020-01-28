@@ -39,6 +39,7 @@ zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|done
 adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|done. performance issue.
 adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|done. performance issue.
 adrv9364z7020|ADRV9364Z7020 SOM + ADRV1CRR-BOB carrier board|future
+zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|future
 zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|future
 zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|future
 
