@@ -48,7 +48,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|future
 
 **Quick start:** (Example instructions are verified on Ubuntu 16/18)
 
-* Download pre-built [openwifi Linux img file](https://users.ugent.be/~xjiao/openwifi-1.0.0-ghent.zip) (It might not have the latest bug-fixes/features. Check related sections on how to udpate files in img if needed). Burn the img file to a 16G SD card:
+* Download pre-built [openwifi Linux .img.xz file](https://users.ugent.be/~xjiao/) (It might not have the latest bug-fixes/features. Check related sections on how to udpate files in img if needed). Burn the img file to a 16G SD card:
 ```
 sudo dd bs=4M if=openwifi-1.0.0-ghent.img of=/dev/mmcblk0
 (mmcblk0 is the dev name of sdcard in Linux. Make sure you use the correct one in your situation!)
