@@ -48,12 +48,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|future
 
 **Quick start:** (Example instructions are verified on Ubuntu 16/18)
 
-* Download pre-built [openwifi Linux .img.xz file](https://users.ugent.be/~xjiao/) (It might not have the latest bug-fixes/features. Check related sections on how to udpate files in img if needed). Burn the img file to a 16G SD card:
-```
-sudo dd bs=4M if=openwifi-1.0.0-ghent.img of=/dev/mmcblk0
-(mmcblk0 is the dev name of sdcard in Linux. Make sure you use the correct one in your situation!)
-(Above command takes a while)
-```
+* Download pre-built [openwifi Linux .img.xz file](https://users.ugent.be/~xjiao/) (It might not have the latest bug-fixes/features. Check related sections on how to udpate files in img if needed). Burn the img file to a SD card.
 * Connect RX/TX antenna to RX1A/TX2A ports(For fmcomms4/ad9364, you may connect antennas to TXA/RXA), and make two antennas orthogonal to each other for good isolation. Config the board to SD card boot mode by switches (Read the board spec on internet). Insert the SD card to the board. 
 
 * Connect the board to PC. (PC IP address should be 192.168.10.1). Power on the board. Then from PC:
