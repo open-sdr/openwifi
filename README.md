@@ -133,8 +133,8 @@ cd $OPENWIFI_DIR/driver
 ```
 * Build openwifi Linux devicetree:
 ```
-export BOARD_NAME=your_board_name
-(Check the board_name in the table of supported SDR platforms)
+export BOARD_NAME=board_name
+(Check the board_name naming in the table of supported SDR platforms)
 cd $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME
 dtc -I dts -O dtb -o devicetree.dtb devicetree.dts
 cp devicetree.dtb $OPENWIFI_DIR/kernel_boot/
