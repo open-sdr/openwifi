@@ -229,8 +229,8 @@ route add default gw 192.168.10.1
 * Make on board file update easier:
   * Option 1: Access the board disk/rootfs from Ubuntu PC: "File manager --> Connect to Server...", input: sftp://root@192.168.10.122/root . Then you can operate files on board like normal files on your disk. To update files that need to be in boot partition (BOOT.BIN, uImage and devicetree.dtb), you can transfer those files to rootfs firstly, then on board:
   
+         mkdir /sdcard
          mount /dev/mmcblk0p1 /sdcard
-         (Create /sdcard directory firstly if it doesn't exist)
          cp file /sdcard
          cd /sdcard
          sync
@@ -239,6 +239,7 @@ route add default gw 192.168.10.1
          (Remember to power cycle the board)
   * Option 2: Setup [ftp server](https://help.ubuntu.com/lts/serverguide/ftp-server.html) on PC, allow anonymous and change ftp root directory to $OPENWIFI_DIR. Then on board:
   
+        mkdir /sdcard
         ./sdcard_boot_update.sh
         (Above command downloads uImage, BOOT.BIN and devicetree.dtb, then copy them into boot partition. Remember to power cycle)
         ./wgd.sh remote
