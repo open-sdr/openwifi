@@ -277,11 +277,8 @@ make
   sudo apt-get install isc-dhcp-server
   sudo apt-get install Haveged
   sudo apt-get install hostapd
-  ```
-  * Put user_space/dhcpd.conf into (overwrite) /etc/dhcp/dhcpd.conf on board.
-  * On board: 
-  ```
   cd openwifi
+  cp dhcpd.conf /etc/dhcp/dhcpd.conf
   service network-manager stop
   ./wgd.sh
   (For fmcomms4, you need an extra command: ./set_ant.sh rx1 tx1)
