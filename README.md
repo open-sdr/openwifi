@@ -223,6 +223,8 @@ Disable update (long time hang) on boot or ssh session:
 reboot the board, and set proper IP (192.168.10.1) of the connected PC, then from the PC:
 ssh roo@192.168.10.122
 (password: openwifi)
+route add default gw 192.168.10.1
+(above route is necessary for your board to access internent via your PC)
 ```
 * Make on board file update easier:
   * Option 1: Access the board disk/rootfs from Ubuntu PC: "File manager --> Connect to Server...", input: sftp://root@192.168.10.122/root . Then you can operate files on board like normal files on your disk. To update files that need to be in boot partition (BOOT.BIN, uImage and devicetree.dtb), you can transfer those files to rootfs firstly, then on board:
