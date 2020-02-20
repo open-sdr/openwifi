@@ -36,10 +36,10 @@ Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2
 board_name|actual boards used|status
 -------|-------|----
 zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done
-adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|Done. Issue. Don't use now.
-adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|Done. Issue. Don't use now.
-adrv9364z7020|ADRV9364Z7020 SOM + ADRV1CRR-BOB carrier board|Future
-zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Future
+adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|Coming soon!
+adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|Coming soon!
+adrv9364z7020|ADRV9364Z7020 SOM + ADRV1CRR-BOB carrier board|Coming soon!
+zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Coming soon!
 zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Future
 zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
 
