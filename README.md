@@ -66,7 +66,7 @@ iwlist sdr0 scan
 (you should see the Wi-Fi scan result)
 ```
 * Setup openwifi hotspot over topology: client -- (sdr0)|board|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
-  * Enable IPv4 **IP forwarding** on both **board** and **PC**
+  * Enable **IP forwarding** on both **board** and **PC** (uncomment net.ipv4.ip_forward=1 in /etc/sysctl.conf)
   * Then, on board:
 
         ifconfig sdr0 192.168.13.1
@@ -261,7 +261,7 @@ make
 
 **Internet config**
 * Connect board to internet. Topology: board|(eth0) -- (***ethX***)|PC|(***ethY***) -- internet
-  * Enable IPv4 **IP forwarding** on both **board** and **PC**
+  * Enable **IP forwarding** on both **board** and **PC** (uncomment net.ipv4.ip_forward=1 in /etc/sysctl.conf)
   * On board:
   ```
   route add default gw 192.168.10.1
