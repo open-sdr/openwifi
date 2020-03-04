@@ -136,6 +136,10 @@ static inline void RX_INTF_REG_CFG_DATA_TO_ANT_write(u32 value){
 	reg_write(RX_INTF_REG_CFG_DATA_TO_ANT_ADDR, value);
 }
 
+static inline void RX_INTF_REG_BB_GAIN_write(u32 value) {
+	reg_write(RX_INTF_REG_BB_GAIN_ADDR, value);
+}
+
 static inline void RX_INTF_REG_ANT_SEL_write(u32 value){
 	reg_write(RX_INTF_REG_ANT_SEL_ADDR, value);
 }
@@ -325,6 +329,7 @@ static inline u32 hw_init(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		rx_intf_api->RX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write(num_dma_symbol_to_pl);
 		rx_intf_api->RX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		rx_intf_api->RX_INTF_REG_CFG_DATA_TO_ANT_write(1<<8);
+		rx_intf_api->RX_INTF_REG_BB_GAIN_write(4);
 		rx_intf_api->RX_INTF_REG_ANT_SEL_write(ant_sel);
 
 		rx_intf_api->RX_INTF_REG_MULTI_RST_write(0x14);//rst m/s axis
@@ -390,6 +395,7 @@ static int dev_probe(struct platform_device *pdev)
 	rx_intf_api->RX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write=RX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write;
 	rx_intf_api->RX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write=RX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write;
 	rx_intf_api->RX_INTF_REG_CFG_DATA_TO_ANT_write=RX_INTF_REG_CFG_DATA_TO_ANT_write;
+	rx_intf_api->RX_INTF_REG_BB_GAIN_write=RX_INTF_REG_BB_GAIN_write;
 	rx_intf_api->RX_INTF_REG_ANT_SEL_write=RX_INTF_REG_ANT_SEL_write;
 	rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write=RX_INTF_REG_INTERRUPT_TEST_write;
 

@@ -107,7 +107,7 @@ module_name: **tx_intf**
 
 reg_idx|meaning|comment
 -------|-------|----
-13|tx I/Q digital gain before DUC|current optimal value: 237
+13|tx I/Q digital gain before DUC|current optimal value: 100
 14|enable/disable tx interrupt|196672(0x30040):disable, 64(0x40):enable
 
 module_name: **rx**

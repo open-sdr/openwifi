@@ -735,7 +735,7 @@
 		tx_dma: dma@80400000 {
 			#dma-cells = <1>;
 			clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
-			clocks = <0x2 0x10>, <0x2 0x10>, <0x2 0x10>, <0x2 0x10>;
+			clocks = <0x2 0x11>, <0x2 0x11>, <0x2 0x11>, <0x2 0x11>;
 			compatible = "xlnx,axi-dma-1.00.a";
 			interrupt-names = "mm2s_introut", "s2mm_introut";
 			interrupt-parent = <1>;
@@ -763,7 +763,7 @@
 		rx_dma: dma@80410000 {
 			#dma-cells = <1>;
 			clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
-			clocks = <0x2 0x10>, <0x2 0x10>, <0x2 0x10>, <0x2 0x10>;
+			clocks = <0x2 0x11>, <0x2 0x11>, <0x2 0x11>, <0x2 0x11>;
 			compatible = "xlnx,axi-dma-1.00.a";
 			//dma-coherent ;
 			interrupt-names = "mm2s_introut", "s2mm_introut";
@@ -791,7 +791,7 @@
 
 		tx_intf_0: tx_intf@83c00000 {
 			clock-names = "s00_axi_aclk", "s00_axis_aclk", "s01_axis_aclk", "m00_axis_aclk";
-			clocks = <0x2 0x10>, <0x2 0x10>, <0x2 0x10>, <0x2 0x10>;
+			clocks = <0x2 0x11>, <0x2 0x11>, <0x2 0x11>, <0x2 0x11>;
 			compatible = "sdr,tx_intf";
 			interrupt-names = "tx_itrpt0", "tx_itrpt1";
 			interrupt-parent = <1>;
@@ -803,7 +803,7 @@
 
 		rx_intf_0: rx_intf@83c20000 {
 			clock-names = "s00_axi_aclk", "s00_axis_aclk", "m00_axis_aclk";
-			clocks = <0x2 0x10>, <0x2 0x10>, <0x2 0x10>;
+			clocks = <0x2 0x11>, <0x2 0x11>, <0x2 0x11>;
 			compatible = "sdr,rx_intf";
 			interrupt-names = "not_valid_anymore", "rx_pkt_intr";
 			interrupt-parent = <1>;
@@ -815,21 +815,21 @@
 
 		openofdm_tx_0: openofdm_tx@83c10000 {
 			clock-names = "clk";
-			clocks = <0x2 0x10>;
+			clocks = <0x2 0x11>;
 			compatible = "sdr,openofdm_tx";
 			reg = <0x83c10000 0x10000>;
 		};
 
 		openofdm_rx_0: openofdm_rx@83c30000 {
 			clock-names = "clk";
-			clocks = <0x2 0x10>;
+			clocks = <0x2 0x11>;
 			compatible = "sdr,openofdm_rx";
 			reg = <0x83c30000 0x10000>;
 		};
 
 		xpu_0: xpu@83c40000 {
 			clock-names = "s00_axi_aclk";
-			clocks = <0x2 0x10>;
+			clocks = <0x2 0x11>;
 			compatible = "sdr,xpu";
 			reg = <0x83c40000 0x10000>;
 		};

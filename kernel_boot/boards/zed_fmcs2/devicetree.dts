@@ -5,7 +5,7 @@
 	#size-cells = <0x1>;
 	compatible = "xlnx,zynq-7000";
 	interrupt-parent = <0x1>;
-	model = "Xilinx Zynq ZC706";
+	model = "Xilinx Zynq ZED";
 
 	cpus {
 		#address-cells = <0x1>;
@@ -358,14 +358,12 @@
 			reg = <0xe000d000 0x1000>;
 			#address-cells = <0x1>;
 			#size-cells = <0x0>;
-			is-dual = <0x1>;
+			is-dual = <0x0>;
 			num-cs = <0x1>;
 
 			ps7-qspi@0 {
 				#address-cells = <0x1>;
 				#size-cells = <0x1>;
-				spi-tx-bus-width = <0x1>;
-				spi-rx-bus-width = <0x4>;
 				compatible = "n25q128a11";
 				reg = <0x0>;
 				spi-max-frequency = <0x2faf080>;
@@ -438,9 +436,10 @@
 			phy-handle = <0x8>;
 			phy-mode = "rgmii-id";
 
-			phy@7 {
+			phy@0 {
 				device_type = "ethernet-phy";
-				reg = <0x7>;
+				reg = <0x0>;
+				marvell,reg-init = <0x3 0x10 0xff00 0x1e 0x3 0x11 0xfff0 0xa>;
 				linux,phandle = <0x8>;
 				phandle = <0x8>;
 			};
@@ -524,8 +523,8 @@
 			#dma-requests = <0x4>;
 			clocks = <0x2 0x1b>;
 			clock-names = "apb_pclk";
-			linux,phandle = <0xe>;
-			phandle = <0xe>;
+			linux,phandle = <0xf>;
+			phandle = <0xf>;
 		};
 
 		devcfg@f8007000 {
@@ -586,7 +585,7 @@
 			reg = <0xe0002000 0x1000>;
 			phy_type = "ulpi";
 			dr_mode = "host";
-			xlnx,phy-reset-gpio = <0x6 0x7 0x0>;
+			xlnx,phy-reset-gpio = <0x6 0x55 0x0>;
 		};
 
 		usb@e0003000 {
@@ -616,69 +615,12 @@
 
 	memory {
 		device_type = "memory";
-		reg = <0x0 0x40000000>;
+		reg = <0x0 0x20000000>;
 	};
 
 	chosen {
 		bootargs = "console=ttyPS0,115200 root=/dev/mmcblk0p2 rw earlyprintk rootfstype=ext4 rootwait";
 		linux,stdout-path = "/amba@0/uart@E0001000";
-	};
-
-	leds {
-		compatible = "gpio-leds";
-
-		ds8 {
-			label = "ds12:green";
-			gpios = <0x6 0x3d 0x0>;
-			//gpios = <0x6 7 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x3d
-			default-state = "off";
-		};
-
-		ds9 {
-			label = "ds15:green";
-			gpios = <0x6 0x3e 0x0>;
-			//gpios = <0x6 8 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x3e
-			default-state = "off";
-		};
-
-		ds10 {
-			label = "ds16:green";
-			gpios = <0x6 0x3f 0x0>;
-			//gpios = <0x6 9 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x3f
-			default-state = "off";
-		};
-
-		ds35 {
-			label = "ds17:green";
-			gpios = <0x6 0x40 0x0>;
-			//gpios = <0x6 10 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x40
-			default-state = "on";
-		};
-	};
-
-	gpio_keys {
-		compatible = "gpio-keys";
-		#address-cells = <0x1>;
-		#size-cells = <0x0>;
-		autorepeat;
-
-		sw7 {
-			label = "Left";
-			linux,code = <0x69>;
-			gpios = <0x6 0x3a 0x0>;
-		};
-
-		sw8 {
-			label = "Right";
-			linux,code = <0x6a>;
-			gpios = <0x6 0x3c 0x0>;
-		};
-
-		sw9 {
-			label = "Select";
-			linux,code = <0x1c>;
-			gpios = <0x6 0x3b 0x0>;
-		};
 	};
 
 	fpga-axi@0 {
@@ -688,149 +630,77 @@
 		ranges;
 
 		i2c@41600000 {
-			compatible = "xlnx,axi-iic-1.02.a", "xlnx,xps-iic-2.00.a";
+			compatible = "xlnx,axi-iic-1.01.b", "xlnx,xps-iic-2.00.a";
 			reg = <0x41600000 0x10000>;
 			interrupt-parent = <0x1>;
 			interrupts = <0x0 0x3a 0x4>;
 			clocks = <0x2 0xf>;
 			clock-names = "pclk";
-			#address-cells = <0x1>;
 			#size-cells = <0x0>;
+			#address-cells = <0x1>;
 
-			i2cswitch@74 {
-				compatible = "nxp,pca9548";
-				#address-cells = <0x1>;
-				#size-cells = <0x0>;
-				reg = <0x74>;
+			adv7511@39 {
+				compatible = "adi,adv7511";
+				reg = <0x39 0x3f>;
+				reg-names = "primary", "edid";
+				adi,input-depth = <0x8>;
+				adi,input-colorspace = "yuv422";
+				adi,input-clock = "1x";
+				adi,input-style = <0x1>;
+				adi,input-justification = "right";
+				adi,clock-delay = <0x0>;
+				#sound-dai-cells = <0x0>;
+				linux,phandle = <0x14>;
+				phandle = <0x14>;
 
-				i2c@0 {
+				ports {
 					#address-cells = <0x1>;
 					#size-cells = <0x0>;
-					reg = <0x0>;
 
-					osc@5d {
-						compatible = "si570";
-						temperature-stability = <0x32>;
-						reg = <0x5d>;
-						factory-fout = <0x9502f90>;
-						initial-fout = <0x8d9ee20>;
-					};
-				};
+					port@0 {
+						reg = <0x0>;
 
-				i2c@1 {
-					#address-cells = <0x1>;
-					#size-cells = <0x0>;
-					reg = <0x1>;
-
-					adv7511 {
-						compatible = "adi,adv7511";
-						reg = <0x39 0x3f>;
-						reg-names = "primary", "edid";
-						adi,input-depth = <0x8>;
-						adi,input-colorspace = "rgb";
-						adi,input-clock = "1x";
-						adi,clock-delay = <0x0>;
-						#sound-dai-cells = <0x0>;
-						linux,phandle = <0x14>;
-						phandle = <0x14>;
-
-						ports {
-							#address-cells = <0x1>;
-							#size-cells = <0x0>;
-
-							port@0 {
-								reg = <0x0>;
-
-								endpoint {
-									remote-endpoint = <0xa>;
-									linux,phandle = <0xd>;
-									phandle = <0xd>;
-								};
-							};
-
-							port@1 {
-								reg = <0x1>;
-							};
+						endpoint {
+							remote-endpoint = <0xa>;
+							linux,phandle = <0xe>;
+							phandle = <0xe>;
 						};
 					};
-				};
 
-				i2c@2 {
-					#address-cells = <0x1>;
-					#size-cells = <0x0>;
-					reg = <0x2>;
-
-					eeprom@54 {
-						compatible = "at,24c08";
-						reg = <0x54>;
-					};
-				};
-
-				i2c@3 {
-					#address-cells = <0x1>;
-					#size-cells = <0x0>;
-					reg = <0x3>;
-
-					gpio@21 {
-						compatible = "ti,tca6416";
-						reg = <0x21>;
-						gpio-controller;
-						#gpio-cells = <0x2>;
-					};
-				};
-
-				i2c@4 {
-					#address-cells = <0x1>;
-					#size-cells = <0x0>;
-					reg = <0x4>;
-
-					rtc@54 {
-						compatible = "nxp,pcf8563";
-						reg = <0x51>;
-					};
-				};
-
-				i2c@6 {
-					#size-cells = <0x0>;
-					#address-cells = <0x1>;
-					reg = <0x6>;
-
-					ad7291@2f {
-						compatible = "adi,ad7291";
-						reg = <0x2f>;
-					};
-
-					eeprom@50 {
-						compatible = "at24,24c02";
-						reg = <0x50>;
+					port@1 {
+						reg = <0x1>;
 					};
 				};
 			};
+
+			adau1761@3b {
+				compatible = "adi,adau1761";
+				reg = <0x3b>;
+				clocks = <0xb>;
+				clock-names = "mclk";
+				#sound-dai-cells = <0x0>;
+				linux,phandle = <0x16>;
+				phandle = <0x16>;
+			};
 		};
 
+/*
 		axivdma@43000000 {
+			compatible = "xlnx,axi-vdma-1.00.a";
 			#address-cells = <0x1>;
 			#size-cells = <0x1>;
 			#dma-cells = <0x1>;
-			clock-names = "s_axi_lite_aclk", "m_axi_mm2s_aclk", "m_axi_mm2s_aclk";
-			clocks = <2 15>, <2 15>, <2 15>;
-			compatible = "xlnx,axi-vdma-1.00.a";
-			interrupt-names = "mm2s_introut";
-			interrupt-parent = <1>;
-			interrupts = <0 59 4>;
+			#dma-channels = <0x1>;
 			reg = <0x43000000 0x1000>;
-			xlnx,addrwidth = <0x20>;
-			xlnx,flush-fsync = <0x1>;
 			xlnx,num-fstores = <0x3>;
-			linux,phandle = <0xb>;
-			phandle = <0xb>;
+			linux,phandle = <0xc>;
+			phandle = <0xc>;
 
 			dma-channel@43000000 {
 				compatible = "xlnx,axi-vdma-mm2s-channel";
-				interrupts = <0 59 4>;
+				interrupts = <0x0 0x3b 0x4>;
 				xlnx,datawidth = <0x40>;
-				xlnx,device-id = <0x0>;
-				xlnx,genlock-mode ;
+				xlnx,genlock-mode = <0x0>;
 				xlnx,include-dre = <0x0>;
 			};
 		};
@@ -840,22 +710,21 @@
 			reg = <0x79000000 0x10000>;
 			#clock-cells = <0x0>;
 			clocks = <0x2 0x10>;
-			linux,phandle = <0xc>;
-			phandle = <0xc>;
+			linux,phandle = <0xd>;
+			phandle = <0xd>;
 		};
 
 		axi_hdmi@70e00000 {
 			compatible = "adi,axi-hdmi-tx-1.00.a";
 			reg = <0x70e00000 0x10000>;
-			dmas = <0xb 0x0>;
+			dmas = <0xc 0x0>;
 			dma-names = "video";
-			clocks = <0xc>;
-			adi,is-rgb;
+			clocks = <0xd>;
 
 			port {
 
 				endpoint {
-					remote-endpoint = <0xd>;
+					remote-endpoint = <0xe>;
 					linux,phandle = <0xa>;
 					phandle = <0xa>;
 				};
@@ -865,21 +734,55 @@
 		axi-spdif-tx@75c00000 {
 			compatible = "adi,axi-spdif-tx-1.00.a";
 			reg = <0x75c00000 0x1000>;
-			dmas = <0xe 0x0>;
+			dmas = <0xf 0x0>;
 			dma-names = "tx";
-			clocks = <0x2 0xf 0xf>;
+			clocks = <0x2 0xf 0xb>;
 			clock-names = "axi", "ref";
 			#sound-dai-cells = <0x0>;
 			linux,phandle = <0x13>;
 			phandle = <0x13>;
+		};
+*/
+
+		axi-i2s@77600000 {
+			compatible = "adi,axi-i2s-1.00.a";
+			reg = <0x77600000 0x1000>;
+			dmas = <0xf 0x1 0xf 0x2>;
+			dma-names = "tx", "rx";
+			clocks = <0x2 0xf 0xb>;
+			clock-names = "axi", "ref";
+			#sound-dai-cells = <0x0>;
+			linux,phandle = <0x15>;
+			phandle = <0x15>;
+		};
+
+		i2c@41620000 {
+			compatible = "xlnx,axi-iic-1.01.b", "xlnx,xps-iic-2.00.a";
+			reg = <0x41620000 0x10000>;
+			interrupt-parent = <0x1>;
+			interrupts = <0x0 0x37 0x4>;
+			clocks = <0x2 0xf>;
+			clock-names = "pclk";
+			#size-cells = <0x0>;
+			#address-cells = <0x1>;
+
+			ad7291@2f {
+				compatible = "adi,ad7291";
+				reg = <0x2f>;
+			};
+
+			eeprom@50 {
+				compatible = "at24,24c02";
+				reg = <0x50>;
+			};
 		};
 
 		dma@7c400000 {
 			compatible = "adi,axi-dmac-1.00.a";
 			reg = <0x7c400000 0x10000>;
 			#dma-cells = <0x1>;
-			interrupts = <0 57 4>;
-			clocks = <0x2 0xf 0xf>;
+			interrupts = <0x0 0x39 0x0>;
+			clocks = <0x2 0x10>;
 			linux,phandle = <0x10>;
 			phandle = <0x10>;
 
@@ -902,8 +805,8 @@
 			compatible = "adi,axi-dmac-1.00.a";
 			reg = <0x7c420000 0x10000>;
 			#dma-cells = <0x1>;
-			interrupts = <0 56 4>;
-			clocks = <0x2 0xf 0xf>;
+			interrupts = <0x0 0x38 0x0>;
+			clocks = <0x2 0x10>;
 			linux,phandle = <0x12>;
 			phandle = <0x12>;
 
@@ -1059,22 +962,16 @@
 			clock-names = "sampl_clk";
 			dmas = <0x12 0x0>;
 			dma-names = "tx";
-			adi,axi-dds-rate = <0x1>;
-			adi,axi-dds-1-rf-channel;
-		};
-
-		mwipcore@43c00000 {
-			compatible = "mathworks,mwipcore-axi4lite-v1.00";
-			reg = <0x43c00000 0xffff>;
 		};
 	};
 
+/*
 	audio_clock {
 		compatible = "fixed-clock";
 		#clock-cells = <0x0>;
 		clock-frequency = <0xbb8000>;
-		linux,phandle = <0xf>;
-		phandle = <0xf>;
+		linux,phandle = <0xb>;
+		phandle = <0xb>;
 	};
 
 	adv7511_hdmi_snd {
@@ -1095,6 +992,72 @@
 			codec {
 				sound-dai = <0x14>;
 			};
+		};
+	};
+
+	zed_sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "ZED ADAU1761";
+		simple-audio-card,widgets = "Microphone", "Mic In", "Headphone", "Headphone Out", "Line", "Line In", "Line", "Line Out";
+		simple-audio-card,routing = "Line Out", "LOUT", "Line Out", "ROUT", "Headphone Out", "LHP", "Headphone Out", "RHP", "Mic In", "MICBIAS", "LINN", "Mic In", "RINN", "Mic In", "LAUX", "Line In", "RAUX", "Line In";
+
+		simple-audio-card,dai-link@0 {
+			format = "i2s";
+
+			cpu {
+				sound-dai = <0x15>;
+				frame-master;
+				bitclock-master;
+			};
+
+			codec {
+				sound-dai = <0x16>;
+			};
+		};
+	};
+*/
+
+	leds {
+		compatible = "gpio-leds";
+
+		ld0 {
+			label = "ld0:red";
+			gpios = <0x6 0x49 0x0>;
+		};
+
+		ld1 {
+			label = "ld1:red";
+			gpios = <0x6 0x4a 0x0>;
+		};
+
+		ld2 {
+			label = "ld2:red";
+			gpios = <0x6 0x4b 0x0>;
+		};
+
+		ld3 {
+			label = "ld3:red";
+			gpios = <0x6 0x4c 0x0>;
+		};
+
+		ld4 {
+			label = "ld4:red";
+			gpios = <0x6 0x4d 0x0>;
+		};
+
+		ld5 {
+			label = "ld5:red";
+			gpios = <0x6 0x4e 0x0>;
+		};
+
+		ld6 {
+			label = "ld6:red";
+			gpios = <0x6 0x4f 0x0>;
+		};
+
+		ld7 {
+			label = "ld7:red";
+			gpios = <0x6 0x50 0x0>;
 		};
 	};
 

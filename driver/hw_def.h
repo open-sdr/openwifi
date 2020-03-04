@@ -107,6 +107,7 @@ const char *rx_intf_compatible_str = "sdr,rx_intf";
 #define RX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_ADDR      (8*4)
 #define RX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_ADDR      (9*4)
 #define RX_INTF_REG_CFG_DATA_TO_ANT_ADDR           (10*4)
+#define RX_INTF_REG_BB_GAIN_ADDR                   (11*4)
 #define RX_INTF_REG_TLAST_TIMEOUT_TOP_ADDR         (12*4)
 #define RX_INTF_REG_S2MM_INTR_DELAY_COUNT_ADDR     (13*4)
 #define RX_INTF_REG_ANT_SEL_ADDR                   (16*4)
@@ -159,6 +160,7 @@ struct rx_intf_driver_api {
 	void (*RX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write)(u32 value);
 	void (*RX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write)(u32 value);
 	void (*RX_INTF_REG_CFG_DATA_TO_ANT_write)(u32 value);
+	void (*RX_INTF_REG_BB_GAIN_write)(u32 value);
 	void (*RX_INTF_REG_ANT_SEL_write)(u32 value);
 	void (*RX_INTF_REG_INTERRUPT_TEST_write)(u32 value);
 

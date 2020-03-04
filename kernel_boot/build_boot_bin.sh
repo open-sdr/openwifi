@@ -1,21 +1,37 @@
 #!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+    echo "You must enter the \$BOARD_NAME as argument"
+    echo "Like: adrv9364z7020 adrv9361z7035 adrv9361z7035_fmc zc706_fmcs2 zed_fmcs2 zc702_fmcs2"
+    exit 1
+fi
+BOARD_NAME=$1
+
+if [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9361z7035_fmc" ] && [ "$BOARD_NAME" != "adrv9364z7020" ]; then
+    echo "\$BOARD_NAME is not correct. Please check!"
+    exit 1
+else
+    echo "\$BOARD_NAME is found!"
+fi
+
+
 set -ex
 
-HDF_FILE=$1
-UBOOT_FILE=$2
-BUILD_DIR=build_boot_bin
-OUTPUT_DIR=output_boot_bin
+HDF_FILE=../openwifi-hw/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf
+UBOOT_FILE=./boards/$BOARD_NAME/u-boot.elf
+BUILD_DIR=./boards/$BOARD_NAME/build_boot_bin
+OUTPUT_DIR=./boards/$BOARD_NAME/output_boot_bin
 
-usage () {
-	echo usage: $0 system_top.hdf u-boot.elf [output-archive]
-	exit 1
-}
+# usage () {
+# 	echo usage: $0 system_top.hdf u-boot.elf [output-archive]
+# 	exit 1
+# }
 
-depends () {
-	echo Xilinx $1 must be installed and in your PATH
-	echo try: source /opt/Xilinx/Vivado/201x.x/settings64.sh
-	exit 1
-}
+# depends () {
+# 	echo Xilinx $1 must be installed and in your PATH
+# 	echo try: source /opt/Xilinx/Vivado/201x.x/settings64.sh
+# 	exit 1
+# }
 
 ### Check command line parameters
 echo $HDF_FILE | grep -q ".hdf" || usage
@@ -81,7 +97,7 @@ cp $BUILD_DIR/build/sdk/hw_0/system_top.bit $OUTPUT_DIR/system_top.bit
 	rm $BUILD_DIR -rf
 )
 
-### Optionally tar.gz the entire output folder with the name given in argument 3
-if [ ${#3} -ne 0 ]; then
-	tar czvf $3.tar.gz $OUTPUT_DIR
-fi
+# ### Optionally tar.gz the entire output folder with the name given in argument 3
+# if [ ${#3} -ne 0 ]; then
+# 	tar czvf $3.tar.gz $OUTPUT_DIR
+# fi
