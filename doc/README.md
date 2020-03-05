@@ -60,6 +60,7 @@ addr1|target MAC address of tx slice 1|32bit. for address 6c:fd:b9:4c:b1:c1, you
 slice_total1|tx slice 1 cycle length in us|for length 50ms, you set 49999
 slice_start1|tx slice 1 cycle start time in us|for start at 10ms, you set 10000
 slice_end1|  tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
+tsf| sets TSF value| it requires two values "high_TSF low_TSF". Decimal
 
 ### Get and set a register of a module
 ```

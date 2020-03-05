@@ -1515,6 +1515,16 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		if (nla_put_u32(skb, OPENWIFI_ATTR_RSSI_TH, tmp))
 			goto nla_put_failure;
 		return cfg80211_testmode_reply(skb);
+       case OPENWIFI_CMD_SET_TSF:
+               printk("openwifi_set_tsf_1");
+               if ( (!tb[OPENWIFI_ATTR_HIGH_TSF]) || (!tb[OPENWIFI_ATTR_LOW_TSF]) )
+                       return -EINVAL;
+               printk("openwifi_set_tsf_2");
+               u32 tsft_high = nla_get_u32(tb[OPENWIFI_ATTR_HIGH_TSF]);
+               u32 tsft_low  = nla_get_u32(tb[OPENWIFI_ATTR_LOW_TSF]);
+               xpu_api->XPU_REG_TSF_LOAD_VAL_write(tsft_high,tsft_low);
+               printk("%s openwifi_set_tsf: %08x%08x\n", sdr_compatible_str,tsft_high,tsft_low);
+               return 0;
 
 	case REG_CMD_SET:
 		if ( (!tb[REG_ATTR_ADDR]) || (!tb[REG_ATTR_VAL]) )
