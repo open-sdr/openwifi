@@ -47,6 +47,8 @@ else
     exit 1
 fi
 
+sudo ls
+
 home_dir=$(pwd)
 
 set -x
@@ -107,6 +109,7 @@ sudo rm $SDCARD_DIR/rootfs/lib/modules/openwifi/{axidmatest.ko,xilinx_dma.ko,adi
 
 sudo rm $SDCARD_DIR/rootfs/etc/udev/rules.d/70-persistent-net.rules
 sudo cp $OPENWIFI_DIR/kernel_boot/70-persistent-net.rules $SDCARD_DIR/rootfs/etc/udev/rules.d/
+sudo mv $SDCARD_DIR/rootfs/lib/udev/rules.d/75-persistent-net-generator.rules $SDCARD_DIR/rootfs/lib/udev/rules.d/75-persistent-net-generator.rules.bak
 
 # Some setup
 sudo echo -e "\nauto lo eth0\niface lo inet loopback\niface eth0 inet static\naddress 192.168.10.122\nnetmask 255.255.255.0\n" | sudo tee -a $SDCARD_DIR/rootfs/etc/network/interfaces
