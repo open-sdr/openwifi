@@ -1,13 +1,28 @@
 #!/bin/bash
-xilinx_sdk_dir=$1
-adi_lnx_dir=$2\
-
 if [ "$#" -ne 2 ]; then
-    echo "You must enter exactly 2 command line arguments"
-    echo "First argument is the path, second argument is the path to adi linux repository, please don't add slash at the end of the path"
-    echo "Eg, ./make_all.sh /opt/Xilinx/SDK/2017.4 /home/gitfolder/linux"
+    echo "You must enter exactly 2 arguments: \$OPENWIFI_DIR \$XILINX_DIR"
     exit 1
 fi
+
+OPENWIFI_DIR=$1
+XILINX_DIR=$2
+
+if [ -f "$OPENWIFI_DIR/LICENSE" ]; then
+    echo "\$OPENWIFI_DIR is found!"
+else
+    echo "\$OPENWIFI_DIR is not correct. Please check!"
+    exit 1
+fi
+
+if [ -d "$XILINX_DIR/SDK" ]; then
+    echo "\$XILINX_DIR is found!"
+else
+    echo "\$XILINX_DIR is not correct. Please check!"
+    exit 1
+fi
+
+adi_lnx_dir=$OPENWIFI_DIR/adi-linux/
+xilinx_sdk_dir=$XILINX_DIR/SDK/2017.4/
 
 # check if user entered the right path to SDK
 if [ -d "$xilinx_sdk_dir" ]; then
@@ -28,25 +43,25 @@ else
   exit 1
 fi
 
-
+home_dir=$(pwd)
 
 #source ~/Xilinx/SDK/2017.4/settings64.sh
 #set -x
+cd $OPENWIFI_DIR/driver/
 make KDIR=$adi_lnx_dir
-cd openofdm_tx
+cd $OPENWIFI_DIR/driver/openofdm_tx
 make KDIR=$adi_lnx_dir
-cd ../openofdm_rx
+cd $OPENWIFI_DIR/driver/openofdm_rx
 make KDIR=$adi_lnx_dir
-cd ../tx_intf
+cd $OPENWIFI_DIR/driver/tx_intf
 make KDIR=$adi_lnx_dir
-cd ../rx_intf
+cd $OPENWIFI_DIR/driver/rx_intf
 make KDIR=$adi_lnx_dir
-cd ../xpu
+cd $OPENWIFI_DIR/driver/xpu
 make KDIR=$adi_lnx_dir
-cd ../ad9361
+cd $OPENWIFI_DIR/driver/ad9361
 make KDIR=$adi_lnx_dir
-cd ../xilinx_dma
+cd $OPENWIFI_DIR/driver/xilinx_dma
 ./make_xilinx_dma.sh $adi_lnx_dir $sdk_setting
-cd ..
 
-
+cd $home_dir

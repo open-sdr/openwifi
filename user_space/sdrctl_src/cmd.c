@@ -215,6 +215,72 @@ static int handle_set_rssi_th(struct nl80211_state *state,
 }
 COMMAND(set, rssi_th, "<rssi_th in value>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_rssi_th, "set rssi_th");
 
+
+static int handle_set_tsf(struct nl80211_state *state,
+		  struct nl_cb *cb,
+		  struct nl_msg *msg,
+		  int argc, char **argv,
+		  enum id_input id)
+{
+	struct nlattr *tmdata;
+	char *end;
+	unsigned int reg_cat, high_tsf, low_tsf;
+
+	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+	if (!tmdata) {
+		return 1;
+	}
+
+	high_tsf = strtoul(argv[0], &end, 10);
+	if (*end) {
+		return 1;
+	}
+
+	low_tsf = strtoul(argv[1], &end, 10);
+	if (*end) {
+		return 1;
+	}
+
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_TSF);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_HIGH_TSF, high_tsf);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_LOW_TSF, low_tsf);
+
+	nla_nest_end(msg, tmdata);
+
+	printf("high_tsf val: %08x\n", high_tsf);
+	printf("low_tsf  val: %08x\n", low_tsf);
+
+	return 0;
+
+	/*struct nlattr *tmdata;
+	char *end;
+	unsigned int tmp;
+
+	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+	if (!tmdata) {
+		return 1;
+	}
+
+	tmp = strtoul(argv[0], &end, 10);
+
+	if (*end) {
+		return 1;
+	}
+
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_TSF);
+	NLA_PUT_U64(msg, OPENWIFI_ATTR_TSF, tmp);
+
+	nla_nest_end(msg, tmdata);
+
+	printf("openwifi tsf: %d\n", tmp);
+
+	return 0;*/
+
+ nla_put_failure:
+	return -ENOBUFS;
+}
+COMMAND(set, tsf, "<high_tsf value low_tsf value>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_tsf, "set tsf");
+
 static int handle_get_rssi_th(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,

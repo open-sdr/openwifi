@@ -5,7 +5,7 @@
 	#size-cells = <0x1>;
 	compatible = "xlnx,zynq-7000";
 	interrupt-parent = <0x1>;
-	model = "Xilinx Zynq ZC706";
+	model = "Xilinx Zynq ZC702";
 
 	cpus {
 		#address-cells = <0x1>;
@@ -358,17 +358,16 @@
 			reg = <0xe000d000 0x1000>;
 			#address-cells = <0x1>;
 			#size-cells = <0x0>;
-			is-dual = <0x1>;
+			is-dual = <0x0>;
 			num-cs = <0x1>;
 
 			ps7-qspi@0 {
 				#address-cells = <0x1>;
 				#size-cells = <0x1>;
-				spi-tx-bus-width = <0x1>;
-				spi-rx-bus-width = <0x4>;
 				compatible = "n25q128a11";
 				reg = <0x0>;
-				spi-max-frequency = <0x2faf080>;
+				spi-tx-bus-width = <0x1>;
+				spi-rx-bus-width = <0x4>;
 
 				partition@0 {
 					label = "boot";
@@ -627,32 +626,54 @@
 	leds {
 		compatible = "gpio-leds";
 
-		ds8 {
+		ds12 {
 			label = "ds12:green";
-			gpios = <0x6 0x3d 0x0>;
-			//gpios = <0x6 7 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x3d
-			default-state = "off";
+			gpios = <0x6 0x8 0x0>;
 		};
 
-		ds9 {
+		ds15 {
 			label = "ds15:green";
-			gpios = <0x6 0x3e 0x0>;
-			//gpios = <0x6 8 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x3e
-			default-state = "off";
+			gpios = <0x6 0x3a 0x0>;
 		};
 
-		ds10 {
+		ds16 {
 			label = "ds16:green";
-			gpios = <0x6 0x3f 0x0>;
-			//gpios = <0x6 9 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x3f
-			default-state = "off";
+			gpios = <0x6 0x3b 0x0>;
 		};
 
-		ds35 {
+		ds17 {
 			label = "ds17:green";
+			gpios = <0x6 0x3c 0x0>;
+		};
+
+		ds18 {
+			label = "ds18:green";
+			gpios = <0x6 0x3d 0x0>;
+		};
+
+		ds19 {
+			label = "ds19:green";
+			gpios = <0x6 0x3e 0x0>;
+		};
+
+		ds20 {
+			label = "ds20:green";
+			gpios = <0x6 0x3f 0x0>;
+		};
+
+		ds21 {
+			label = "ds21:green";
 			gpios = <0x6 0x40 0x0>;
-			//gpios = <0x6 10 0x0>;//according to zc706 board, do not know why real gpio_bd[7] here becomes 0x40
-			default-state = "on";
+		};
+
+		ds22 {
+			label = "ds22:green";
+			gpios = <0x6 0x41 0x0>;
+		};
+
+		ds23 {
+			label = "ds23:green";
+			gpios = <0x6 0xa 0x0>;
 		};
 	};
 
@@ -662,22 +683,42 @@
 		#size-cells = <0x0>;
 		autorepeat;
 
-		sw7 {
+		sw5 {
 			label = "Left";
 			linux,code = <0x69>;
-			gpios = <0x6 0x3a 0x0>;
+			gpios = <0x6 0x36 0x0>;
 		};
 
-		sw8 {
+		sw7 {
 			label = "Right";
 			linux,code = <0x6a>;
-			gpios = <0x6 0x3c 0x0>;
+			gpios = <0x6 0x37 0x0>;
 		};
 
-		sw9 {
+		sw15_0 {
+			label = "SW15_0";
+			linux,code = <0x0>;
+			linux,input-type = <0x5>;
+			gpios = <0x6 0x38 0x0>;
+		};
+
+		sw15_1 {
+			label = "SW15_1";
+			linux,code = <0x1>;
+			linux,input-type = <0x5>;
+			gpios = <0x6 0x39 0x0>;
+		};
+
+		sw13 {
 			label = "Select";
 			linux,code = <0x1c>;
-			gpios = <0x6 0x3b 0x0>;
+			gpios = <0x6 0xe 0x0>;
+		};
+
+		sw14 {
+			label = "SW14";
+			linux,code = <0x1>;
+			gpios = <0x6 0xc 0x0>;
 		};
 	};
 
@@ -697,38 +738,26 @@
 			#address-cells = <0x1>;
 			#size-cells = <0x0>;
 
-			i2cswitch@74 {
-				compatible = "nxp,pca9548";
+			mux@74 {
+				compatible = "pca9548";
+				reg = <0x74>;
 				#address-cells = <0x1>;
 				#size-cells = <0x0>;
-				reg = <0x74>;
-
-				i2c@0 {
-					#address-cells = <0x1>;
-					#size-cells = <0x0>;
-					reg = <0x0>;
-
-					osc@5d {
-						compatible = "si570";
-						temperature-stability = <0x32>;
-						reg = <0x5d>;
-						factory-fout = <0x9502f90>;
-						initial-fout = <0x8d9ee20>;
-					};
-				};
 
 				i2c@1 {
-					#address-cells = <0x1>;
 					#size-cells = <0x0>;
+					#address-cells = <0x1>;
 					reg = <0x1>;
 
-					adv7511 {
+					adv7511@39 {
 						compatible = "adi,adv7511";
 						reg = <0x39 0x3f>;
 						reg-names = "primary", "edid";
 						adi,input-depth = <0x8>;
-						adi,input-colorspace = "rgb";
+						adi,input-colorspace = "yuv422";
 						adi,input-clock = "1x";
+						adi,input-style = <0x1>;
+						adi,input-justification = "right";
 						adi,clock-delay = <0x0>;
 						#sound-dai-cells = <0x0>;
 						linux,phandle = <0x14>;
@@ -755,45 +784,21 @@
 					};
 				};
 
-				i2c@2 {
-					#address-cells = <0x1>;
-					#size-cells = <0x0>;
-					reg = <0x2>;
-
-					eeprom@54 {
-						compatible = "at,24c08";
-						reg = <0x54>;
-					};
-				};
-
-				i2c@3 {
-					#address-cells = <0x1>;
-					#size-cells = <0x0>;
-					reg = <0x3>;
-
-					gpio@21 {
-						compatible = "ti,tca6416";
-						reg = <0x21>;
-						gpio-controller;
-						#gpio-cells = <0x2>;
-					};
-				};
-
 				i2c@4 {
-					#address-cells = <0x1>;
 					#size-cells = <0x0>;
+					#address-cells = <0x1>;
 					reg = <0x4>;
 
-					rtc@54 {
-						compatible = "nxp,pcf8563";
+					rtc@51 {
+						compatible = "rtc8564";
 						reg = <0x51>;
 					};
 				};
 
-				i2c@6 {
+				i2c@5 {
 					#size-cells = <0x0>;
 					#address-cells = <0x1>;
-					reg = <0x6>;
+					reg = <0x5>;
 
 					ad7291@2f {
 						compatible = "adi,ad7291";
@@ -807,30 +812,22 @@
 				};
 			};
 		};
-
+/*
 		axivdma@43000000 {
 			#address-cells = <0x1>;
 			#size-cells = <0x1>;
 			#dma-cells = <0x1>;
-			clock-names = "s_axi_lite_aclk", "m_axi_mm2s_aclk", "m_axi_mm2s_aclk";
-			clocks = <2 15>, <2 15>, <2 15>;
 			compatible = "xlnx,axi-vdma-1.00.a";
-			interrupt-names = "mm2s_introut";
-			interrupt-parent = <1>;
-			interrupts = <0 59 4>;
 			reg = <0x43000000 0x1000>;
-			xlnx,addrwidth = <0x20>;
-			xlnx,flush-fsync = <0x1>;
 			xlnx,num-fstores = <0x3>;
 			linux,phandle = <0xb>;
 			phandle = <0xb>;
 
-			dma-channel@43000000 {
+			dma-channel@7e200000 {
 				compatible = "xlnx,axi-vdma-mm2s-channel";
-				interrupts = <0 59 4>;
+				interrupts = <0x0 0x3b 0x4>;
 				xlnx,datawidth = <0x40>;
-				xlnx,device-id = <0x0>;
-				xlnx,genlock-mode ;
+				xlnx,genlock-mode = <0x0>;
 				xlnx,include-dre = <0x0>;
 			};
 		};
@@ -850,7 +847,6 @@
 			dmas = <0xb 0x0>;
 			dma-names = "video";
 			clocks = <0xc>;
-			adi,is-rgb;
 
 			port {
 
@@ -873,13 +869,13 @@
 			linux,phandle = <0x13>;
 			phandle = <0x13>;
 		};
-
+*/
 		dma@7c400000 {
 			compatible = "adi,axi-dmac-1.00.a";
 			reg = <0x7c400000 0x10000>;
 			#dma-cells = <0x1>;
-			interrupts = <0 57 4>;
-			clocks = <0x2 0xf 0xf>;
+			interrupts = <0x0 0x39 0x0>;
+			clocks = <0x2 0x10>;
 			linux,phandle = <0x10>;
 			phandle = <0x10>;
 
@@ -902,8 +898,8 @@
 			compatible = "adi,axi-dmac-1.00.a";
 			reg = <0x7c420000 0x10000>;
 			#dma-cells = <0x1>;
-			interrupts = <0 56 4>;
-			clocks = <0x2 0xf 0xf>;
+			interrupts = <0x0 0x38 0x0>;
+			clocks = <0x2 0x10>;
 			linux,phandle = <0x12>;
 			phandle = <0x12>;
 
@@ -1059,16 +1055,9 @@
 			clock-names = "sampl_clk";
 			dmas = <0x12 0x0>;
 			dma-names = "tx";
-			adi,axi-dds-rate = <0x1>;
-			adi,axi-dds-1-rf-channel;
-		};
-
-		mwipcore@43c00000 {
-			compatible = "mathworks,mwipcore-axi4lite-v1.00";
-			reg = <0x43c00000 0xffff>;
 		};
 	};
-
+/*
 	audio_clock {
 		compatible = "fixed-clock";
 		#clock-cells = <0x0>;
@@ -1097,7 +1086,7 @@
 			};
 		};
 	};
-
+*/
 	clocks {
 
 		clock@0 {

@@ -101,7 +101,7 @@ then
 fi
 sleep 1
 
-echo "set RF frontend: ant0 rx, ant1 tx"
+echo "set RF frontend"
 # if [ $last_input == "remote" ]
 #   then
 #     rm rf_init.sh
@@ -214,6 +214,3 @@ dmesg
 # dmesg -c
 # sleep 0.1
 # ifconfig sdr0 up
-
-
-

@@ -779,7 +779,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	//ring_len = (ring->bd_wr_idx>=ring->bd_rd_idx)?(ring->bd_wr_idx-ring->bd_rd_idx):(ring->bd_wr_idx+NUM_TX_BD-ring->bd_rd_idx);
 	ring_len = ((ring->bd_wr_idx-ring->bd_rd_idx)&(NUM_TX_BD-1));
 	ring_room_left = NUM_TX_BD - ring_len;
-	if (ring_len>12)
+	if (ring_len>28)
 		printk("%s openwifi_tx: WARNING ring len %d\n", sdr_compatible_str,ring_len);
 //		printk("%s openwifi_tx: WARNING ring len %d HW fifo %d q %d\n", sdr_compatible_str,ring_len,tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_read()&0xFFFF, ((tx_intf_api->TX_INTF_REG_PHY_QUEUE_TX_SN_read())>>16)&0xFF );
 
@@ -927,7 +927,8 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	// xpu_api->XPU_REG_CSMA_CFG_write(3);
 
 	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030-238)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030)<<16)|0 );//now our tx send out I/Q immediately
+	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030)<<16)|0 );//now our tx send out I/Q immediately
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030+450)<<16)|(0+450) );//we have more time when we use FIR in AD9361
 
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200 + 300)<<16) | 200 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200 + 300)<<16) | 200 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
@@ -1514,6 +1515,16 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		if (nla_put_u32(skb, OPENWIFI_ATTR_RSSI_TH, tmp))
 			goto nla_put_failure;
 		return cfg80211_testmode_reply(skb);
+       case OPENWIFI_CMD_SET_TSF:
+               printk("openwifi_set_tsf_1");
+               if ( (!tb[OPENWIFI_ATTR_HIGH_TSF]) || (!tb[OPENWIFI_ATTR_LOW_TSF]) )
+                       return -EINVAL;
+               printk("openwifi_set_tsf_2");
+               u32 tsft_high = nla_get_u32(tb[OPENWIFI_ATTR_HIGH_TSF]);
+               u32 tsft_low  = nla_get_u32(tb[OPENWIFI_ATTR_LOW_TSF]);
+               xpu_api->XPU_REG_TSF_LOAD_VAL_write(tsft_high,tsft_low);
+               printk("%s openwifi_set_tsf: %08x%08x\n", sdr_compatible_str,tsft_high,tsft_low);
+               return 0;
 
 	case REG_CMD_SET:
 		if ( (!tb[REG_ATTR_ADDR]) || (!tb[REG_ATTR_VAL]) )
@@ -1730,12 +1741,14 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 		err = -ENOMEM;
 		goto err_free_dev;
 	}
+	printk("%s bus_find_device ad9361-phy: %s\n", sdr_compatible_str, tmp_dev->init_name);
 	priv->ad9361_phy = ad9361_spi_to_phy((struct spi_device*)tmp_dev);
 	if (!(priv->ad9361_phy)) {
 		printk(KERN_ERR "%s ad9361_spi_to_phy failed\n",sdr_compatible_str);
 		err = -ENOMEM;
 		goto err_free_dev;
 	}
+	printk("%s ad9361_spi_to_phy ad9361-phy: %s\n", sdr_compatible_str, priv->ad9361_phy->spi->modalias);
 
 	priv->ctrl_out.en_mask=0xFF;
 	priv->ctrl_out.index=0x16;
@@ -1817,7 +1830,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
 		// // test ddc at central, duc at central+10M. It works. And also change rx BW from 40MHz to 20MHz in rf_init.sh. Rx sampling rate is still 40Msps
 		priv->rx_intf_cfg = RX_INTF_BW_20MHZ_AT_0MHZ_ANT0;
-		priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1;
+		priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0; // Let's use rx0 tx0 as default mode, because it works for both 9361 and 9364
 		// // try another antenna option
 		//priv->rx_intf_cfg = RX_INTF_BW_20MHZ_AT_0MHZ_ANT1;
 		//priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0;
