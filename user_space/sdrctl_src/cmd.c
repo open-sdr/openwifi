@@ -224,7 +224,7 @@ static int handle_set_tsf(struct nl80211_state *state,
 {
 	struct nlattr *tmdata;
 	char *end;
-	unsigned int reg_cat, high_tsf, low_tsf;
+	unsigned int high_tsf, low_tsf;
 
 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
 	if (!tmdata) {

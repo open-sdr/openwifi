@@ -1346,7 +1346,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
 	struct sk_buff *skb;
 	int err;
-	u32 tmp=-1, reg_cat, reg_addr, reg_val, reg_addr_idx;
+	u32 tmp=-1, reg_cat, reg_addr, reg_val, reg_addr_idx, tsft_high, tsft_low;
 
 	err = nla_parse(tb, OPENWIFI_ATTR_MAX, data, len, openwifi_testmode_policy, NULL);
 	if (err)
@@ -1520,8 +1520,8 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
                if ( (!tb[OPENWIFI_ATTR_HIGH_TSF]) || (!tb[OPENWIFI_ATTR_LOW_TSF]) )
                        return -EINVAL;
                printk("openwifi_set_tsf_2");
-               u32 tsft_high = nla_get_u32(tb[OPENWIFI_ATTR_HIGH_TSF]);
-               u32 tsft_low  = nla_get_u32(tb[OPENWIFI_ATTR_LOW_TSF]);
+               tsft_high = nla_get_u32(tb[OPENWIFI_ATTR_HIGH_TSF]);
+               tsft_low  = nla_get_u32(tb[OPENWIFI_ATTR_LOW_TSF]);
                xpu_api->XPU_REG_TSF_LOAD_VAL_write(tsft_high,tsft_low);
                printk("%s openwifi_set_tsf: %08x%08x\n", sdr_compatible_str,tsft_high,tsft_low);
                return 0;
