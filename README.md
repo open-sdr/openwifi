@@ -193,6 +193,7 @@ For hostapd program, 802.11b rates can be suppressed using configuration command
 
 On the other hand, the wpa_supplicant program on the client side (commercial Wi-Fi dongle/board) cannot suppress 802.11b rates out of the box in 2.4GHz band, so there will be an issue when connecting openwifi (OFDM only). A patched wpa_supplicant should be used at the client side.
 ```
+sudo apt-get install libssl1.0-dev
 $OPENWIFI_DIR/user_space/build_wpa_supplicant_wo11b.sh $OPENWIFI_DIR
 ```
 ## Porting guide
