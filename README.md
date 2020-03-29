@@ -58,8 +58,8 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
 [[Cite openwifi project](#Cite-openwifi-project)]
 
 ## Quick start
-- Burn [openwifi image](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan.img.xz) into a SD card (Double clikc in Ubuntu or "Open With Disk Image Writer"). You can see two partitions (BOOT and rootfs) when you insert the SD card to your PC. You need to use **correct files in the BOOT partition** according to the **platform you have**. Just **overwrite** the files in the base directory with the files in **board_name** directory of BOOT partiton.
-- Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check your board manual). Insert the SD card to the board. 
+- Burn [openwifi image](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-1.img.xz) into a SD card (Double click or "Open With Disk Image Writer"). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **platform you have** by operating the SD card on your computer: **overwrite** the files in the base directory of BOOT partiton with the files in **openwifi/board_name** directory.
+- Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. 
 - Power on. login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with one time password **analog**.
   ```
   ssh root@192.168.10.122

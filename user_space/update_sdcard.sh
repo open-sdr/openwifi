@@ -35,6 +35,7 @@ fi
 # detect SD card mounting status
 if [ -d "$SDCARD_DIR/BOOT/" ]; then
     echo "$SDCARD_DIR/BOOT/"
+    mkdir $SDCARD_DIR/BOOT/openwifi
 else
     echo "$SDCARD_DIR/BOOT/ does not exist!"
     exit 1
@@ -83,9 +84,9 @@ do
     $OPENWIFI_DIR/user_space/boot_bin_gen.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME_TMP
 # fi
     dtc -I dts -O dtb -o $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/devicetree.dtb $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/devicetree.dts
-    mkdir $SDCARD_DIR/BOOT/$BOARD_NAME_TMP
-    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/devicetree.dtb $SDCARD_DIR/BOOT/$BOARD_NAME_TMP
-    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/$BOARD_NAME_TMP
+    mkdir $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
+    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/devicetree.dtb $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
+    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
 done
 
 # Copy uImage BOOT.BIN and devicetree to SD card BOOT partition
