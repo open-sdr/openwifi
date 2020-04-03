@@ -83,7 +83,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
   ```
 - After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your deivce, you should see the webpage hosted by the webserver on board.
   - Note 1: If your device doesn't support 5GHz (ch44), please change the **hostapd-openwifi.conf** on board and re-run fosdem.sh.
-  - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just power cycle the board if it happens.
+  - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just power cycle the board if it happens. (If output of "./sdrctl dev sdr0 get reg rx 20" is always the same, it means the decoder halts)
 
 ## Basic operations
 The board actually is an Linux/Ubuntu computer which is running **hostapd** to offer Wi-Fi AP functionality over the Wi-Fi Network Interface (NIC). The NIC is implemented by openwifi-hw FPGA design. We use the term **"On board"** to indicate that the commands should be executed after ssh login to the board. **"On PC"** means the commands should run on PC.
