@@ -39,7 +39,7 @@ adrv9364z7020|ADRV9364Z7020 SOM + ADRV1CRR-BOB carrier board|Done
 adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|Done
 adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|Done
 zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done
-zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Future
+zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Coming soon!
 zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
