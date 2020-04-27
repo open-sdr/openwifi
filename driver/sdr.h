@@ -71,6 +71,7 @@ union u16_byte2 {
 #define LEN_PHY_HEADER 16
 #define LEN_PHY_CRC 4
 
+#define RING_ROOM_THRESHOLD 4
 #define NUM_TX_BD 32
 #define NUM_RX_BD 16
 #define TX_BD_BUF_SIZE (8192)
@@ -250,6 +251,35 @@ static const u8  wifi_mcs_table_11b_force_up[16] = {11, 11, 11, 11, 11, 15, 10, 
 static const u16 wifi_n_dbps_table[16] =           {24, 24, 24, 24, 24, 36, 48, 72, 96, 144, 192, 216,  0,  0,  0, 0};
 // static const u8 wifi_mcs_table[8] =             {6,9,12,18,24,36,48,54};
 // static const u8 wifi_mcs_table_phy_tx[8]    =   {11,15,10,14,9,13,8,12};
+
+// ===== copy from adi-linux/drivers/iio/frequency/cf_axi_dds.c =====
+struct cf_axi_dds_state {
+	struct device			*dev_spi;
+	struct clk			*clk;
+	struct cf_axi_dds_chip_info	*chip_info;
+	struct gpio_desc		*plddrbypass_gpio;
+	struct gpio_desc		*interpolation_gpio;
+
+	bool				standalone;
+	bool				dp_disable;
+	bool				enable;
+	bool				pl_dma_fifo_en;
+	enum fifo_ctrl			gpio_dma_fifo_ctrl;
+
+	struct iio_info			iio_info;
+	size_t				regs_size;
+	void __iomem			*regs;
+	void __iomem			*slave_regs;
+	void __iomem			*master_regs;
+	u64				dac_clk;
+	unsigned int			ddr_dds_interp_en;
+	unsigned int			cached_freq[16];
+	unsigned int			version;
+	unsigned int			have_slave_channels;
+	unsigned int			interpolation_factor;
+	struct notifier_block		clk_nb;
+};
+// ===== end of copy from adi-linux/drivers/iio/frequency/cf_axi_dds.c =====
 
 #define RX_DMA_CYCLIC_MODE
 struct openwifi_priv {

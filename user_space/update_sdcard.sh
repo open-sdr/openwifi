@@ -25,7 +25,7 @@ else
     exit 1
 fi
 
-if [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9361z7035_fmc" ] && [ "$BOARD_NAME" != "adrv9364z7020" ]; then
+if [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
     echo "\$BOARD_NAME is not correct. Please check!"
     exit 1
 else
@@ -36,6 +36,7 @@ fi
 if [ -d "$SDCARD_DIR/BOOT/" ]; then
     echo "$SDCARD_DIR/BOOT/"
     mkdir $SDCARD_DIR/BOOT/openwifi
+    rm -rf $SDCARD_DIR/BOOT/README.txt
 else
     echo "$SDCARD_DIR/BOOT/ does not exist!"
     exit 1
@@ -48,65 +49,96 @@ else
     exit 1
 fi
 
-sudo ls
+if [ "$BOARD_NAME" == "zcu102_fmcs2" ] || [ "$BOARD_NAME" == "zcu102_9371" ]; then
+    dtb_filename="system.dtb"
+    dts_filename="system.dts"
+else
+    dtb_filename="devicetree.dtb"
+    dts_filename="devicetree.dts"
+fi
+echo $dtb_filename
+echo $dts_filename
+
+sudo true
 
 home_dir=$(pwd)
 
 set -x
 
-if [ -f "$OPENWIFI_DIR/adi-linux/arch/arm/boot/uImage" ]; then
-    echo "Skip the time costly Linux kernel compiling."
-else
-    # Build the Linux kernel uImage and modules
-    cd $OPENWIFI_DIR/
-    git submodule init adi-linux
-    git submodule update adi-linux
-    cd adi-linux
-    git reset --hard 4220d5d24c6c7589fc702db4f941f0632b5ad767
-    cp ../kernel_boot/kernel_config ./.config
-    source $XILINX_DIR/SDK/2017.4/settings64.sh
-    export ARCH=arm
-    export CROSS_COMPILE=arm-linux-gnueabihf-
-    make oldconfig && make prepare && make modules_prepare
-    make -j12 UIMAGE_LOADADDR=0x8000 uImage
-    make modules
-fi
+cd $OPENWIFI_DIR/user_space/
+./prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR 32 build
+sudo true
+./prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR 64 build
+sudo true
+
+LINUX_KERNEL_SRC_DIR_NAME32=adi-linux
+LINUX_KERNEL_SRC_DIR_NAME64=adi-linux-64
 
 $OPENWIFI_DIR/user_space/get_fpga.sh $OPENWIFI_DIR
 
-BOARD_NAME_ALL="zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9361z7035_fmc adrv9364z7020"
+BOARD_NAME_ALL="zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 zcu102_9371"
+# BOARD_NAME_ALL="zcu102_fmcs2"
+# BOARD_NAME_ALL="adrv9361z7035"
 for BOARD_NAME_TMP in $BOARD_NAME_ALL
 do
-# if [ -f "$OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN" ]; then
-#     echo "Skip the BOOT.BIN generation."
-# else
-#     # Build BOOT.BIN
-    $OPENWIFI_DIR/user_space/boot_bin_gen.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME_TMP
-# fi
-    dtc -I dts -O dtb -o $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/devicetree.dtb $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/devicetree.dts
+    if [ "$BOARD_NAME_TMP" == "zcu102_fmcs2" ] || [ "$BOARD_NAME_TMP" == "zcu102_9371" ]; then
+        dtb_filename_tmp="system.dtb"
+        dts_filename_tmp="system.dts"
+        $OPENWIFI_DIR/user_space/boot_bin_gen_zynqmp.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME_TMP
+    else
+        dtb_filename_tmp="devicetree.dtb"
+        dts_filename_tmp="devicetree.dts"
+        $OPENWIFI_DIR/user_space/boot_bin_gen.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME_TMP
+    fi
+    echo $dtb_filename_tmp
+    echo $dts_filename_tmp
+
+    dtc -I dts -O dtb -o $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dtb_filename_tmp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dts_filename_tmp
     mkdir $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
-    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/devicetree.dtb $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
+    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dtb_filename_tmp $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
     cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
+    sudo true
 done
 
+mkdir $SDCARD_DIR/BOOT/openwifi/zynq-common
+cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage  $SDCARD_DIR/BOOT/openwifi/zynq-common/
+mkdir $SDCARD_DIR/BOOT/openwifi/zynqmp-common
+cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/openwifi/zynqmp-common/
+
 # Copy uImage BOOT.BIN and devicetree to SD card BOOT partition
-cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/devicetree.dtb $SDCARD_DIR/BOOT/
+cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/$dtb_filename $SDCARD_DIR/BOOT/
 cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/
-cp $OPENWIFI_DIR/adi-linux/arch/arm/boot/uImage $SDCARD_DIR/BOOT/
+if [ "$BOARD_NAME" == "zcu102_fmcs2" ] || [ "$BOARD_NAME" == "zcu102_9371" ]; then
+    cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/
+else
+    cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage $SDCARD_DIR/BOOT/
+fi
 
-# build openwifi driver
-$OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR
-
-# Copy files to SD card rootfs partition
 sudo mkdir $SDCARD_DIR/rootfs/root/openwifi
-sudo find $OPENWIFI_DIR/driver -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/root/openwifi/ \;
 sudo cp $OPENWIFI_DIR/user_space/* $SDCARD_DIR/rootfs/root/openwifi/ -rf
 sudo wget -P $SDCARD_DIR/rootfs/root/openwifi/webserver/ https://users.ugent.be/~xjiao/openwifi-low-aac.mp4
 
+# build openwifi driver
+$OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR 32
+# Copy files to SD card rootfs partition
+sudo mkdir $SDCARD_DIR/rootfs/root/openwifi/drv32
+sudo find $OPENWIFI_DIR/driver -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/root/openwifi/drv32 \;
+
+# build openwifi driver
+$OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR 64
+# Copy files to SD card rootfs partition
+sudo mkdir $SDCARD_DIR/rootfs/root/openwifi/drv64
+sudo find $OPENWIFI_DIR/driver -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/root/openwifi/drv64 \;
+
 sudo mkdir $SDCARD_DIR/rootfs/lib/modules
-sudo mkdir $SDCARD_DIR/rootfs/lib/modules/openwifi
-sudo find $OPENWIFI_DIR/adi-linux -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/lib/modules/openwifi/ \;
-sudo rm $SDCARD_DIR/rootfs/lib/modules/openwifi/{axidmatest.ko,xilinx_dma.ko,adi_axi_hdmi.ko,ad9361_drv.ko} -f
+
+sudo mkdir $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32
+sudo find $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32 -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32/ \;
+sudo rm $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32/{axidmatest.ko,xilinx_dma.ko,adi_axi_hdmi.ko,ad9361_drv.ko} -f
+
+sudo mkdir $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64
+sudo find $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64 -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64/ \;
+sudo rm $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64/{axidmatest.ko,xilinx_dma.ko,adi_axi_hdmi.ko,ad9361_drv.ko} -f
 
 sudo rm $SDCARD_DIR/rootfs/etc/udev/rules.d/70-persistent-net.rules
 sudo cp $OPENWIFI_DIR/kernel_boot/70-persistent-net.rules $SDCARD_DIR/rootfs/etc/udev/rules.d/

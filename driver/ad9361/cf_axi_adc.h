@@ -6,26 +6,12 @@
  * Licensed under the GPL-2.
  *
  * http://wiki.analog.com/resources/fpga/xilinx/fmc/ad9467
- * 
- * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
- * 
  */
 
 #ifndef ADI_AXI_ADC_H_
 #define ADI_AXI_ADC_H_
 
-#define ADI_REG_VERSION		0x0000				/*Version and Scratch Registers */
-#define ADI_VERSION(x)		(((x) & 0xffffffff) << 0)	/* RO, Version number. */
-#define VERSION_IS(x,y,z)	((x) << 16 | (y) << 8 | (z))
-#define ADI_REG_ID		0x0004			 	/*Version and Scratch Registers */
-#define ADI_ID(x)		(((x) & 0xffffffff) << 0)   	/* RO, Instance identifier number. */
-#define ADI_REG_SCRATCH		0x0008			 	/*Version and Scratch Registers */
-#define ADI_SCRATCH(x)		(((x) & 0xffffffff) << 0)	/* RW, Scratch register. */
-
-#define PCORE_VERSION(major, minor, letter) ((major << 16) | (minor << 8) | letter)
-#define PCORE_VERSION_MAJOR(version) (version >> 16)
-#define PCORE_VERSION_MINOR(version) ((version >> 8) & 0xff)
-#define PCORE_VERSION_LETTER(version) (version & 0xff)
+#include <linux/fpga/adi-axi-common.h>
 
 /* ADC COMMON */
 
@@ -205,6 +191,7 @@ struct axiadc_state {
 	struct device 			*dev_spi;
 	struct iio_info			iio_info;
 	struct clk 			*clk;
+	struct gpio_desc		*gpio_decimation;
 	size_t				regs_size;
 	void __iomem			*regs;
 	void __iomem			*slave_regs;
@@ -214,9 +201,11 @@ struct axiadc_state {
 	unsigned			id;
 	unsigned			pcore_version;
 	unsigned			decimation_factor;
+	unsigned int                    oversampling_ratio;
 	bool				dp_disable;
 	unsigned long long		adc_clk;
 	unsigned			have_slave_channels;
+	bool				additional_channel;
 
 	struct iio_hw_consumer		*frontend;
 
@@ -239,6 +228,7 @@ struct axiadc_converter {
 	unsigned long 		adc_clk;
 	const struct axiadc_chip_info	*chip_info;
 
+	struct delayed_work	watchdog_work;
 	bool			sample_rate_read_only;
 
 	int (*reg_access)(struct iio_dev *indio_dev, unsigned int reg,
@@ -289,6 +279,7 @@ struct axiadc_converter {
 			int state);
 
 	int (*post_setup)(struct iio_dev *indio_dev);
+	int (*post_iio_register)(struct iio_dev *indio_dev);
 	int (*set_pnsel)(struct iio_dev *indio_dev, unsigned chan,
 			enum adc_pn_sel sel);
 };
@@ -338,7 +329,7 @@ static inline unsigned int axiadc_slave_read(struct axiadc_state *st, unsigned r
 static inline void axiadc_idelay_set(struct axiadc_state *st,
 				unsigned lane, unsigned val)
 {
-	if (PCORE_VERSION_MAJOR(st->pcore_version) > 8) {
+	if (ADI_AXI_PCORE_VER_MAJOR(st->pcore_version) > 8) {
 		axiadc_write(st, ADI_REG_DELAY(lane), val);
 	} else {
 		axiadc_write(st, ADI_REG_DELAY_CNTRL, 0);

@@ -2,14 +2,26 @@
 
 set -ex
 
+MACHINE_TYPE=`uname -m`
+
 # setup kernel module directory
 if [ -d "/lib/modules/$(uname -r)" ]; then
     echo "/lib/modules/$(uname -r) already exists."
 else
-    ln -s /lib/modules/openwifi /lib/modules/$(uname -r)
+    if [ ${MACHINE_TYPE} == 'aarch64' ]; then
+        ln -s /lib/modules/adi-linux-64 /lib/modules/$(uname -r)
+    else
+        ln -s /lib/modules/adi-linux /lib/modules/$(uname -r)
+    fi
 fi
 depmod
 modprobe mac80211
+
+if [ ${MACHINE_TYPE} == 'aarch64' ]; then
+    cp ~/openwifi/drv64/* ~/openwifi/ -rf
+else
+    cp ~/openwifi/drv32/* ~/openwifi/ -rf
+fi
 
 # add gateway (PC) for internet access
 route add default gw 192.168.10.1 || true
