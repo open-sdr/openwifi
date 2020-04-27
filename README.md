@@ -35,11 +35,10 @@ board_name|board combination|status
 -------|-------|----
 zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done
 zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done
-adrv9364z7020|ADRV9364Z7020 SOM + ADRV1CRR-BOB carrier board|Done
-adrv9361z7035|ADRV9361Z7035 SOM + ADRV1CRR-BOB carrier board|Done
-adrv9361z7035_fmc|ADRV9361Z7035 SOM + ADRV1CRR-FMC carrier board|Done
+adrv9364z7020|ADRV9364Z7020 SOM|Done
+adrv9361z7035|ADRV9361Z7035 SOM|Done
 zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done
-zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Coming soon!
+zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done
 zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
@@ -58,7 +57,9 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
 [[Cite openwifi project](#Cite-openwifi-project)]
 
 ## Quick start
-- Burn [openwifi image](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-1.img.xz) into a SD card (Double click or "Open With Disk Image Writer"). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **platform you have** by operating the SD card on your computer: **overwrite** the BOOT.BIN and devicetree.dtb in the base directory of BOOT partiton with the files in **openwifi/board_name** directory. (DO **NOT** touch **uImage**!)
+- Burn [openwifi image](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2.img.xz) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
+  - Copy files in **openwifi/board_name** to the base directory of BOOT partiton.
+  - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partiton
 - Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. 
 - Power on. login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with one time password **analog**.
   ```
@@ -116,7 +117,13 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 - Get the latest FPGA bitstream from openwifi-hw, generate BOOT.BIN and transfer it on board via ssh channel:
   ```
   $OPENWIFI_DIR/user_space/get_fpga.sh $OPENWIFI_DIR
+  
+  For Zynq 7000:
   $OPENWIFI_DIR/user_space/boot_bin_gen.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME
+  
+  For Zynq MPSoC (like zcu102 board):
+  $OPENWIFI_DIR/user_space/boot_bin_gen_zynqmp.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME
+  
   scp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN root@192.168.10.122:
   ```
 - On board: Put the BOOT.BIN into the BOOT partition.
@@ -132,11 +139,13 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to udpate the driver on board.
 - Prepare Analog Devices Linux kernel source code (only need to run once):
   ```
-  $OPENWIFI_DIR/user_space/prepare_kernel_src.sh $OPENWIFI_DIR $XILINX_DIR
+  $OPENWIFI_DIR/user_space/prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
+  (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
   ```
 - Compile the latest openwifi driver
   ```
-  $OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR
+  $OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
+  (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
   ```
 - Copy the driver files to the board via ssh channel
   ```
@@ -169,7 +178,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
    - Input password "openwifi"
 
 ## Build openwifi Linux img from scratch
-- Download [2017_R1-2018_01_29.img.xz](http://swdownloads.analog.com/cse/2017_R1-2018_01_29.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
+- Download [2019_R1-2020_02_04.img.xz](swdownloads.analog.com/cse/2019_R1-2020_02_04.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
 - Insert the SD card to your Linux PC. Find out the mount point (that has two sub directories BOOT and rootfs), and setup environment variables (use absolute path):
   ```
   export SDCARD_DIR=sdcard_mount_point
@@ -198,7 +207,7 @@ $OPENWIFI_DIR/user_space/build_wpa_supplicant_wo11b.sh $OPENWIFI_DIR
 ```
 ## Porting guide
 
-This section explains the porting work by showing the differences between openwifi and Analog Devices reference design. We use **2018_r1** of [HDL Reference Designs](https://github.com/analogdevicesinc/hdl).
+This section explains the porting work by showing the differences between openwifi and Analog Devices reference design. openwifi is based on f61d9707 (2019 r1) of [HDL Reference Designs](https://github.com/analogdevicesinc/hdl).
 - Open the fmcomms2 + zc706 reference design at hdl/projects/fmcomms2/zc706 (Please read Analog Devices help)
 - Open the openwifi design zc706_fmcs2 at openwifi-hw/boards/zc706_fmcs2 (Please read openwifi-hw repository)
 - "Open Block Design", you will see the differences between openwifi and the reference design. Both in "diagram" and in "Address Editor".

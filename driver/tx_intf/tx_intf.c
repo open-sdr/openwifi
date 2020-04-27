@@ -78,6 +78,10 @@ static inline u32 TX_INTF_REG_CFG_DATA_TO_ANT_read(void){
 	return reg_read(TX_INTF_REG_CFG_DATA_TO_ANT_ADDR);
 }
 
+static inline u32 TX_INTF_REG_TX_HOLD_THRESHOLD_read(void){
+	return reg_read(TX_INTF_REG_TX_HOLD_THRESHOLD_ADDR);
+}
+
 static inline u32 TX_INTF_REG_INTERRUPT_SEL_read(void){
 	return reg_read(TX_INTF_REG_INTERRUPT_SEL_ADDR);
 }
@@ -146,6 +150,10 @@ static inline void TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(u32 value){
 
 static inline void TX_INTF_REG_CFG_DATA_TO_ANT_write(u32 value){
 	reg_write(TX_INTF_REG_CFG_DATA_TO_ANT_ADDR, value);
+}
+
+static inline void TX_INTF_REG_TX_HOLD_THRESHOLD_write(u32 value){
+	reg_write(TX_INTF_REG_TX_HOLD_THRESHOLD_ADDR, value);
 }
 
 static inline void TX_INTF_REG_INTERRUPT_SEL_write(u32 value){
@@ -257,11 +265,12 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 		tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write(duc_input_ch_sel);
 		tx_intf_api->TX_INTF_REG_START_TRANS_TO_PS_MODE_write(2);
-		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*200)<<16)|(10*200) );//high 16bit 5GHz; low 16 bit 2.4GHz
+		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write(num_dma_symbol_to_pl);
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0);
+		tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write(420);
 		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x40); //.src_sel0(slv_reg14[2:0]), .src_sel1(slv_reg14[6:4]), 0-s00_axis_tlast,1-ap_start,2-tx_start_from_acc,3-tx_end_from_acc,4-xpu signal
 		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30040); //disable interrupt
 		tx_intf_api->TX_INTF_REG_BB_GAIN_write(100);
@@ -316,6 +325,7 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_read=TX_INTF_REG_CFG_DATA_TO_ANT_read;
+	tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_read=TX_INTF_REG_TX_HOLD_THRESHOLD_read;
 	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_read=TX_INTF_REG_INTERRUPT_SEL_read;
 	tx_intf_api->TX_INTF_REG_BB_GAIN_read=TX_INTF_REG_BB_GAIN_read;
 	tx_intf_api->TX_INTF_REG_ANT_SEL_read=TX_INTF_REG_ANT_SEL_read;
@@ -334,6 +344,7 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write=TX_INTF_REG_CFG_DATA_TO_ANT_write;
+	tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write=TX_INTF_REG_TX_HOLD_THRESHOLD_write;
 	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write=TX_INTF_REG_INTERRUPT_SEL_write;
 	tx_intf_api->TX_INTF_REG_BB_GAIN_write=TX_INTF_REG_BB_GAIN_write;
 	tx_intf_api->TX_INTF_REG_ANT_SEL_write=TX_INTF_REG_ANT_SEL_write;
@@ -346,10 +357,10 @@ static int dev_probe(struct platform_device *pdev)
 	if (IS_ERR(base_addr))
 		return PTR_ERR(base_addr);
 
-	printk("%s dev_probe io start 0x%08x end 0x%08x name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
-	printk("%s dev_probe base_addr 0x%08x\n", tx_intf_compatible_str,(u32)base_addr);
-	printk("%s dev_probe tx_intf_driver_api_inst 0x%08x\n", tx_intf_compatible_str, (u32)(&tx_intf_driver_api_inst) );
-	printk("%s dev_probe             tx_intf_api 0x%08x\n", tx_intf_compatible_str, (u32)tx_intf_api);
+	printk("%s dev_probe io start 0x%08llx end 0x%08llx name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
+	printk("%s dev_probe base_addr 0x%p\n", tx_intf_compatible_str,(void*)base_addr);
+	printk("%s dev_probe tx_intf_driver_api_inst 0x%p\n", tx_intf_compatible_str, (void*)(&tx_intf_driver_api_inst) );
+	printk("%s dev_probe             tx_intf_api 0x%p\n", tx_intf_compatible_str, (void*)tx_intf_api);
 
 	printk("%s dev_probe succeed!\n", tx_intf_compatible_str);
 
@@ -364,9 +375,9 @@ static int dev_remove(struct platform_device *pdev)
 {
 	printk("\n");
 
-	printk("%s dev_remove base_addr 0x%08x\n", tx_intf_compatible_str,(u32)base_addr);
-	printk("%s dev_remove tx_intf_driver_api_inst 0x%08x\n", tx_intf_compatible_str, (u32)(&tx_intf_driver_api_inst) );
-	printk("%s dev_remove             tx_intf_api 0x%08x\n", tx_intf_compatible_str, (u32)tx_intf_api);
+	printk("%s dev_remove base_addr 0x%p\n", tx_intf_compatible_str,(void*)base_addr);
+	printk("%s dev_remove tx_intf_driver_api_inst 0x%p\n", tx_intf_compatible_str, (void*)(&tx_intf_driver_api_inst) );
+	printk("%s dev_remove             tx_intf_api 0x%p\n", tx_intf_compatible_str, (void*)tx_intf_api);
 
 	printk("%s dev_remove succeed!\n", tx_intf_compatible_str);
 	return 0;

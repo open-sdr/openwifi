@@ -22,7 +22,7 @@ else
     exit 1
 fi
 
-if [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ]; then
+if [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
     echo "\$BOARD_NAME is not correct. Please check!"
     exit 1
 else
@@ -38,6 +38,10 @@ source $XILINX_DIR/SDK/2018.3/settings64.sh
 
 cd $OPENWIFI_DIR/kernel_boot
 
-./build_boot_bin.sh $BOARD_NAME
+./build_zynqmp_boot_bin.sh ../openwifi-hw/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf boards/$BOARD_NAME/u-boot-zcu.elf boards/$BOARD_NAME/bl31.elf
+# ./build_zynqmp_boot_bin.sh ../openwifi-hw/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf boards/$BOARD_NAME/u-boot-zcu.elf download
+rm -rf build_boot_bin
+rm -rf boards/$BOARD_NAME/output_boot_bin
+mv output_boot_bin boards/$BOARD_NAME/
 
 cd $home_dir

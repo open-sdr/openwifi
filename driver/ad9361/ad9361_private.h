@@ -180,6 +180,25 @@ struct auxdac_control {
 	u8 dac2_tx_delay_us;
 };
 
+#if 0
+enum rssi_restart_mode {
+	AGC_IN_FAST_ATTACK_MODE_LOCKS_THE_GAIN,
+	EN_AGC_PIN_IS_PULLED_HIGH,
+	ENTERS_RX_MODE,
+	GAIN_CHANGE_OCCURS,
+	SPI_WRITE_TO_REGISTER,
+	GAIN_CHANGE_OCCURS_OR_EN_AGC_PIN_PULLED_HIGH,
+};
+
+struct rssi_control {
+	enum rssi_restart_mode restart_mode;
+	bool rssi_unit_is_rx_samples;	/* default unit is time */
+	u32 rssi_delay;
+	u32 rssi_wait;
+	u32 rssi_duration;
+};
+#endif
+
 struct rx_gain_info {
 	enum rx_gain_table_type tbl_type;
 	int starting_gain_db;
@@ -377,6 +396,15 @@ struct rf_rx_gain {
 	u32 mixer_index;		/* MIXER Index (Split GT mode only) */
 
 };
+#if 0
+struct rf_rssi {
+	u32 ant;		/* Antenna number for which RSSI is reported */
+	u32 symbol;		/* Runtime RSSI */
+	u32 preamble;		/* Initial RSSI */
+	s32 multiplier;	/* Multiplier to convert reported RSSI */
+	u8 duration;		/* Duration to be considered for measuring */
+};
+#endif
 
 struct SynthLUT {
 	u16 VCO_MHz;

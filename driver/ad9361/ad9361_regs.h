@@ -2,8 +2,6 @@
  * AD9361
  *
  * Copyright 2013-2018 Analog Devices Inc.
- * 
- * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
  *
  * Licensed under the GPL-2.
  */
@@ -2795,17 +2793,16 @@
  */
 
 #define MIN_ADC_CLK			25000000UL /* 25 MHz */
-//#define MIN_ADC_CLK			(MIN_BBPLL_FREQ / MAX_BBPLL_DIV) /* 11.17MHz */
 #define MAX_ADC_CLK			640000000UL /* 640 MHz */
 #define MAX_DAC_CLK			(MAX_ADC_CLK / 2)
 
 /* Associated with outputs of stage */
-#define MAX_RX_HB1			245760000UL
-#define MAX_RX_HB2			320000000UL
-#define MAX_RX_HB3			640000000UL
+#define MAX_RX_HB1			122880000UL
+#define MAX_RX_HB2			245760000UL
+#define MAX_RX_HB3			320000000UL
 /* Associated with inputs of stage */
-#define MAX_TX_HB1			160000000UL
-#define MAX_TX_HB2			320000000UL
+#define MAX_TX_HB1			122880000UL
+#define MAX_TX_HB2			245760000UL
 #define MAX_TX_HB3			320000000UL
 
 #define MAX_BASEBAND_RATE		61440000UL
@@ -2828,5 +2825,7 @@
 
 #define MAX_GAIN_TABLE_SIZE		90
 #define MAX_NUM_GAIN_TABLES		16 /* randomly picked */
+
+#define MAX_TX_ATTENUATION_DB		89750
 
 #endif

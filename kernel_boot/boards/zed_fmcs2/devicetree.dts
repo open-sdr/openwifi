@@ -192,9 +192,6 @@
 			#size-cells = <0x0>;
 
 			ad9361-phy@0 {
-				#address-cells = <0x1>;
-				#size-cells = <0x0>;
-				#clock-cells = <0x1>;
 				compatible = "adi,ad9361";
 				reg = <0x0>;
 				spi-cpha;
@@ -202,6 +199,7 @@
 				clocks = <0x5 0x0>;
 				clock-names = "ad9361_ext_refclk";
 				clock-output-names = "rx_sampl_clk", "tx_sampl_clk";
+				#clock-cells = <0x1>;
 				adi,digital-interface-tune-skip-mode = <0x0>;
 				adi,pp-tx-swap-enable;
 				adi,pp-rx-swap-enable;
@@ -217,6 +215,7 @@
 				adi,rx-rf-port-input-select = <0x0>;
 				adi,tx-rf-port-input-select = <0x0>;
 				adi,tx-attenuation-mdB = <0x2710>;
+				adi,tx-lo-powerdown-managed-enable;
 				adi,rf-rx-bandwidth-hz = <0x112a880>;
 				adi,rf-tx-bandwidth-hz = <0x112a880>;
 				adi,rx-synthesizer-frequency-hz = <0x0 0x8f0d1800>;
@@ -312,8 +311,6 @@
 			#size-cells = <0x0>;
 
 			adf4351-udc-tx-pmod@0 {
-				#address-cells = <0x1>;
-				#size-cells = <0x0>;
 				compatible = "adi,adf4351";
 				reg = <0x0>;
 				spi-max-frequency = <0x989680>;
@@ -330,8 +327,6 @@
 			};
 
 			adf4351-udc-rx-pmod@1 {
-				#address-cells = <0x1>;
-				#size-cells = <0x0>;
 				compatible = "adi,adf4351";
 				reg = <0x1>;
 				spi-max-frequency = <0x989680>;
@@ -456,7 +451,7 @@
 			#size-cells = <0x0>;
 		};
 
-		sdhci@e0100000 {
+		mmc@e0100000 {
 			compatible = "arasan,sdhci-8.9a";
 			status = "okay";
 			clock-names = "clk_xin", "clk_ahb";
@@ -464,10 +459,9 @@
 			interrupt-parent = <0x1>;
 			interrupts = <0x0 0x18 0x4>;
 			reg = <0xe0100000 0x1000>;
-			broken-adma2;
 		};
 
-		sdhci@e0101000 {
+		mmc@e0101000 {
 			compatible = "arasan,sdhci-8.9a";
 			status = "disabled";
 			clock-names = "clk_xin", "clk_ahb";
@@ -475,10 +469,10 @@
 			interrupt-parent = <0x1>;
 			interrupts = <0x0 0x2f 0x4>;
 			reg = <0xe0101000 0x1000>;
-			broken-adma2;
 		};
 
 		slcr@f8000000 {
+			u-boot,dm-pre-reloc;
 			#address-cells = <0x1>;
 			#size-cells = <0x1>;
 			compatible = "xlnx,zynq-slcr", "syscon", "simple-mfd";
@@ -488,6 +482,7 @@
 			phandle = <0x9>;
 
 			clkc@100 {
+				u-boot,dm-pre-reloc;
 				#clock-cells = <0x1>;
 				compatible = "xlnx,ps7-clkc";
 				fclk-enable = <0xf>;
@@ -685,23 +680,26 @@
 		};
 
 /*
-		axivdma@43000000 {
-			compatible = "xlnx,axi-vdma-1.00.a";
-			#address-cells = <0x1>;
-			#size-cells = <0x1>;
+		dma@43000000 {
+			compatible = "adi,axi-dmac-1.00.a";
+			reg = <0x43000000 0x10000>;
 			#dma-cells = <0x1>;
-			#dma-channels = <0x1>;
-			reg = <0x43000000 0x1000>;
-			xlnx,num-fstores = <0x3>;
+			interrupts = <0x0 0x3b 0x0>;
+			clocks = <0x2 0x10>;
 			linux,phandle = <0xc>;
 			phandle = <0xc>;
 
-			dma-channel@43000000 {
-				compatible = "xlnx,axi-vdma-mm2s-channel";
-				interrupts = <0x0 0x3b 0x4>;
-				xlnx,datawidth = <0x40>;
-				xlnx,genlock-mode = <0x0>;
-				xlnx,include-dre = <0x0>;
+			adi,channels {
+				#size-cells = <0x0>;
+				#address-cells = <0x1>;
+
+				dma-channel@0 {
+					reg = <0x0>;
+					adi,source-bus-width = <0x40>;
+					adi,source-bus-type = <0x0>;
+					adi,destination-bus-width = <0x40>;
+					adi,destination-bus-type = <0x1>;
+				};
 			};
 		};
 
@@ -756,6 +754,11 @@
 			phandle = <0x15>;
 		};
 
+		axi-sysid-0@45000000 {
+			compatible = "adi,axi-sysid-1.00.a";
+			reg = <0x45000000 0x10000>;
+		};
+
 		i2c@41620000 {
 			compatible = "xlnx,axi-iic-1.01.b", "xlnx,xps-iic-2.00.a";
 			reg = <0x41620000 0x10000>;
@@ -796,7 +799,6 @@
 					adi,source-bus-type = <0x2>;
 					adi,destination-bus-width = <0x40>;
 					adi,destination-bus-type = <0x0>;
-					adi,length-width = <0x18>;
 				};
 			};
 		};
@@ -820,8 +822,6 @@
 					adi,source-bus-type = <0x0>;
 					adi,destination-bus-width = <0x40>;
 					adi,destination-bus-type = <0x2>;
-					adi,length-width = <0x18>;
-					adi,cyclic;
 				};
 			};
 		};
@@ -1064,19 +1064,19 @@
 	clocks {
 
 		clock@0 {
-			#clock-cells = <0x0>;
 			compatible = "fixed-clock";
 			clock-frequency = <0x2625a00>;
 			clock-output-names = "ad9361_ext_refclk";
+			#clock-cells = <0x0>;
 			linux,phandle = <0x5>;
 			phandle = <0x5>;
 		};
 
 		clock@1 {
-			#clock-cells = <0x0>;
 			compatible = "fixed-clock";
 			clock-frequency = <0x17d7840>;
 			clock-output-names = "refclk";
+			#clock-cells = <0x0>;
 			linux,phandle = <0x7>;
 			phandle = <0x7>;
 		};

@@ -4,16 +4,14 @@
  * Copyright 2013-2018 Analog Devices Inc.
  * 
  * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+ *
  * Licensed under the GPL-2.
  */
 
 #ifndef IIO_FREQUENCY_AD9361_H_
 #define IIO_FREQUENCY_AD9361_H_
 
-//#define IIO_AD9361_USE_PRIVATE_H_
-
 #include "ad9361_regs.h"
-//#include "ad9361_private.h"
 
 enum ad9361_clocks {
 	BB_REFCLK,
@@ -51,6 +49,7 @@ enum debugfs_cmd {
 	DBGFS_MCS,
 	DBGFS_CAL_SW_CTRL,
 	DBGFS_DIGITAL_TUNE,
+	DBGFS_GPO_SET,
 };
 
 enum dig_tune_flags {
@@ -172,7 +171,7 @@ struct ad9361_rf_phy {
 	struct refclk_scale	clk_priv[NUM_AD9361_CLKS];
 	struct clk_onecell_data	clk_data;
 	struct ad9361_phy_platform_data *pdata;
-	struct ad9361_debugfs_entry debugfs_entry[181];
+	struct ad9361_debugfs_entry debugfs_entry[182];
 	struct bin_attribute 	bin;
 	struct bin_attribute 	bin_gt;
 	struct iio_dev 		*indio_dev;
@@ -185,6 +184,7 @@ struct ad9361_rf_phy {
 	struct ad9361_ext_band_ctl	*ext_band_ctl;
 	struct ad9361_rf_phy_state	*state;
 };
+
 int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy, struct ctrl_outs_control *ctrl);
 int ad9361_clk_set_rate(struct clk *clk, unsigned long rate);
 int ad9361_rssi_setup(struct ad9361_rf_phy *phy,

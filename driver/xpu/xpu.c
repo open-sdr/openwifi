@@ -343,12 +343,12 @@ static inline u32 hw_init(enum xpu_mode mode){
 	//xpu_api->XPU_REG_ACK_FC_FILTER_write((3<<(2+16))|(2<<2)); // low 16 bits target FC 16 bits; high 16 bits -- mask
 
 	// after send data frame wait for ACK, this will be set in real time in function ad9361_rf_set_channel
-	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2)*200)<<16) | 200 ); // high 16 bits to cover sig valid of ACK packet, low 16 bits is adjustment of fcs valid waiting time.  let's add 2us for those device that is really "slow"!
-	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 1200 ); // +6 = 16us for 5GHz
+	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2)*10)<<16) | 10 ); // high 16 bits to cover sig valid of ACK packet, low 16 bits is adjustment of fcs valid waiting time.  let's add 2us for those device that is really "slow"!
+	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 6*10 ); // +6 = 16us for 5GHz
 
 	//xpu_api->XPU_REG_MAX_NUM_RETRANS_write(3); // if this > 0, it will override mac80211 set value, and set static retransmission limit
 	
-	xpu_api->XPU_REG_BB_RF_DELAY_write(975);
+	xpu_api->XPU_REG_BB_RF_DELAY_write(49);
 
 	xpu_api->XPU_REG_SLICE_COUNT_TOTAL0_write(50000-1); // total 50ms
 	xpu_api->XPU_REG_SLICE_COUNT_START0_write(0); //start 0ms
@@ -388,11 +388,11 @@ static inline u32 hw_init(enum xpu_mode mode){
 	//xpu_api->XPU_REG_CSMA_CFG_write(3); //normal CSMA
 	xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); //high priority
 
-	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030-238)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030)<<16)|0 );//now our tx send out I/Q immediately
+	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((40)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
 
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200 + 300)<<16) | 200 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200 + 300)<<16) | 200 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
 	printk("%s hw_init err %d\n", xpu_compatible_str, err);
 	return(err);

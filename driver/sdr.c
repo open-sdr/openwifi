@@ -156,10 +156,10 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				priv->band = BAND_2_4GHZ;
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
 			}
-			// //xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((45+2)*200)<<16) | 200 ); // high 16 bits to cover sig valid of ACK packet, low 16 bits is adjustment of fcs valid waiting time.  let's add 2us for those device that is really "slow"!
-			// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((45+2+2)*200)<<16) | 200 );//add 2us for longer fir. BUT corrding to FPGA probing test, we do not need this
+			// //xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((45+2)*10)<<16) | 10 ); // high 16 bits to cover sig valid of ACK packet, low 16 bits is adjustment of fcs valid waiting time.  let's add 2us for those device that is really "slow"!
+			// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((45+2+2)*10)<<16) | 10 );//add 2us for longer fir. BUT corrding to FPGA probing test, we do not need this
 			// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 0 );
-			// tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(((10)*200)<<16);
+			// tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(((10)*10)<<16);
 		}
 		else {
 			//priv->slot_time = 9; //default slot time of OFDM PHY (OFDM by default means 5GHz)
@@ -168,11 +168,11 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				priv->band = BAND_5_8GHZ;
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
 			}
-			// //xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((51+2)*200)<<16) | 200 ); // because 5GHz needs longer SIFS (16 instead of 10), we need 58 instead of 48 for XPU low mac setting.  let's add 2us for those device that is really "slow"!
-			// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((51+2+2)*200)<<16) | 200 );//add 2us for longer fir.  BUT corrding to FPGA probing test, we do not need this
-			// //xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 1200 );
-			// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 1000 );// for longer fir we need this delay 1us shorter
-			// tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(((16)*200)<<16);
+			// //xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((51+2)*10)<<16) | 10 ); // because 5GHz needs longer SIFS (16 instead of 10), we need 58 instead of 48 for XPU low mac setting.  let's add 2us for those device that is really "slow"!
+			// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((51+2+2)*10)<<16) | 10 );//add 2us for longer fir.  BUT corrding to FPGA probing test, we do not need this
+			// //xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 60*10 );
+			// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 50*10 );// for longer fir we need this delay 1us shorter
+			// tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(((16)*10)<<16);
 		}
 		//printk("%s ad9361_rf_set_channel %dM rssi_correction %d\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction);
 		// //-- use less
@@ -261,7 +261,7 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv)
 //			dev_kfree_skb(ring->bds[i].skb_linked);
 		if ( (ring->bds[i].dma_mapping_addr != 0 && ring->bds[i].skb_linked == 0) ||
 		     (ring->bds[i].dma_mapping_addr == 0 && ring->bds[i].skb_linked != 0))
-			printk("%s openwifi_free_tx_ring: WARNING %d skb_linked %08x dma_mapping_addr %08x\n", sdr_compatible_str, i, (u32)(ring->bds[i].skb_linked), ring->bds[i].dma_mapping_addr);
+			printk("%s openwifi_free_tx_ring: WARNING %d skb_linked %p dma_mapping_addr %08llx\n", sdr_compatible_str, i, (void*)(ring->bds[i].skb_linked), ring->bds[i].dma_mapping_addr);
 
 		ring->bds[i].skb_linked=0;
 		ring->bds[i].dma_mapping_addr = 0;
@@ -298,7 +298,7 @@ static int rx_dma_setup(struct ieee80211_hw *dev){
 	priv->rxd = rx_dev->device_prep_dma_cyclic(priv->rx_chan,priv->rx_cyclic_buf_dma_mapping_addr,RX_BD_BUF_SIZE*NUM_RX_BD,RX_BD_BUF_SIZE,DMA_DEV_TO_MEM,DMA_CTRL_ACK|DMA_PREP_INTERRUPT);
 	if (!(priv->rxd)) {
 		openwifi_free_rx_ring(priv);
-		printk("%s rx_dma_setup: WARNING rx_dev->device_prep_dma_cyclic %d\n", sdr_compatible_str, (u32)(priv->rxd));
+		printk("%s rx_dma_setup: WARNING rx_dev->device_prep_dma_cyclic %p\n", sdr_compatible_str, (void*)(priv->rxd));
 		return(-1);
 	}
 	priv->rxd->callback = 0;
@@ -518,7 +518,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 		//ring_len = (just_wr_idx>=current_rd_idx)?(just_wr_idx-current_rd_idx):(just_wr_idx+NUM_TX_BD-current_rd_idx);
 		ring_len = ((just_wr_idx-current_rd_idx)&(NUM_TX_BD-1));
 		ring_room_left = NUM_TX_BD - ring_len;
-		if (ring_room_left > 2 && priv->tx_queue_stopped) {
+		if (ring_room_left > RING_ROOM_THRESHOLD && priv->tx_queue_stopped) {
 			unsigned int prio = skb_get_queue_mapping(skb);
 			ieee80211_wake_queue(dev, prio);
 			printk("%s openwifi_tx_interrupt: WARNING ieee80211_wake_queue. ring_room_left %d prio %d curr rd %d just wr %d\n", sdr_compatible_str,ring_room_left,prio,current_rd_idx,just_wr_idx);
@@ -709,6 +709,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 			sc,info->flags,retry_limit_raw,pkt_need_ack,queue_idx,priv->phy_tx_sn,
 			use_rts_cts,use_cts_protect|force_use_cts_protect,wifi_rate_all[cts_rate_hw_value],cts_duration,
 			ring->bd_wr_idx,ring->bd_rd_idx);
+
 		// printk("%s openwifi_tx: rate&try: %d %d %03x; %d %d %03x; %d %d %03x; %d %d %03x\n", sdr_compatible_str,
 		// 	info->status.rates[0].idx,info->status.rates[0].count,info->status.rates[0].flags,
 		// 	info->status.rates[1].idx,info->status.rates[1].count,info->status.rates[1].flags,
@@ -779,11 +780,11 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	//ring_len = (ring->bd_wr_idx>=ring->bd_rd_idx)?(ring->bd_wr_idx-ring->bd_rd_idx):(ring->bd_wr_idx+NUM_TX_BD-ring->bd_rd_idx);
 	ring_len = ((ring->bd_wr_idx-ring->bd_rd_idx)&(NUM_TX_BD-1));
 	ring_room_left = NUM_TX_BD - ring_len;
-	if (ring_len>28)
+	if (ring_room_left < RING_ROOM_THRESHOLD)
 		printk("%s openwifi_tx: WARNING ring len %d\n", sdr_compatible_str,ring_len);
 //		printk("%s openwifi_tx: WARNING ring len %d HW fifo %d q %d\n", sdr_compatible_str,ring_len,tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_read()&0xFFFF, ((tx_intf_api->TX_INTF_REG_PHY_QUEUE_TX_SN_read())>>16)&0xFF );
 
-	if (ring_room_left <= 2 && priv->tx_queue_stopped == false) {
+	if (ring_room_left <= RING_ROOM_THRESHOLD && priv->tx_queue_stopped == false) {
 		ieee80211_stop_queue(dev, prio);
 		printk("%s openwifi_tx: WARNING ieee80211_stop_queue. ring_room_left %d!\n", sdr_compatible_str,ring_room_left);
 		priv->tx_queue_stopped = true;
@@ -822,7 +823,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write(dma_reg);
 	priv->txd = priv->tx_chan->device->device_prep_slave_sg(priv->tx_chan, &(priv->tx_sg),1,DMA_MEM_TO_DEV, DMA_CTRL_ACK | DMA_PREP_INTERRUPT, NULL);
 	if (!(priv->txd)) {
-		printk("%s openwifi_tx: WARNING device_prep_slave_sg %d\n", sdr_compatible_str, (u32)(priv->txd));
+		printk("%s openwifi_tx: WARNING device_prep_slave_sg %p\n", sdr_compatible_str, (void*)(priv->txd));
 		goto openwifi_tx_after_dma_mapping;
 	}
 
@@ -926,17 +927,17 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	// // xpu_api->XPU_REG_CSMA_CFG_write(3); // cw_min
 	// xpu_api->XPU_REG_CSMA_CFG_write(3);
 
-	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030-238)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
-	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030)<<16)|0 );//now our tx send out I/Q immediately
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((1030+450)<<16)|(0+450) );//we have more time when we use FIR in AD9361
+	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((40)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
+	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51+23)<<16)|(0+23) );//we have more time when we use FIR in AD9361
 
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*200 + 300)<<16) | 200 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*200 + 300)<<16) | 200 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
-	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*200)<<16)|(10*200) );//high 16bit 5GHz; low 16 bit 2.4GHz
+	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 	
-	//xpu_api->XPU_REG_BB_RF_DELAY_write(1020); // fine tuned value at 0.005us. old: dac-->ant port: 0.6us, 57 taps fir at 40MHz: 1.425us; round trip: 2*(0.6+1.425)=4.05us; 4.05*200=810
-	xpu_api->XPU_REG_BB_RF_DELAY_write(975);//add .5us for slightly longer fir
+	//xpu_api->XPU_REG_BB_RF_DELAY_write(51); // fine tuned value at 0.005us. old: dac-->ant port: 0.6us, 57 taps fir at 40MHz: 1.425us; round trip: 2*(0.6+1.425)=4.05us; 4.05*10=41
+	xpu_api->XPU_REG_BB_RF_DELAY_write(49);//add .5us for slightly longer fir
 	xpu_api->XPU_REG_MAC_ADDR_write(priv->mac_addr);
 
 	xpu_api->XPU_REG_SLICE_COUNT_TOTAL0_write(50000-1); // total 50ms.
@@ -1736,12 +1737,18 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	// //-------------find ad9361-phy driver for lo/channel control---------------
 	priv->actual_rx_lo = 0;
 	tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
-	if (!tmp_dev) {
+	if (tmp_dev == NULL) {
 		printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);
 		err = -ENOMEM;
 		goto err_free_dev;
 	}
-	printk("%s bus_find_device ad9361-phy: %s\n", sdr_compatible_str, tmp_dev->init_name);
+	printk("%s bus_find_device ad9361-phy: %s. driver_data pointer %p\n", sdr_compatible_str, ((struct spi_device*)tmp_dev)->modalias, (void*)(((struct spi_device*)tmp_dev)->dev.driver_data));
+	if (((struct spi_device*)tmp_dev)->dev.driver_data == NULL) {
+		printk(KERN_ERR "%s find_dev ad9361-phy failed. dev.driver_data == NULL\n",sdr_compatible_str);
+		err = -ENOMEM;
+		goto err_free_dev;
+	}
+	
 	priv->ad9361_phy = ad9361_spi_to_phy((struct spi_device*)tmp_dev);
 	if (!(priv->ad9361_phy)) {
 		printk(KERN_ERR "%s ad9361_spi_to_phy failed\n",sdr_compatible_str);
@@ -2043,7 +2050,7 @@ static int openwifi_dev_remove(struct platform_device *pdev)
 	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
 
 	if (!dev) {
-		pr_info("%s openwifi_dev_remove: dev %d\n", sdr_compatible_str, (u32)dev);
+		pr_info("%s openwifi_dev_remove: dev %p\n", sdr_compatible_str, (void*)dev);
 		return(-1);
 	}
 
