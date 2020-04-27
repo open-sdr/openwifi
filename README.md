@@ -57,15 +57,22 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
 [[Cite openwifi project](#Cite-openwifi-project)]
 
 ## Quick start
-- Burn [openwifi image](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2.img.xz) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
+- Burn openwifi [64bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-64bit.img.xz) (for Zynq MPSoC FPGA, like zcu102 board) or [32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz) (for other boards, Zynq7000 FPGA) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
   - Copy files in **openwifi/board_name** to the base directory of BOOT partiton.
   - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partiton
-- Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. 
-- Power on. login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with one time password **analog**.
+- Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on. 
+- Login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with password **openwifi**.
   ```
   ssh root@192.168.10.122
   ```
-- Setup routing/NAT **on the PC** for the board -- this is **important** for post installation/config.
+- On board, run openwifi AP and the on board webserver
+  ```
+  ~/openwifi/fosdem.sh
+  ```
+- After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your deivce, you should see the webpage hosted by the webserver on board.
+  - Note 1: If your device doesn't support 5GHz (ch44), please change the **hostapd-openwifi.conf** on board and re-run fosdem.sh.
+  - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just power cycle the board if it happens. (If output of "./sdrctl dev sdr0 get reg rx 20" is always the same, it means the decoder halts)
+- To give the Wi-Fii client internet access, configure routing/NAT **on the PC**:
   ```
   sudo sysctl -w net.ipv4.ip_forward=1
   sudo iptables -t nat -A POSTROUTING -o ethY -j MASQUERADE
@@ -74,17 +81,6 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
   **ethX** is the PC NIC name connecting the board. **ethY** is the PC NIC name connecting internet.
   
   If you want, uncommenting "net.ipv4.ip_forward=1" in /etc/sysctl.conf to make IP forwarding persistent on PC.
-- Run **one time** script on board to complete post installation/config (After this, password becomes **openwifi**)
-  ```
-  cd ~/openwifi && ./post_config.sh
-  ```
-- Run openwifi AP together with the on board webserver
-  ```
-  ~/openwifi/fosdem.sh
-  ```
-- After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your deivce, you should see the webpage hosted by the webserver on board.
-  - Note 1: If your device doesn't support 5GHz (ch44), please change the **hostapd-openwifi.conf** on board and re-run fosdem.sh.
-  - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just power cycle the board if it happens. (If output of "./sdrctl dev sdr0 get reg rx 20" is always the same, it means the decoder halts)
 
 ## Basic operations
 The board actually is an Linux/Ubuntu computer which is running **hostapd** to offer Wi-Fi AP functionality over the Wi-Fi Network Interface (NIC). The NIC is implemented by openwifi-hw FPGA design. We use the term **"On board"** to indicate that the commands should be executed after ssh login to the board. **"On PC"** means the commands should run on PC.
@@ -190,7 +186,25 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   $OPENWIFI_DIR/user_space/update_sdcard.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME $SDCARD_DIR
   ```
-- Now you can start from [Quick start](#Quick-start)
+- Config your board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on.
+- Login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with one time password **analog**.
+  ```
+  ssh root@192.168.10.122
+  ```
+- Setup routing/NAT **on the PC** for your board -- this internet connection is **important** for post installation/config.
+  ```
+  sudo sysctl -w net.ipv4.ip_forward=1
+  sudo iptables -t nat -A POSTROUTING -o ethY -j MASQUERADE
+  sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
+  ```
+  **ethX** is the PC NIC name connecting the board. **ethY** is the PC NIC name connecting internet.
+  
+  If you want, uncommenting "net.ipv4.ip_forward=1" in /etc/sysctl.conf to make IP forwarding persistent on PC.
+- Run **one time** script on board to complete post installation/config (After this, password becomes **openwifi**)
+  ```
+  cd ~/openwifi && ./post_config.sh
+  ```
+- Now you can start from [Quick start](#Quick-start) (Skip the image download and burn step)
 
 ## Special note for 11b
 
