@@ -31,15 +31,15 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 
 **Supported SDR platforms:** (Check [Porting guide](#Porting-guide) for your new board if it isn't in the list)
 
-board_name|board combination|status
--------|-------|----
-zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done
-zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done
-adrv9364z7020|ADRV9364Z7020 SOM|Done
-adrv9361z7035|ADRV9361Z7035 SOM|Done
-zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done
-zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done
-zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
+board_name|board combination|status|SD card
+-------|-------|----|----
+zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz)
+zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz)
+adrv9364z7020|ADRV9364Z7020 SOM|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz)
+adrv9361z7035|ADRV9361Z7035 SOM|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz)
+zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz)
+zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-64bit.img.xz)
+zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|None
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
 - Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
@@ -57,7 +57,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future
 [[Cite openwifi project](#Cite-openwifi-project)]
 
 ## Quick start
-- Burn openwifi [64bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-64bit.img.xz) (for Zynq MPSoC FPGA, like zcu102 board) or [32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz) (for other boards, Zynq7000 FPGA) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
+- Burn openwifi board specific img file (from the table) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
   - Copy files in **openwifi/board_name** to the base directory of BOOT partiton.
   - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partiton
 - Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on. 
