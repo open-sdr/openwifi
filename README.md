@@ -31,7 +31,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 
 **Supported SDR platforms:** (Check [Porting guide](#Porting-guide) for your new board if it isn't in the list)
 
-board_name|board combination|status|SD card
+board_name|board combination|status|SD card img
 -------|-------|----|----
 zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz)
 zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-2-32bit.img.xz)
