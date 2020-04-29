@@ -103,7 +103,7 @@ The board actually is an Linux/Ubuntu computer which is running **hostapd** to o
 
 Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to udpate the fpga bitstream on board.
 
-- Install Vivado/SDK 2017.4.1 (If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
+- Install Vivado/SDK 2018.3 (If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
 - Setup environment variables (use absolute path):
   ```
   export XILINX_DIR=your_Xilinx_directory
