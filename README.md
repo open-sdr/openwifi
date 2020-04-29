@@ -174,7 +174,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
    - Input password "openwifi"
 
 ## Build openwifi Linux img from scratch
-- Download [2019_R1-2020_02_04.img.xz](swdownloads.analog.com/cse/2019_R1-2020_02_04.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
+- Download [2019_R1-2020_02_04.img.xz](http://swdownloads.analog.com/cse/2019_R1-2020_02_04.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
 - Insert the SD card to your Linux PC. Find out the mount point (that has two sub directories BOOT and rootfs), and setup environment variables (use absolute path):
   ```
   export SDCARD_DIR=sdcard_mount_point
