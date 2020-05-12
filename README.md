@@ -86,6 +86,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|None
 The board actually is an Linux/Ubuntu computer which is running **hostapd** to offer Wi-Fi AP functionality over the Wi-Fi Network Interface (NIC). The NIC is implemented by openwifi-hw FPGA design. We use the term **"On board"** to indicate that the commands should be executed after ssh login to the board. **"On PC"** means the commands should run on PC.
 - Bring up the openwifi NIC sdr0:
   ```
+  service network-manager stop
   cd ~/openwifi && ./wgd.sh
   ```
 - Use openwifi as client to connect other AP (Change wpa-connect.conf on board firstly):
