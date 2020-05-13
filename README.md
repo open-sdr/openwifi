@@ -153,7 +153,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 ## Update sdrctl
 - Copy the sdrctl source files to the board via ssh channel
   ```
-  scp `find $OPENWIFI_DIR/user_space/sdrctl_src/ -name \*.*` root@192.168.10.122:openwifi/sdrctl_src/
+  scp `find $OPENWIFI_DIR/user_space/sdrctl_src/ -name \*` root@192.168.10.122:openwifi/sdrctl_src/
   ```
 - Compile the sdrctl **on board**:
   ```
