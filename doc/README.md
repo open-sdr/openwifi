@@ -25,7 +25,7 @@ openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 -	**bss_info_changed**. It is called when upper layer believe some BSS parameters need to be changed (BSSID, TX power, beacon interval, etc)
 -	**conf_tx**. It is called when upper layer needs to config/change some tx parameters (AIFS, CW_MIN, CW_MAX, TXOP, etc)
 -	**prepare_multicast**. It is called when upper layer needs to prepare multicast, currently only a empty function hook is present.
--	**configure_filter**. It is called when upper layer wants to config/change the [frame filtering](#tx-packet-flow-and-config) rule in FPGA.
+-	**configure_filter**. It is called when upper layer wants to config/change the [frame filtering](#rx-packet-flow-and-filtering-config) rule in FPGA.
 -	**rfkill_poll**. It is called when upper layer wants to know the RF status (ON/OFF).
 -	**get_tsf**. It is called when upper layer wants to get 64bit FPGA timer value (TSF - Timing synchronization function) 
 -	**set_tsf**. It is called when upper layer wants to set 64bit FPGA timer value
