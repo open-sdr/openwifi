@@ -58,7 +58,7 @@ static struct openofdm_tx_driver_api *openofdm_tx_api = &openofdm_tx_driver_api_
 EXPORT_SYMBOL(openofdm_tx_api);
 
 static inline u32 hw_init(enum openofdm_tx_mode mode){
-	int err=0;
+	int err=0, i;
 
 	printk("%s hw_init mode %d\n", openofdm_tx_compatible_str, mode);
 
@@ -77,13 +77,13 @@ static inline u32 hw_init(enum openofdm_tx_mode mode){
 			err=1;
 	}
 
-	openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0);
+	//rst
+	for (i=0;i<8;i++)
+		openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0);
+	for (i=0;i<32;i++)
+		openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0xFFFFFFFF);
+	for (i=0;i<8;i++)
+		openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0);
 
 	openofdm_tx_api->OPENOFDM_TX_REG_INIT_PILOT_STATE_write(0x7E);
 	openofdm_tx_api->OPENOFDM_TX_REG_INIT_DATA_STATE_write(0x7F);

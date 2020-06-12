@@ -25,7 +25,7 @@ openwifi driver (sdr.c) implements following APIs of ieee80211_ops:
 -	**bss_info_changed**. It is called when upper layer believe some BSS parameters need to be changed (BSSID, TX power, beacon interval, etc)
 -	**conf_tx**. It is called when upper layer needs to config/change some tx parameters (AIFS, CW_MIN, CW_MAX, TXOP, etc)
 -	**prepare_multicast**. It is called when upper layer needs to prepare multicast, currently only a empty function hook is present.
--	**configure_filter**. It is called when upper layer wants to config/change the [frame filtering](#rx-packet-flow-and-filtering-config) rule in FPGA.
+-	**configure_filter**. It is called when upper layer wants to config/change the [frame filtering](#Rx-packet-flow-and-filtering-config) rule in FPGA.
 -	**rfkill_poll**. It is called when upper layer wants to know the RF status (ON/OFF).
 -	**get_tsf**. It is called when upper layer wants to get 64bit FPGA timer value (TSF - Timing synchronization function) 
 -	**set_tsf**. It is called when upper layer wants to set 64bit FPGA timer value
@@ -52,14 +52,11 @@ sdrctl dev sdr0 set para_name value
 ```
 para_name|meaning|comment
 ---------|-------|----
-addr0|target MAC address of tx slice 0|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
-slice_total0|tx slice 0 cycle length in us|for length 50ms, you set 49999
-slice_start0|tx slice 0 cycle start time in us|for start at 10ms, you set 10000
-slice_end0|  tx slice 0 cycle end   time in us|for end   at 40ms, you set 39999
-addr1|target MAC address of tx slice 1|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
-slice_total1|tx slice 1 cycle length in us|for length 50ms, you set 49999
-slice_start1|tx slice 1 cycle start time in us|for start at 10ms, you set 10000
-slice_end1|  tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
+slice_idx|the slice that will be set/get|0~3. After finishing all slice config, **set slice_idx to 4** to synchronize all slices. Otherwize the start/end of different slices have different actual time
+addr|target MAC address of tx slice_idx|32bit. for address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
+slice_total|tx slice_idx cycle length in us|for length 50ms, you set 49999
+slice_start|tx slice_idx cycle start time in us|for start at 10ms, you set 10000
+slice_end|  tx slice_idx cycle end   time in us|for end   at 40ms, you set 39999
 tsf| sets TSF value| it requires two values "high_TSF low_TSF". Decimal
 
 ### Get and set a register of a module
@@ -76,6 +73,7 @@ module_name: **drv_rx**
 reg_idx|meaning|comment
 -------|-------|----
 1|rx antenna selection|0:rx1, 1:rx2. After this command, you should down and up sdr0 by ifconfig, but not reload sdr0 driver via ./wgd.sh
+7|dmesg print control|bit0:error msg (0:OFF, 1:ON); bit1:regular msg (0:OFF, 1:ON)
 
 (In the **comment** column, you may get a list of **decimalvalue(0xhexvalue):explanation** for a register, only use the **decimalvalue** in the sdrctl command)
 
@@ -85,6 +83,7 @@ reg_idx|meaning|comment
 -------|-------|----
 0|override Linux rate control of tx unicast data packet|4:6M, 5:9M, 6:12M, 7:18M, 8:24M, 9:36M, 10:48M, 11:54M
 1|tx antenna selection|0:tx1, 1:tx2. After this command, you should down and up sdr0 by ifconfig, but not reload sdr0 driver via ./wgd.sh
+7|dmesg print control|bit0:error msg (0:OFF, 1:ON); bit1:regular msg (0:OFF, 1:ON)
 
 module_name: **drv_xpu**
 
@@ -134,12 +133,6 @@ reg_idx|meaning|comment
 4|band and channel number setting|see enum openwifi_band in hw_def.h. it will be set automatically by Linux. normally you shouldn't set it
 11|max number of retransmission in FPGA|normally number of retransmissions controlled by Linux in real-time. If you write non-zeros value to this register, it will override Linux real-time setting
 19|CSMA enable/disable|3758096384(0xe0000000): disable, 3:enable
-20|tx slice 0 cycle length in us|for length 50ms, you set 49999
-21|tx slice 0 cycle start time in us|for start at 10ms, you set 10000
-22|tx slice 0 cycle end   time in us|for end   at 40ms, you set 39999
-23|tx slice 1 cycle length in us|for length 50ms, you set 49999
-24|tx slice 1 cycle start time in us|for start at 10ms, you set 10000
-25|tx slice 1 cycle end   time in us|for end   at 40ms, you set 39999
 27|FPGA packet filter config|check openwifi_configure_filter in sdr.c. also [mac80211 frame filtering](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#frame-filtering)
 28|BSSID address low  32bit for BSSID filtering|normally it is set by Linux in real-time automatically
 29|BSSID address high 32bit for BSSID filtering|normally it is set by Linux in real-time automatically
@@ -147,7 +140,6 @@ reg_idx|meaning|comment
 31|openwifi MAC address high 32bit|check XPU_REG_MAC_ADDR_write in sdr.c to see how we set MAC address to FPGA when NIC start
 58|TSF runtime value low  32bit|read only
 59|TSF runtime value high 32bit|read only
-63|version information|read only
 
 ## Rx packet flow and filtering config
 
@@ -240,42 +232,53 @@ Following figure shows the detailed configuration point in AD9361, driver (sdr.c
 
 ### dmesg
 
-To debug/see the basic driver behaviour, you could use dmesg command in Linux. openwifi driver prints normal tx/rx packet information when a packet is sent or received. The driver also prints WARNING information if it feels something abnormal happens. You can search "printk" in sdr.c to see all the printing points.
+To debug/see the basic driver behaviour, you could turn on message printing by 
+```
+See all printing:
+./sdrctl dev sdr0 set reg drv_tx 7 3
+./sdrctl dev sdr0 set reg drv_rx 7 3
+See only error printing:
+./sdrctl dev sdr0 set reg drv_tx 7 1
+./sdrctl dev sdr0 set reg drv_rx 7 1
+See only regular printing:
+./sdrctl dev sdr0 set reg drv_tx 7 2
+./sdrctl dev sdr0 set reg drv_rx 7 2
+Turn off printing:
+./sdrctl dev sdr0 set reg drv_tx 7 0
+./sdrctl dev sdr0 set reg drv_rx 7 0
+```
+and use dmesg command in Linux to see those messages. openwifi driver prints normal tx/rx packet information when a packet is sent or received. The driver also prints WARNING information if it feels something abnormal happens. You can search "printk" in sdr.c to see all the printing points.
 
 - tx printing example
 
-      sdr,sdr openwifi_tx:  116bytes 48M FC0208 DI002c addr1/2/3:b827ebe65f1e/66554433224c/66554433224c SC1df0 flag40000012 retry2 ack1 q0 sn1075 R/CTS 00 1M 0us wr/rd 19/19
+      sdr,sdr openwifi_tx:   84bytes 48M FC0208 DI002c addr1/2/3:b0481ada2ef2/66554433222a/66554433222a SC2100 flag40000012 retr6 ack1 prio2 q2 wr4 rd3
   - printing from sdr driver, openwifi_tx function.
-  - 116bytes: packet size (length field in SIGNAL) is 116 bytes.
-  - 48M: MCS (rate field in SIGNAL) is 48Mbps.
-  - FC0208: Frame Control field 0x0208, which means type data, subtype data, to DS 0, from DS 1 (a packet from AP to client).
+  - 84bytes: packet size (length field in SIGNAL)
+  - 48M: MCS (rate field in SIGNAL)
+  - FC0208: Frame Control field, which means type data, subtype data, to DS 0, from DS 1 (a packet from AP to client).
   - DI002c: Duration/ID field 0x002c. How many us this packet will occupy the channel (including waiting for ACK).
-  - addr1/2/3: address fields. Target MAC address b827ebe65f1e, source MAC address 66554433224c (openwifi).
-  - SC1df0: Sequence Control field 0x1df0, which means that the driver inserts sequence number 0x1df0 to the packet under request of upper layer.
+  - addr1/2/3: address fields. Target MAC address b0481ada2ef2, source MAC address 66554433222a (openwifi).
+  - SC2100: Sequence Control field 0x2100, which means that the driver inserts sequence number 0x2100 to the packet under request of upper layer.
   - flag40000012: flags field from upper layer struct ieee80211_tx_info (first fragment? need ACK? need sequence number insertion? etc.). Here is 0x40000012.
-  - retry2: upper layer tells us the maximum number of retransmissions for this packet is 2.
+  - retry6: upper layer tells us the maximum number of retransmissions for this packet is 6.
   - ack1: upper layer tells us this packet needs ACK.
-  - q0: the packet goes to FPGA queue 0.
-  - sn1075: PHY/FPGA sequence number 1075. This is different from Sequence Control asked by upper layer. This is for cross check between FPGA/interrupt and driver.
-  - R/CTS 00: upper layer believes this packet doesn't need RTS/CTS mechanism (Because the packet size is below the RTS threshold).
-  - 1M 0us: if RTS/CTS is asked to be used by upper layer, it should use xM rate and Xus duration.
-  - wr/rd 19/19: the write/read index of buffer (shared buffer between the active openwifi_tx and background openwifi_tx_interrupt).
+  - prio2: Linux select priority queue 2 for this packet (0:VO voice, 1:VI video, 2:BE best effort and 3:BK background)
+  - q2: the packet goes to FPGA queue 2. (You can change the mapping between Linux priority and FPGA queue in sdr.c)
+  - wr4 rd3: the write/read index of buffer (shared buffer between the active openwifi_tx and background openwifi_tx_interrupt).
   
 - rx printing example
 
-      sdr,sdr openwifi_rx_interrupt: 120bytes ht0 54M FC0108 DI002c addr1/2/3:66554433224c/b827ebe65f1e/66554433224c SCcf20 fcs1 sn117 i117 -36dBm
+      sdr,sdr openwifi_rx_interrupt:  28bytes 24M FC0108 DI002c addr1/2/3:66554433222a/b0481ada2ef2/66554433222a SC4760 fcs1 buf_idx13 -30dBm
   - printing from sdr driver, openwifi_rx_interrupt function.
-  - 120bytes: packet size (length field in SIGNAL) is 120 bytes.
-  - ht0: this is non-ht packet.
-  - 54M:  MCS (rate field in SIGNAL) is 54Mbps.
-  - FC0108: Frame Control field 0x0208, which means type data, subtype data, to DS 1, from DS 0 (a packet client to openwifi AP).
+  - 28bytes: packet size (length field in SIGNAL)
+  - 24M:  MCS (rate field in SIGNAL)
+  - FC0108: Frame Control field 0x0108, which means type data, subtype data, to DS 1, from DS 0 (a packet client to openwifi AP).
   - DI002c: Duration/ID field 0x002c. How many us this packet will occupy the channel (including waiting for ACK).
-  - addr1/2/3: address fields. Target MAC address 66554433224c (openwifi), source MAC address b827ebe65f1e.
-  - SCcf20: Sequence Control field 0x1df0, which means that the packet includes sequence number 0xcf20 (under request of upper layer of the peer).
-  - fcs1: FCS/CRC is OK.
-  - sn117: HY/FPGA sequence number 117. This is different from Sequence Control asked by upper layer. This is for cross check between FPGA/interrupt and driver.
-  - i117: current rx packet DMA buffer index 117.
-  - -36dBm: signal strength of this received packet.
+  - addr1/2/3: address fields. Target MAC address 66554433222a (openwifi), source MAC address b0481ada2ef2.
+  - SC4760: Sequence Control field 0x4760, which means that the packet includes sequence number 0x4760 (under request of upper layer of the peer).
+  - fcs1: FCS/CRC is OK. (fcs0 means bad CRC)
+  - buf_idx13: current rx packet DMA buffer index 13.
+  - -30dBm: signal strength of this received packet.
 
 ### Native Linux tools
 

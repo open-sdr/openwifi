@@ -305,11 +305,12 @@ static int handle_get_rssi_th(struct nl80211_state *state,
 }
 COMMAND(get, rssi_th, "<rssi_th in value>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_rssi_th, "get rssi_th");
 
-static int cb_openwifi_slice_total0_handler(struct nl_msg *msg, void *arg)
+static int cb_openwifi_slice_total_handler(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+	unsigned int tmp;
 
 	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
@@ -318,12 +319,13 @@ static int cb_openwifi_slice_total0_handler(struct nl_msg *msg, void *arg)
 
 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
 
-	printf("openwifi slice_total0 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_TOTAL0]));
+	tmp = nla_get_u32(tb[OPENWIFI_ATTR_SLICE_TOTAL]);
+	printf("openwifi slice_total (duration) %dus of slice %d\n", tmp&0xFFFFF, tmp>>20);
 
 	return NL_SKIP;
 }
 
-static int handle_set_slice_total0(struct nl80211_state *state,
+static int handle_set_slice_total(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -344,21 +346,21 @@ static int handle_set_slice_total0(struct nl80211_state *state,
 		return 1;
 	}
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_TOTAL0);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_TOTAL0, tmp);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_TOTAL);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_TOTAL, tmp);
 
 	nla_nest_end(msg, tmdata);
 
-	printf("openwifi slice_total0 (duration): %dus\n", tmp);
+	printf("openwifi slice_total (duration): %dus\n", tmp);
 
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(set, slice_total0, "<slice_total0(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_total0, "set slice_total0");
+COMMAND(set, slice_total, "<slice_total(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_total, "set slice_total");
 
-static int handle_get_slice_total0(struct nl80211_state *state,
+static int handle_get_slice_total(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -370,24 +372,102 @@ static int handle_get_slice_total0(struct nl80211_state *state,
 	if (!tmdata)
 		return 1;
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_TOTAL0);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_TOTAL);
 
 	nla_nest_end(msg, tmdata);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_total0_handler, NULL);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_total_handler, NULL);
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(get, slice_total0, "<slice_total0(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_total0, "get slice_total0");
+COMMAND(get, slice_total, "<slice_total(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_total, "get slice_total");
 
 
-static int cb_openwifi_slice_total1_handler(struct nl_msg *msg, void *arg)
+// static int cb_openwifi_slice_total1_handler(struct nl_msg *msg, void *arg)
+// {
+// 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
+// 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
+// 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+
+// 	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+
+// 	if (!attrs[NL80211_ATTR_TESTDATA])
+// 		return NL_SKIP;
+
+// 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
+
+// 	printf("openwifi slice_total1 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_TOTAL1]));
+
+// 	return NL_SKIP;
+// }
+
+// static int handle_set_slice_total1(struct nl80211_state *state,
+// 			  struct nl_cb *cb,
+// 			  struct nl_msg *msg,
+// 			  int argc, char **argv,
+// 			  enum id_input id)
+// {
+// 	struct nlattr *tmdata;
+// 	char *end;
+// 	unsigned int tmp;
+
+// 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+// 	if (!tmdata) {
+// 		return 1;
+// 	}
+
+// 	tmp = strtoul(argv[0], &end, 10);
+
+// 	if (*end) {
+// 		return 1;
+// 	}
+
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_TOTAL1);
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_TOTAL1, tmp);
+
+// 	nla_nest_end(msg, tmdata);
+
+// 	printf("openwifi slice_total1 (duration): %dus\n", tmp);
+
+// 	return 0;
+
+//  nla_put_failure:
+// 	return -ENOBUFS;
+// }
+// COMMAND(set, slice_total1, "<slice_total1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_total1, "set slice_total1");
+
+// static int handle_get_slice_total1(struct nl80211_state *state,
+// 			  struct nl_cb *cb,
+// 			  struct nl_msg *msg,
+// 			  int argc, char **argv,
+// 			  enum id_input id)
+// {
+// 	struct nlattr *tmdata;
+
+// 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+// 	if (!tmdata)
+// 		return 1;
+
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_TOTAL1);
+
+// 	nla_nest_end(msg, tmdata);
+
+// 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_total1_handler, NULL);
+// 	return 0;
+
+//  nla_put_failure:
+// 	return -ENOBUFS;
+// }
+// COMMAND(get, slice_total1, "<slice_total1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_total1, "get slice_total1");
+
+static int cb_openwifi_slice_start_handler(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+	unsigned int tmp;
 
 	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
@@ -396,12 +476,13 @@ static int cb_openwifi_slice_total1_handler(struct nl_msg *msg, void *arg)
 
 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
 
-	printf("openwifi slice_total1 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_TOTAL1]));
+	tmp = nla_get_u32(tb[OPENWIFI_ATTR_SLICE_START]);
+	printf("openwifi slice_start (duration) %dus of slice %d\n", tmp&0xFFFFF, tmp>>20);
 
 	return NL_SKIP;
 }
 
-static int handle_set_slice_total1(struct nl80211_state *state,
+static int handle_set_slice_start(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -422,21 +503,21 @@ static int handle_set_slice_total1(struct nl80211_state *state,
 		return 1;
 	}
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_TOTAL1);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_TOTAL1, tmp);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_START);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_START, tmp);
 
 	nla_nest_end(msg, tmdata);
 
-	printf("openwifi slice_total1 (duration): %dus\n", tmp);
+	printf("openwifi slice_start (duration): %dus\n", tmp);
 
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(set, slice_total1, "<slice_total1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_total1, "set slice_total1");
+COMMAND(set, slice_start, "<slice_start(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_start, "set slice_start");
 
-static int handle_get_slice_total1(struct nl80211_state *state,
+static int handle_get_slice_start(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -448,24 +529,103 @@ static int handle_get_slice_total1(struct nl80211_state *state,
 	if (!tmdata)
 		return 1;
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_TOTAL1);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_START);
 
 	nla_nest_end(msg, tmdata);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_total1_handler, NULL);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_start_handler, NULL);
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(get, slice_total1, "<slice_total1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_total1, "get slice_total1");
+COMMAND(get, slice_start, "<slice_start(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_start, "get slice_start");
 
 
-static int cb_openwifi_slice_start0_handler(struct nl_msg *msg, void *arg)
+// static int cb_openwifi_slice_start1_handler(struct nl_msg *msg, void *arg)
+// {
+// 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
+// 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
+// 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+
+// 	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+
+// 	if (!attrs[NL80211_ATTR_TESTDATA])
+// 		return NL_SKIP;
+
+// 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
+
+// 	printf("openwifi slice_start1 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_START1]));
+
+// 	return NL_SKIP;
+// }
+
+// static int handle_set_slice_start1(struct nl80211_state *state,
+// 			  struct nl_cb *cb,
+// 			  struct nl_msg *msg,
+// 			  int argc, char **argv,
+// 			  enum id_input id)
+// {
+// 	struct nlattr *tmdata;
+// 	char *end;
+// 	unsigned int tmp;
+
+// 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+// 	if (!tmdata) {
+// 		return 1;
+// 	}
+
+// 	tmp = strtoul(argv[0], &end, 10);
+
+// 	if (*end) {
+// 		return 1;
+// 	}
+
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_START1);
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_START1, tmp);
+
+// 	nla_nest_end(msg, tmdata);
+
+// 	printf("openwifi slice_start1 (duration): %dus\n", tmp);
+
+// 	return 0;
+
+//  nla_put_failure:
+// 	return -ENOBUFS;
+// }
+// COMMAND(set, slice_start1, "<slice_start1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_start1, "set slice_start1");
+
+// static int handle_get_slice_start1(struct nl80211_state *state,
+// 			  struct nl_cb *cb,
+// 			  struct nl_msg *msg,
+// 			  int argc, char **argv,
+// 			  enum id_input id)
+// {
+// 	struct nlattr *tmdata;
+
+// 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+// 	if (!tmdata)
+// 		return 1;
+
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_START1);
+
+// 	nla_nest_end(msg, tmdata);
+
+// 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_start1_handler, NULL);
+// 	return 0;
+
+//  nla_put_failure:
+// 	return -ENOBUFS;
+// }
+// COMMAND(get, slice_start1, "<slice_start1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_start1, "get slice_start1");
+
+
+static int cb_openwifi_slice_end_handler(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+	unsigned int tmp;
 
 	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
 
@@ -474,12 +634,13 @@ static int cb_openwifi_slice_start0_handler(struct nl_msg *msg, void *arg)
 
 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
 
-	printf("openwifi slice_start0 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_START0]));
+	tmp = nla_get_u32(tb[OPENWIFI_ATTR_SLICE_END]);
+	printf("openwifi slice_end (duration) %dus of slice %d\n", tmp&0xFFFFF, tmp>>20);
 
 	return NL_SKIP;
 }
 
-static int handle_set_slice_start0(struct nl80211_state *state,
+static int handle_set_slice_end(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -500,21 +661,21 @@ static int handle_set_slice_start0(struct nl80211_state *state,
 		return 1;
 	}
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_START0);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_START0, tmp);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_END);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_END, tmp);
 
 	nla_nest_end(msg, tmdata);
 
-	printf("openwifi slice_start0 (duration): %dus\n", tmp);
+	printf("openwifi slice_end (duration): %dus\n", tmp);
 
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(set, slice_start0, "<slice_start0(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_start0, "set slice_start0");
+COMMAND(set, slice_end, "<slice_end(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_end, "set slice_end");
 
-static int handle_get_slice_start0(struct nl80211_state *state,
+static int handle_get_slice_end(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -526,20 +687,98 @@ static int handle_get_slice_start0(struct nl80211_state *state,
 	if (!tmdata)
 		return 1;
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_START0);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_END);
 
 	nla_nest_end(msg, tmdata);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_start0_handler, NULL);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_end_handler, NULL);
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(get, slice_start0, "<slice_start0(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_start0, "get slice_start0");
+COMMAND(get, slice_end, "<slice_end(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_end, "get slice_end");
 
 
-static int cb_openwifi_slice_start1_handler(struct nl_msg *msg, void *arg)
+// static int cb_openwifi_slice_end1_handler(struct nl_msg *msg, void *arg)
+// {
+// 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
+// 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
+// 	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+
+// 	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+
+// 	if (!attrs[NL80211_ATTR_TESTDATA])
+// 		return NL_SKIP;
+
+// 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
+
+// 	printf("openwifi slice_end1 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_END1]));
+
+// 	return NL_SKIP;
+// }
+
+// static int handle_set_slice_end1(struct nl80211_state *state,
+// 			  struct nl_cb *cb,
+// 			  struct nl_msg *msg,
+// 			  int argc, char **argv,
+// 			  enum id_input id)
+// {
+// 	struct nlattr *tmdata;
+// 	char *end;
+// 	unsigned int tmp;
+
+// 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+// 	if (!tmdata) {
+// 		return 1;
+// 	}
+
+// 	tmp = strtoul(argv[0], &end, 10);
+
+// 	if (*end) {
+// 		return 1;
+// 	}
+
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_END1);
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_END1, tmp);
+
+// 	nla_nest_end(msg, tmdata);
+
+// 	printf("openwifi slice_end1 (duration): %dus\n", tmp);
+
+// 	return 0;
+
+//  nla_put_failure:
+// 	return -ENOBUFS;
+// }
+// COMMAND(set, slice_end1, "<slice_end1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_end1, "set slice_end1");
+
+// static int handle_get_slice_end1(struct nl80211_state *state,
+// 			  struct nl_cb *cb,
+// 			  struct nl_msg *msg,
+// 			  int argc, char **argv,
+// 			  enum id_input id)
+// {
+// 	struct nlattr *tmdata;
+
+// 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+// 	if (!tmdata)
+// 		return 1;
+
+// 	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_END1);
+
+// 	nla_nest_end(msg, tmdata);
+
+// 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_end1_handler, NULL);
+// 	return 0;
+
+//  nla_put_failure:
+// 	return -ENOBUFS;
+// }
+// COMMAND(get, slice_end1, "<slice_end1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_end1, "get slice_end1");
+
+
+static int cb_openwifi_slice_idx_handler(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
@@ -552,12 +791,12 @@ static int cb_openwifi_slice_start1_handler(struct nl_msg *msg, void *arg)
 
 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
 
-	printf("openwifi slice_start1 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_START1]));
+	printf("openwifi slice_idx in hex: %08x\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_IDX]));
 
 	return NL_SKIP;
 }
 
-static int handle_set_slice_start1(struct nl80211_state *state,
+static int handle_set_slice_idx(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -565,272 +804,38 @@ static int handle_set_slice_start1(struct nl80211_state *state,
 {
 	struct nlattr *tmdata;
 	char *end;
-	unsigned int tmp;
+	unsigned int slice_idx;
 
-	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
-	if (!tmdata) {
-		return 1;
-	}
-
-	tmp = strtoul(argv[0], &end, 10);
-
-	if (*end) {
-		return 1;
-	}
-
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_START1);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_START1, tmp);
-
-	nla_nest_end(msg, tmdata);
-
-	printf("openwifi slice_start1 (duration): %dus\n", tmp);
-
-	return 0;
-
- nla_put_failure:
-	return -ENOBUFS;
-}
-COMMAND(set, slice_start1, "<slice_start1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_start1, "set slice_start1");
-
-static int handle_get_slice_start1(struct nl80211_state *state,
-			  struct nl_cb *cb,
-			  struct nl_msg *msg,
-			  int argc, char **argv,
-			  enum id_input id)
-{
-	struct nlattr *tmdata;
-
-	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
-	if (!tmdata)
-		return 1;
-
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_START1);
-
-	nla_nest_end(msg, tmdata);
-
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_start1_handler, NULL);
-	return 0;
-
- nla_put_failure:
-	return -ENOBUFS;
-}
-COMMAND(get, slice_start1, "<slice_start1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_start1, "get slice_start1");
-
-
-static int cb_openwifi_slice_end0_handler(struct nl_msg *msg, void *arg)
-{
-	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
-	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
-	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
-
-	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
-
-	if (!attrs[NL80211_ATTR_TESTDATA])
-		return NL_SKIP;
-
-	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
-
-	printf("openwifi slice_end0 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_END0]));
-
-	return NL_SKIP;
-}
-
-static int handle_set_slice_end0(struct nl80211_state *state,
-			  struct nl_cb *cb,
-			  struct nl_msg *msg,
-			  int argc, char **argv,
-			  enum id_input id)
-{
-	struct nlattr *tmdata;
-	char *end;
-	unsigned int tmp;
-
-	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
-	if (!tmdata) {
-		return 1;
-	}
-
-	tmp = strtoul(argv[0], &end, 10);
-
-	if (*end) {
-		return 1;
-	}
-
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_END0);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_END0, tmp);
-
-	nla_nest_end(msg, tmdata);
-
-	printf("openwifi slice_end0 (duration): %dus\n", tmp);
-
-	return 0;
-
- nla_put_failure:
-	return -ENOBUFS;
-}
-COMMAND(set, slice_end0, "<slice_end0(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_end0, "set slice_end0");
-
-static int handle_get_slice_end0(struct nl80211_state *state,
-			  struct nl_cb *cb,
-			  struct nl_msg *msg,
-			  int argc, char **argv,
-			  enum id_input id)
-{
-	struct nlattr *tmdata;
-
-	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
-	if (!tmdata)
-		return 1;
-
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_END0);
-
-	nla_nest_end(msg, tmdata);
-
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_end0_handler, NULL);
-	return 0;
-
- nla_put_failure:
-	return -ENOBUFS;
-}
-COMMAND(get, slice_end0, "<slice_end0(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_end0, "get slice_end0");
-
-
-static int cb_openwifi_slice_end1_handler(struct nl_msg *msg, void *arg)
-{
-	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
-	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
-	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
-
-	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
-
-	if (!attrs[NL80211_ATTR_TESTDATA])
-		return NL_SKIP;
-
-	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
-
-	printf("openwifi slice_end1 (duration): %dus\n", nla_get_u32(tb[OPENWIFI_ATTR_SLICE_END1]));
-
-	return NL_SKIP;
-}
-
-static int handle_set_slice_end1(struct nl80211_state *state,
-			  struct nl_cb *cb,
-			  struct nl_msg *msg,
-			  int argc, char **argv,
-			  enum id_input id)
-{
-	struct nlattr *tmdata;
-	char *end;
-	unsigned int tmp;
-
-	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
-	if (!tmdata) {
-		return 1;
-	}
-
-	tmp = strtoul(argv[0], &end, 10);
-
-	if (*end) {
-		return 1;
-	}
-
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_END1);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_END1, tmp);
-
-	nla_nest_end(msg, tmdata);
-
-	printf("openwifi slice_end1 (duration): %dus\n", tmp);
-
-	return 0;
-
- nla_put_failure:
-	return -ENOBUFS;
-}
-COMMAND(set, slice_end1, "<slice_end1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_end1, "set slice_end1");
-
-static int handle_get_slice_end1(struct nl80211_state *state,
-			  struct nl_cb *cb,
-			  struct nl_msg *msg,
-			  int argc, char **argv,
-			  enum id_input id)
-{
-	struct nlattr *tmdata;
-
-	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
-	if (!tmdata)
-		return 1;
-
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_END1);
-
-	nla_nest_end(msg, tmdata);
-
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_end1_handler, NULL);
-	return 0;
-
- nla_put_failure:
-	return -ENOBUFS;
-}
-COMMAND(get, slice_end1, "<slice_end1(duration) in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_end1, "get slice_end1");
-
-
-static int cb_openwifi_slice0_target_mac_addr_handler(struct nl_msg *msg, void *arg)
-{
-	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
-	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
-	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
-
-	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
-
-	if (!attrs[NL80211_ATTR_TESTDATA])
-		return NL_SKIP;
-
-	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
-
-	printf("openwifi slice0_target_mac_addr(low32) in hex: %08x\n", nla_get_u32(tb[OPENWIFI_ATTR_ADDR0]));
-
-	return NL_SKIP;
-}
-
-static int handle_set_addr0(struct nl80211_state *state,
-			  struct nl_cb *cb,
-			  struct nl_msg *msg,
-			  int argc, char **argv,
-			  enum id_input id)
-{
-	struct nlattr *tmdata;
-	char *end;
-	unsigned int slice0_target_mac_addr;
-
-	//printf("handle_set_slice0_target_mac_addr\n");
+	//printf("handle_set_slice_idx\n");
 	
 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
 	if (!tmdata) {
-		//printf("handle_set_slice0_target_mac_addr 1\n");
+		//printf("handle_set_slice_idx 1\n");
 		return 1;
 	}
 
-	slice0_target_mac_addr = strtoul(argv[0], &end, 16);
+	slice_idx = strtoul(argv[0], &end, 16);
 
 	if (*end) {
-		//printf("handle_set_slice0_target_mac_addr 2 %d\n", slice0_target_mac_addr);
+		//printf("handle_set_slice_idx 2 %d\n", slice_idx);
 		return 1;
 	}
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_ADDR0);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_ADDR0, slice0_target_mac_addr);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_SLICE_IDX);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_SLICE_IDX, slice_idx);
 
 	nla_nest_end(msg, tmdata);
 
-	printf("openwifi slice0_target_mac_addr(low32) in hex: %08x\n", slice0_target_mac_addr);
+	printf("openwifi slice_idx in hex: %08x\n", slice_idx);
 
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(set, addr0, "<slice0_target_mac_addr(low32) in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_addr0, "set addr0");
+COMMAND(set, slice_idx, "<slice_idx in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_idx, "set slice_idx");
 
-static int handle_get_slice0_target_mac_addr(struct nl80211_state *state,
+static int handle_get_slice_idx(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -842,19 +847,19 @@ static int handle_get_slice0_target_mac_addr(struct nl80211_state *state,
 	if (!tmdata)
 		return 1;
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_ADDR0);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_SLICE_IDX);
 
 	nla_nest_end(msg, tmdata);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice0_target_mac_addr_handler, NULL);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_idx_handler, NULL);
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(get, addr0, "<slice0_target_mac_addr(low32) in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice0_target_mac_addr, "get addr0");
+COMMAND(get, slice_idx, "<slice_idx in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_idx, "get slice_idx");
 
-static int cb_openwifi_slice1_target_mac_addr_handler(struct nl_msg *msg, void *arg)
+static int cb_openwifi_slice_target_mac_addr_handler(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
 	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
@@ -867,12 +872,12 @@ static int cb_openwifi_slice1_target_mac_addr_handler(struct nl_msg *msg, void *
 
 	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
 
-	printf("openwifi slice1_target_mac_addr(low32) in hex: %08x\n", nla_get_u32(tb[OPENWIFI_ATTR_ADDR1]));
+	printf("openwifi slice_target_mac_addr(low32) in hex: %08x\n", nla_get_u32(tb[OPENWIFI_ATTR_ADDR]));
 
 	return NL_SKIP;
 }
 
-static int handle_set_slice1_target_mac_addr(struct nl80211_state *state,
+static int handle_set_slice_target_mac_addr(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -880,32 +885,32 @@ static int handle_set_slice1_target_mac_addr(struct nl80211_state *state,
 {
 	struct nlattr *tmdata;
 	char *end;
-	unsigned int slice1_target_mac_addr;
+	unsigned int slice_target_mac_addr;
 
 	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
 	if (!tmdata)
 		return 1;
 
-	slice1_target_mac_addr = strtoul(argv[0], &end, 16);
+	slice_target_mac_addr = strtoul(argv[0], &end, 16);
 
 	if (*end)
 		return 1;
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_ADDR1);
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_ADDR1, slice1_target_mac_addr);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_ADDR);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_ADDR, slice_target_mac_addr);
 
 	nla_nest_end(msg, tmdata);
 
-	printf("openwifi slice1_target_mac_addr(low32) in hex: %08x\n", slice1_target_mac_addr);
+	printf("openwifi slice_target_mac_addr(low32) in hex: %08x\n", slice_target_mac_addr);
 
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(set, addr1, "<slice1_target_mac_addr(low32) in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice1_target_mac_addr, "set addr1");
+COMMAND(set, addr, "<slice_target_mac_addr(low32) in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_slice_target_mac_addr, "set addr");
 
-static int handle_get_slice1_target_mac_addr(struct nl80211_state *state,
+static int handle_get_slice_target_mac_addr(struct nl80211_state *state,
 			  struct nl_cb *cb,
 			  struct nl_msg *msg,
 			  int argc, char **argv,
@@ -917,17 +922,17 @@ static int handle_get_slice1_target_mac_addr(struct nl80211_state *state,
 	if (!tmdata)
 		return 1;
 
-	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_ADDR1);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_ADDR);
 
 	nla_nest_end(msg, tmdata);
 
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice1_target_mac_addr_handler, NULL);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_slice_target_mac_addr_handler, NULL);
 	return 0;
 
  nla_put_failure:
 	return -ENOBUFS;
 }
-COMMAND(get, addr1, "<slice1_target_mac_addr(low32) in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice1_target_mac_addr, "get addr1");
+COMMAND(get, addr, "<slice_target_mac_addr(low32) in hex>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_slice_target_mac_addr, "get addr");
 
 static int cb_openwifi_gap_handler(struct nl_msg *msg, void *arg)
 {

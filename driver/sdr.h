@@ -26,21 +26,23 @@ struct openwifi_rf_ops {
 };
 
 struct openwifi_buffer_descriptor {
-	u32 num_dma_byte;
-    u32 sn;
-    u32 hw_queue_idx;
-    u32 retry_limit;
-    u32 need_ack;
+	// u32 num_dma_byte;
+    // u32 sn;
+    // u32 hw_queue_idx;
+    // u32 retry_limit;
+    // u32 need_ack;
     struct sk_buff *skb_linked;
     dma_addr_t dma_mapping_addr;
-    u32 reserved;
+    // u32 reserved;
 } __packed;
 
 struct openwifi_ring {
 	struct openwifi_buffer_descriptor *bds;
     u32 bd_wr_idx;
 	u32 bd_rd_idx;
-    u32 reserved;
+    u32 stop_flag; // track the stop/wake status between tx interrupt and openwifi_tx
+	// u32 num_dma_symbol_request;
+	// u32 reserved;
 } __packed;
 
 struct openwifi_vif {
@@ -62,9 +64,19 @@ union u16_byte2 {
 	u8 c[2];
 };
 
-#define MAX_NUM_DRV_REG 32
 #define MAX_NUM_LED 4
 #define OPENWIFI_LED_MAX_NAME_LEN 32
+
+// ------------ software reg definition ------------
+#define MAX_NUM_DRV_REG 8
+#define DRV_TX_REG_IDX_RATE 0
+#define DRV_TX_REG_IDX_FREQ_BW_CFG 1
+#define DRV_TX_REG_IDX_PRINT_CFG (MAX_NUM_DRV_REG-1)
+
+#define DRV_RX_REG_IDX_FREQ_BW_CFG 1
+#define DRV_RX_REG_IDX_PRINT_CFG (MAX_NUM_DRV_REG-1)
+
+// ------end of software reg definition ------------
 
 #define MAX_NUM_VIF 4
 
@@ -72,14 +84,15 @@ union u16_byte2 {
 #define LEN_PHY_CRC 4
 
 #define RING_ROOM_THRESHOLD 4
-#define NUM_TX_BD 32
+#define NUM_TX_BD 64 // !!! should align to the fifo size in tx_bit_intf.v
 #define NUM_RX_BD 16
 #define TX_BD_BUF_SIZE (8192)
 #define RX_BD_BUF_SIZE (8192)
 
 #define NUM_BIT_MAX_NUM_HW_QUEUE 2
-#define MAX_NUM_HW_QUEUE 2
-#define NUM_BIT_MAX_PHY_TX_SN 12
+#define MAX_NUM_HW_QUEUE 4 // number of queue in FPGA
+#define MAX_NUM_SW_QUEUE 4 // number of queue in Linux, depends on the number we report by dev->queues in openwifi_dev_probe
+#define NUM_BIT_MAX_PHY_TX_SN 10 // decrease 12 to 10 to reserve 2 bits storing related linux prio idx
 #define MAX_PHY_TX_SN ((1<<NUM_BIT_MAX_PHY_TX_SN)-1)
 
 #define AD9361_RADIO_OFF_TX_ATT 89750 //please align with ad9361.c
@@ -317,20 +330,23 @@ struct openwifi_priv {
 	int irq_rx;
 	int irq_tx;
 
+	// u32 call_counter;
 	u8 *rx_cyclic_buf;
 	dma_addr_t rx_cyclic_buf_dma_mapping_addr;
 	struct dma_chan *rx_chan;
 	struct dma_async_tx_descriptor *rxd;
 	dma_cookie_t rx_cookie;
 
-	struct openwifi_ring tx_ring;
+	struct openwifi_ring tx_ring[MAX_NUM_SW_QUEUE];
 	struct scatterlist tx_sg;
 	struct dma_chan *tx_chan;
 	struct dma_async_tx_descriptor *txd;
 	dma_cookie_t tx_cookie;
-	bool tx_queue_stopped;
+	// struct completion tx_dma_complete;
+	// bool openwifi_tx_first_time_run;
 
-	int phy_tx_sn;
+	// int phy_tx_sn;
+	u32 slice_idx;
 	u32 dest_mac_addr_queue_map[MAX_NUM_HW_QUEUE];
 	u8 mac_addr[ETH_ALEN];
 	u16 seqno;

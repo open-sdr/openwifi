@@ -63,7 +63,7 @@ static struct openofdm_rx_driver_api *openofdm_rx_api = &openofdm_rx_driver_api_
 EXPORT_SYMBOL(openofdm_rx_api);
 
 static inline u32 hw_init(enum openofdm_rx_mode mode){
-	int err=0;
+	int err=0, i;
 
 	printk("%s hw_init mode %d\n", openofdm_rx_compatible_str, mode);
 
@@ -95,13 +95,13 @@ static inline u32 hw_init(enum openofdm_rx_mode mode){
 	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write(0);
 	openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write(100);
 
-	openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0xFFFFFFFF);
-	openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0);
+	//rst
+	for (i=0;i<8;i++)
+		openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0);
+	for (i=0;i<32;i++)
+		openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0xFFFFFFFF);
+	for (i=0;i<8;i++)
+		openofdm_rx_api->OPENOFDM_RX_REG_MULTI_RST_write(0);
 
 	printk("%s hw_init err %d\n", openofdm_rx_compatible_str, err);
 

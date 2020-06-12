@@ -163,27 +163,25 @@ static const struct of_device_id dev_of_ids[] = {
 MODULE_DEVICE_TABLE(of, dev_of_ids);
 
 static struct rx_intf_driver_api rx_intf_driver_api_inst;
-//EXPORT_SYMBOL(rx_intf_driver_api_inst);
 static struct rx_intf_driver_api *rx_intf_api = &rx_intf_driver_api_inst;
 EXPORT_SYMBOL(rx_intf_api);
 
 static inline u32 hw_init(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps){
-	int err=0;
+	int err=0, i;
 	u32 reg_val, mixer_cfg=0, ant_sel=0;
 
 	printk("%s hw_init mode %d\n", rx_intf_compatible_str, mode);
 
-	////rst wifi rx -- slv_reg11[2] is actual rx reset. slv_reg11[0] only reset axi lite of rx
-	//printk("%s hw_init reset wifi rx\n", rx_intf_compatible_str);
-	//rx_intf_api->RX_INTF_REG_RST_START_TO_EXT_write(0);
-	//rx_intf_api->RX_INTF_REG_RST_START_TO_EXT_write(4);
-	//rx_intf_api->RX_INTF_REG_RST_START_TO_EXT_write(0);
-
 	rx_intf_api->RX_INTF_REG_TLAST_TIMEOUT_TOP_write(7000);
-	//rst ddc internal module
-	for (reg_val=0;reg_val<32;reg_val++)
+	
+	//rst
+	for (i=0;i<8;i++)
+		rx_intf_api->RX_INTF_REG_MULTI_RST_write(0);
+	for (i=0;i<32;i++)
 		rx_intf_api->RX_INTF_REG_MULTI_RST_write(0xFFFFFFFF);
-	rx_intf_api->RX_INTF_REG_MULTI_RST_write(0);
+	for (i=0;i<8;i++)
+		rx_intf_api->RX_INTF_REG_MULTI_RST_write(0);
+
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(1); // hold M AXIS in reset status. will be released when openwifi_start
 
 	switch(mode)

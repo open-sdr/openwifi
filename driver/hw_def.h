@@ -26,11 +26,12 @@ const char *tx_intf_compatible_str = "sdr,tx_intf";
 #define TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_ADDR      (8*4)
 #define TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_ADDR      (9*4)
 #define TX_INTF_REG_CFG_DATA_TO_ANT_ADDR           (10*4)
+#define TX_INTF_REG_S_AXIS_FIFO_TH_ADDR            (11*4)
 #define TX_INTF_REG_TX_HOLD_THRESHOLD_ADDR         (12*4)
 #define TX_INTF_REG_BB_GAIN_ADDR                   (13*4)
 #define TX_INTF_REG_INTERRUPT_SEL_ADDR             (14*4)
 #define TX_INTF_REG_ANT_SEL_ADDR                   (16*4)
-#define TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_ADDR    (21*4)
+#define TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR       (21*4)
 #define TX_INTF_REG_PKT_INFO_ADDR                  (22*4)
 #define TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_ADDR     (24*4)
 
@@ -50,6 +51,7 @@ enum tx_intf_mode {
 };
 
 const int tx_intf_fo_mapping[] = {0, 0, 0, 0,-10,10,-10,10};
+const u32 dma_symbol_fifo_size_hw_queue[] = {4*1024, 4*1024, 4*1024, 4*1024}; // !!!make sure align to fifo in tx_intf_s_axis.v
 
 struct tx_intf_driver_api {
 	u32 (*hw_init)(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps);
@@ -68,11 +70,12 @@ struct tx_intf_driver_api {
 	u32 (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read)(void);
 	u32 (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read)(void);
 	u32 (*TX_INTF_REG_CFG_DATA_TO_ANT_read)(void);
+	u32 (*TX_INTF_REG_S_AXIS_FIFO_TH_read)(void);
 	u32 (*TX_INTF_REG_TX_HOLD_THRESHOLD_read)(void);
 	u32 (*TX_INTF_REG_INTERRUPT_SEL_read)(void);
 	u32 (*TX_INTF_REG_BB_GAIN_read)(void);
 	u32 (*TX_INTF_REG_ANT_SEL_read)(void);
-	u32 (*TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_read)(void);
+	u32 (*TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read)(void);
 	u32 (*TX_INTF_REG_PKT_INFO_read)(void);
 	u32 (*TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read)(void);
 
@@ -87,11 +90,12 @@ struct tx_intf_driver_api {
 	void (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write)(u32 value);
 	void (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write)(u32 value);
 	void (*TX_INTF_REG_CFG_DATA_TO_ANT_write)(u32 value);
+	void (*TX_INTF_REG_S_AXIS_FIFO_TH_write)(u32 value);
 	void (*TX_INTF_REG_TX_HOLD_THRESHOLD_write)(u32 value);
 	void (*TX_INTF_REG_INTERRUPT_SEL_write)(u32 value);
 	void (*TX_INTF_REG_BB_GAIN_write)(u32 value);
 	void (*TX_INTF_REG_ANT_SEL_write)(u32 value);
-	void (*TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_write)(u32 value);
+	void (*TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write)(u32 value);
 	void (*TX_INTF_REG_PKT_INFO_write)(u32 value);
 };
 
@@ -251,12 +255,9 @@ const char *xpu_compatible_str = "sdr,xpu";
 #define XPU_REG_SEND_ACK_WAIT_TOP_ADDR    (18*4)
 #define XPU_REG_CSMA_CFG_ADDR             (19*4)
 
-#define XPU_REG_SLICE_COUNT_TOTAL0_ADDR   (20*4)
-#define XPU_REG_SLICE_COUNT_START0_ADDR   (21*4)
-#define XPU_REG_SLICE_COUNT_END0_ADDR     (22*4)
-#define XPU_REG_SLICE_COUNT_TOTAL1_ADDR   (23*4)
-#define XPU_REG_SLICE_COUNT_START1_ADDR   (24*4)
-#define XPU_REG_SLICE_COUNT_END1_ADDR     (25*4)
+#define XPU_REG_SLICE_COUNT_TOTAL_ADDR   (20*4)
+#define XPU_REG_SLICE_COUNT_START_ADDR   (21*4)
+#define XPU_REG_SLICE_COUNT_END_ADDR     (22*4)
 
 #define XPU_REG_CTS_TO_RTS_CONFIG_ADDR    (26*4)
 #define XPU_REG_FILTER_FLAG_ADDR          (27*4)
@@ -364,16 +365,16 @@ struct xpu_driver_api {
 	void (*XPU_REG_CSMA_CFG_write)(u32 value);
 	u32  (*XPU_REG_CSMA_CFG_read)(void);
 
-	void (*XPU_REG_SLICE_COUNT_TOTAL0_write)(u32 value);
-	void (*XPU_REG_SLICE_COUNT_START0_write)(u32 value);
-	void (*XPU_REG_SLICE_COUNT_END0_write)(u32 value);
+	void (*XPU_REG_SLICE_COUNT_TOTAL_write)(u32 value);
+	void (*XPU_REG_SLICE_COUNT_START_write)(u32 value);
+	void (*XPU_REG_SLICE_COUNT_END_write)(u32 value);
 	void (*XPU_REG_SLICE_COUNT_TOTAL1_write)(u32 value);
 	void (*XPU_REG_SLICE_COUNT_START1_write)(u32 value);
 	void (*XPU_REG_SLICE_COUNT_END1_write)(u32 value);
 
-	u32 (*XPU_REG_SLICE_COUNT_TOTAL0_read)(void);
-	u32 (*XPU_REG_SLICE_COUNT_START0_read)(void);
-	u32 (*XPU_REG_SLICE_COUNT_END0_read)(void);
+	u32 (*XPU_REG_SLICE_COUNT_TOTAL_read)(void);
+	u32 (*XPU_REG_SLICE_COUNT_START_read)(void);
+	u32 (*XPU_REG_SLICE_COUNT_END_read)(void);
 	u32 (*XPU_REG_SLICE_COUNT_TOTAL1_read)(void);
 	u32 (*XPU_REG_SLICE_COUNT_START1_read)(void);
 	u32 (*XPU_REG_SLICE_COUNT_END1_read)(void);
