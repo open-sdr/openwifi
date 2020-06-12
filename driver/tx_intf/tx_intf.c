@@ -78,6 +78,10 @@ static inline u32 TX_INTF_REG_CFG_DATA_TO_ANT_read(void){
 	return reg_read(TX_INTF_REG_CFG_DATA_TO_ANT_ADDR);
 }
 
+static inline u32 TX_INTF_REG_S_AXIS_FIFO_TH_read(void){
+	return reg_read(TX_INTF_REG_S_AXIS_FIFO_TH_ADDR);
+}
+
 static inline u32 TX_INTF_REG_TX_HOLD_THRESHOLD_read(void){
 	return reg_read(TX_INTF_REG_TX_HOLD_THRESHOLD_ADDR);
 }
@@ -94,8 +98,8 @@ static inline u32 TX_INTF_REG_ANT_SEL_read(void){
 	return reg_read(TX_INTF_REG_ANT_SEL_ADDR);
 }
 
-static inline u32 TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_read(void){
-	return reg_read(TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_ADDR);
+static inline u32 TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read(void){
+	return reg_read(TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR);
 }
 
 static inline u32 TX_INTF_REG_PKT_INFO_read(void){
@@ -152,6 +156,10 @@ static inline void TX_INTF_REG_CFG_DATA_TO_ANT_write(u32 value){
 	reg_write(TX_INTF_REG_CFG_DATA_TO_ANT_ADDR, value);
 }
 
+static inline void TX_INTF_REG_S_AXIS_FIFO_TH_write(u32 value){
+	reg_write(TX_INTF_REG_S_AXIS_FIFO_TH_ADDR, value);
+}
+
 static inline void TX_INTF_REG_TX_HOLD_THRESHOLD_write(u32 value){
 	reg_write(TX_INTF_REG_TX_HOLD_THRESHOLD_ADDR, value);
 }
@@ -168,8 +176,8 @@ static inline void TX_INTF_REG_ANT_SEL_write(u32 value){
 	reg_write(TX_INTF_REG_ANT_SEL_ADDR, value);
 }
 
-static inline void TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_write(u32 value){
-	reg_write(TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_ADDR, value);
+static inline void TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write(u32 value){
+	reg_write(TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR, value);
 }
 
 static inline void TX_INTF_REG_PKT_INFO_write(u32 value){
@@ -187,16 +195,20 @@ static struct tx_intf_driver_api *tx_intf_api = &tx_intf_driver_api_inst;
 EXPORT_SYMBOL(tx_intf_api);
 
 static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps){
-	int err=0;
-	u32 reg_val, mixer_cfg=0, duc_input_ch_sel = 0, ant_sel=0;
+	int err=0, i;
+	u32 mixer_cfg=0, duc_input_ch_sel = 0, ant_sel=0;
 
 	printk("%s hw_init mode %d\n", tx_intf_compatible_str, mode);
 
-	//rst duc internal module
-	for (reg_val=0;reg_val<32;reg_val++)
+	//rst
+	for (i=0;i<8;i++)
+		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
+	for (i=0;i<32;i++)
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0xFFFFFFFF);
-	tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
+	for (i=0;i<8;i++)
+		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 
+	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
 	switch(mode)
 	{
 		case TX_INTF_AXIS_LOOP_BACK:
@@ -271,8 +283,8 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0);
 		tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write(420);
-		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x40); //.src_sel0(slv_reg14[2:0]), .src_sel1(slv_reg14[6:4]), 0-s00_axis_tlast,1-ap_start,2-tx_start_from_acc,3-tx_end_from_acc,4-xpu signal
-		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30040); //disable interrupt
+		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x4F); //.src_sel0(slv_reg14[2:0]), .src_sel1(slv_reg14[6:4]), 0-s00_axis_tlast,1-ap_start,2-tx_start_from_acc,3-tx_end_from_acc,4-xpu signal
+		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x3004F); //disable interrupt
 		tx_intf_api->TX_INTF_REG_BB_GAIN_write(100);
 		tx_intf_api->TX_INTF_REG_ANT_SEL_write(ant_sel);
 		tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write((1<<3)|(2<<4));
@@ -325,11 +337,12 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_read=TX_INTF_REG_CFG_DATA_TO_ANT_read;
+	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_read=TX_INTF_REG_S_AXIS_FIFO_TH_read;
 	tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_read=TX_INTF_REG_TX_HOLD_THRESHOLD_read;
 	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_read=TX_INTF_REG_INTERRUPT_SEL_read;
 	tx_intf_api->TX_INTF_REG_BB_GAIN_read=TX_INTF_REG_BB_GAIN_read;
 	tx_intf_api->TX_INTF_REG_ANT_SEL_read=TX_INTF_REG_ANT_SEL_read;
-	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_read=TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_read;
+	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read=TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read;
 	tx_intf_api->TX_INTF_REG_PKT_INFO_read=TX_INTF_REG_PKT_INFO_read;
 	tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read=TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read;
 
@@ -344,11 +357,12 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write=TX_INTF_REG_CFG_DATA_TO_ANT_write;
+	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write=TX_INTF_REG_S_AXIS_FIFO_TH_write;
 	tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write=TX_INTF_REG_TX_HOLD_THRESHOLD_write;
 	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write=TX_INTF_REG_INTERRUPT_SEL_write;
 	tx_intf_api->TX_INTF_REG_BB_GAIN_write=TX_INTF_REG_BB_GAIN_write;
 	tx_intf_api->TX_INTF_REG_ANT_SEL_write=TX_INTF_REG_ANT_SEL_write;
-	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_write=TX_INTF_REG_S_AXIS_FIFO_DATA_COUNT_write;
+	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write=TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write;
 	tx_intf_api->TX_INTF_REG_PKT_INFO_write=TX_INTF_REG_PKT_INFO_write;
 
 	/* Request and map I/O memory */

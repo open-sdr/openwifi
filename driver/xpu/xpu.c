@@ -222,43 +222,27 @@ static inline u32 XPU_REG_CSMA_CFG_read(void){
 	return reg_read(XPU_REG_CSMA_CFG_ADDR);
 }
 
-static inline void XPU_REG_SLICE_COUNT_TOTAL0_write(u32 value){
-	reg_write(XPU_REG_SLICE_COUNT_TOTAL0_ADDR, value);
+static inline void XPU_REG_SLICE_COUNT_TOTAL_write(u32 value){
+	reg_write(XPU_REG_SLICE_COUNT_TOTAL_ADDR, value);
 }
-static inline void XPU_REG_SLICE_COUNT_START0_write(u32 value){
-	reg_write(XPU_REG_SLICE_COUNT_START0_ADDR, value);
+static inline void XPU_REG_SLICE_COUNT_START_write(u32 value){
+	reg_write(XPU_REG_SLICE_COUNT_START_ADDR, value);
 }
-static inline void XPU_REG_SLICE_COUNT_END0_write(u32 value){
-	reg_write(XPU_REG_SLICE_COUNT_END0_ADDR, value);
-}
-static inline void XPU_REG_SLICE_COUNT_TOTAL1_write(u32 value){
-	reg_write(XPU_REG_SLICE_COUNT_TOTAL1_ADDR, value);
-}
-static inline void XPU_REG_SLICE_COUNT_START1_write(u32 value){
-	reg_write(XPU_REG_SLICE_COUNT_START1_ADDR, value);
-}
-static inline void XPU_REG_SLICE_COUNT_END1_write(u32 value){
-	reg_write(XPU_REG_SLICE_COUNT_END1_ADDR, value);
+static inline void XPU_REG_SLICE_COUNT_END_write(u32 value){
+	reg_write(XPU_REG_SLICE_COUNT_END_ADDR, value);
 }
 
-static inline u32 XPU_REG_SLICE_COUNT_TOTAL0_read(void){
-	return reg_read(XPU_REG_SLICE_COUNT_TOTAL0_ADDR);
+
+static inline u32 XPU_REG_SLICE_COUNT_TOTAL_read(void){
+	return reg_read(XPU_REG_SLICE_COUNT_TOTAL_ADDR);
 }
-static inline u32 XPU_REG_SLICE_COUNT_START0_read(void){
-	return reg_read(XPU_REG_SLICE_COUNT_START0_ADDR);
+static inline u32 XPU_REG_SLICE_COUNT_START_read(void){
+	return reg_read(XPU_REG_SLICE_COUNT_START_ADDR);
 }
-static inline u32 XPU_REG_SLICE_COUNT_END0_read(void){
-	return reg_read(XPU_REG_SLICE_COUNT_END0_ADDR);
+static inline u32 XPU_REG_SLICE_COUNT_END_read(void){
+	return reg_read(XPU_REG_SLICE_COUNT_END_ADDR);
 }
-static inline u32 XPU_REG_SLICE_COUNT_TOTAL1_read(void){
-	return reg_read(XPU_REG_SLICE_COUNT_TOTAL1_ADDR);
-}
-static inline u32 XPU_REG_SLICE_COUNT_START1_read(void){
-	return reg_read(XPU_REG_SLICE_COUNT_START1_ADDR);
-}
-static inline u32 XPU_REG_SLICE_COUNT_END1_read(void){
-	return reg_read(XPU_REG_SLICE_COUNT_END1_ADDR);
-}
+
 
 static inline void XPU_REG_BB_RF_DELAY_write(u32 value){
 	reg_write(XPU_REG_BB_RF_DELAY_ADDR, value);
@@ -291,16 +275,18 @@ static struct xpu_driver_api *xpu_api = &xpu_driver_api_inst;
 EXPORT_SYMBOL(xpu_api);
 
 static inline u32 hw_init(enum xpu_mode mode){
-	int err=0, rssi_half_db_th, rssi_half_db_offset, agc_gain_delay;
-	u32 reg_val;
+	int err=0, i, rssi_half_db_th, rssi_half_db_offset, agc_gain_delay;
 	u32 filter_flag = 0;
 
 	printk("%s hw_init mode %d\n", xpu_compatible_str, mode);
 
-	//rst internal module
-	for (reg_val=0;reg_val<32;reg_val++)
+	//rst
+	for (i=0;i<8;i++)
+		xpu_api->XPU_REG_MULTI_RST_write(0);
+	for (i=0;i<32;i++)
 		xpu_api->XPU_REG_MULTI_RST_write(0xFFFFFFFF);
-	xpu_api->XPU_REG_MULTI_RST_write(0);
+	for (i=0;i<8;i++)
+		xpu_api->XPU_REG_MULTI_RST_write(0);
 
 	// http://www.studioreti.it/slide/802-11-Frame_E_C.pdf
 	// https://mrncciew.com/2014/10/14/cwap-802-11-phy-ppdu/
@@ -339,9 +325,6 @@ static inline u32 hw_init(enum xpu_mode mode){
 	xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag);
 	xpu_api->XPU_REG_CTS_TO_RTS_CONFIG_write(0xB<<16);//6M 1011:0xB
 
-	////set up FC type filter for packet needs ACK -- no use, FPGA handle by itself
-	//xpu_api->XPU_REG_ACK_FC_FILTER_write((3<<(2+16))|(2<<2)); // low 16 bits target FC 16 bits; high 16 bits -- mask
-
 	// after send data frame wait for ACK, this will be set in real time in function ad9361_rf_set_channel
 	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2)*10)<<16) | 10 ); // high 16 bits to cover sig valid of ACK packet, low 16 bits is adjustment of fcs valid waiting time.  let's add 2us for those device that is really "slow"!
 	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 6*10 ); // +6 = 16us for 5GHz
@@ -350,13 +333,36 @@ static inline u32 hw_init(enum xpu_mode mode){
 	
 	xpu_api->XPU_REG_BB_RF_DELAY_write(49);
 
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL0_write(50000-1); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START0_write(0); //start 0ms
-	xpu_api->XPU_REG_SLICE_COUNT_END0_write(50000-1); //end 10ms
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL1_write(50000-1); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START1_write(0000); //start 0ms
-	xpu_api->XPU_REG_SLICE_COUNT_END1_write(1000-1); //end 1ms
+	// setup time schedule of 4 slices
+	// slice 0
+	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write(50000-1); // total 50ms
+	xpu_api->XPU_REG_SLICE_COUNT_START_write(0); //start 0ms
+	xpu_api->XPU_REG_SLICE_COUNT_END_write(50000-1); //end 50ms
 
+	// slice 1
+	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((1<<20)|(50000-1)); // total 50ms
+	xpu_api->XPU_REG_SLICE_COUNT_START_write((1<<20)|(0)); //start 0ms
+	//xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(20000-1)); //end 20ms
+	xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(50000-1)); //end 20ms
+
+	// slice 2
+	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((2<<20)|(50000-1)); // total 50ms
+	//xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(20000)); //start 20ms
+	xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(0)); //start 20ms
+	//xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(40000-1)); //end 20ms
+	xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(50000-1)); //end 20ms
+
+	// slice 3
+	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((3<<20)|(50000-1)); // total 50ms
+	//xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(40000)); //start 40ms
+	xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(0)); //start 40ms
+	//xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
+	xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
+
+	// all slice sync rest
+	xpu_api->XPU_REG_MULTI_RST_write(1<<7); //bit7 reset the counter for all queues at the same time
+	xpu_api->XPU_REG_MULTI_RST_write(0<<7); 
+	
 	switch(mode)
 	{
 		case XPU_TEST:
@@ -388,7 +394,6 @@ static inline u32 hw_init(enum xpu_mode mode){
 	//xpu_api->XPU_REG_CSMA_CFG_write(3); //normal CSMA
 	xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); //high priority
 
-	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((40)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
 	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
 
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
@@ -480,19 +485,13 @@ static int dev_probe(struct platform_device *pdev)
 	xpu_api->XPU_REG_CSMA_CFG_write=XPU_REG_CSMA_CFG_write;
 	xpu_api->XPU_REG_CSMA_CFG_read=XPU_REG_CSMA_CFG_read;
 
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL0_write=XPU_REG_SLICE_COUNT_TOTAL0_write;
-	xpu_api->XPU_REG_SLICE_COUNT_START0_write=XPU_REG_SLICE_COUNT_START0_write;
-	xpu_api->XPU_REG_SLICE_COUNT_END0_write=XPU_REG_SLICE_COUNT_END0_write;
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL1_write=XPU_REG_SLICE_COUNT_TOTAL1_write;
-	xpu_api->XPU_REG_SLICE_COUNT_START1_write=XPU_REG_SLICE_COUNT_START1_write;
-	xpu_api->XPU_REG_SLICE_COUNT_END1_write=XPU_REG_SLICE_COUNT_END1_write;
+	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write=XPU_REG_SLICE_COUNT_TOTAL_write;
+	xpu_api->XPU_REG_SLICE_COUNT_START_write=XPU_REG_SLICE_COUNT_START_write;
+	xpu_api->XPU_REG_SLICE_COUNT_END_write=XPU_REG_SLICE_COUNT_END_write;
 
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL0_read=XPU_REG_SLICE_COUNT_TOTAL0_read;
-	xpu_api->XPU_REG_SLICE_COUNT_START0_read=XPU_REG_SLICE_COUNT_START0_read;
-	xpu_api->XPU_REG_SLICE_COUNT_END0_read=XPU_REG_SLICE_COUNT_END0_read;
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL1_read=XPU_REG_SLICE_COUNT_TOTAL1_read;
-	xpu_api->XPU_REG_SLICE_COUNT_START1_read=XPU_REG_SLICE_COUNT_START1_read;
-	xpu_api->XPU_REG_SLICE_COUNT_END1_read=XPU_REG_SLICE_COUNT_END1_read;
+	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_read=XPU_REG_SLICE_COUNT_TOTAL_read;
+	xpu_api->XPU_REG_SLICE_COUNT_START_read=XPU_REG_SLICE_COUNT_START_read;
+	xpu_api->XPU_REG_SLICE_COUNT_END_read=XPU_REG_SLICE_COUNT_END_read;
 
 	xpu_api->XPU_REG_BB_RF_DELAY_write=XPU_REG_BB_RF_DELAY_write;
 	xpu_api->XPU_REG_MAX_NUM_RETRANS_write=XPU_REG_MAX_NUM_RETRANS_write;
