@@ -241,4 +241,6 @@ Any use of openwifi project which results in a publication should include a cita
             year = {2019},
 }
 ```
+Openwifi paper: [1](https://ieeexplore.ieee.org/document/9128614)
+
 Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2020 programme under agreement number 732174).
