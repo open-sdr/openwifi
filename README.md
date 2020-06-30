@@ -55,6 +55,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|None
 [[Special note for 11b](#Special-note-for-11b)]
 [[Porting guide](#Porting-guide)]
 [[Cite openwifi project](#Cite-openwifi-project)]
+[[Openwifi paper](#Openwifi-paper)]
 
 ## Quick start
 - Burn openwifi board specific img file (from the table) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
@@ -241,6 +242,8 @@ Any use of openwifi project which results in a publication should include a cita
             year = {2019},
 }
 ```
-Openwifi paper: [1](https://ieeexplore.ieee.org/document/9128614)
+## Openwifi paper
+
+[openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://biblio.ugent.be/publication/8663043/file/8663044.pdf)
 
 Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2020 programme under agreement number 732174).
