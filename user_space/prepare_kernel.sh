@@ -50,7 +50,7 @@ set -x
 
 cd $OPENWIFI_DIR/
 git submodule init $LINUX_KERNEL_SRC_DIR_NAME
-git submodule update $LINUX_KERNEL_SRC_DIR_NAME
+git submodule update --progress $LINUX_KERNEL_SRC_DIR_NAME
 cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
 git checkout 2019_R1
 git pull origin 2019_R1

@@ -175,6 +175,48 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
    - On PC: "File manager --> Connect to Server...", input: sftp://root@192.168.10.122/root
    - Input password "openwifi"
 
+## Setup AP and STA
+- To solve the issue that openwifi-AP did not acknowledge authentication response.
+  - At AP side, just replace (sdr.c):
+    ```
+    if ((tx_result_report&0x10)==0)
+    ```
+    by:
+    ```
+    if ((tx_result_report&0x10)==0 || priv->drv_xpu_reg_val[0])
+    ```
+  - Then recompile the driver (you could use driver/make_all.sh), and put/load the new driver on AP board. For    client, you don't need to update the driver.
+
+- Usage:
+  - Before your openwifi client tries to connect openwifi AP, issue the follow command at AP side:
+  ```
+    ./sdrctl dev sdr0 set reg drv_xpu 0 1
+  ```
+  - This command will always tell Linux mac80211 (AP side) the packet is sent successfully, even the ACK is not decoded well.
+  - After your client is connected successfully, you could disable this "fake ACK status" at AP side by:
+  ```
+  ./sdrctl dev sdr0 set reg drv_xpu 0 0
+  ```
+- openwifi board 1 (AP):
+```
+  cd openwifi
+  ./fosdem.sh
+```
+- openwifi board 2 (Client):
+```
+  cd openwifi
+  service network-manager stop
+  ./wgd.sh
+  iwconfig sdr0 mode managed
+  ifconfig sdr0 up
+  iwconfig sdr0 essid openwifi
+  dhclient sdr0
+  (Get IP from openwifi dhcp server. It could take a while)
+  ./set_csma_normal.sh
+  (Turn on random backoff. Another script set_csma_high.sh will turn off backoff)
+  ping 192.168.13.1
+```
+
 ## Build openwifi Linux img from scratch
 - Download [2019_R1-2020_02_04.img.xz](http://swdownloads.analog.com/cse/2019_R1-2020_02_04.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
 - Insert the SD card to your Linux PC. Find out the mount point (that has two sub directories BOOT and rootfs), and setup environment variables (use absolute path):
