@@ -62,6 +62,8 @@ extern struct xpu_driver_api *xpu_api;
 
 static int test_mode = 0; // 0 normal; 1 rx test
 
+struct tdma_node my_tdma_node;
+
 MODULE_AUTHOR("Xianjun Jiao");
 MODULE_DESCRIPTION("SDR driver");
 MODULE_LICENSE("GPL v2");
@@ -210,6 +212,20 @@ u32 reverse32(u32 d) {
 	return(tmp1.a);
 }
 
+u64 reverse64(u64 d) {
+	union u64_byte8 tmp0, tmp1;
+	tmp0.a = d;
+	tmp1.c[0] = tmp0.c[7];
+	tmp1.c[1] = tmp0.c[6];
+	tmp1.c[2] = tmp0.c[5];
+	tmp1.c[3] = tmp0.c[4];
+	tmp1.c[4] = tmp0.c[3];
+	tmp1.c[5] = tmp0.c[2];
+	tmp1.c[6] = tmp0.c[1];
+	tmp1.c[7] = tmp0.c[0];
+	return(tmp1.a);
+}
+
 static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 {
 	struct openwifi_ring *ring = &(priv->tx_ring[ring_idx]);
@@ -250,7 +266,7 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 //			dev_kfree_skb(ring->bds[i].skb_linked); // only use dev_kfree_skb when there is exception
 		if ( (ring->bds[i].dma_mapping_addr != 0 && ring->bds[i].skb_linked == 0) ||
 		     (ring->bds[i].dma_mapping_addr == 0 && ring->bds[i].skb_linked != 0))
-			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08llx\n", sdr_compatible_str, 
+			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08x\n", sdr_compatible_str, 
 			ring_idx, i, (void*)(ring->bds[i].skb_linked), ring->bds[i].dma_mapping_addr);
 
 		ring->bds[i].skb_linked=0;
@@ -320,6 +336,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	bool content_ok = false, len_overflow = false;
 	struct dma_tx_state state;
 	static u8 target_buf_idx_old = 0xFF;
+    u8 fc_type,fc_subtype;
 
 	spin_lock(&priv->lock);
 	priv->rx_chan->device->device_tx_status(priv->rx_chan,priv->rx_cookie,&state);
@@ -396,6 +413,19 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			skb = dev_alloc_skb(len);
 			if (skb) {
 				skb_put_data(skb,pdata_tmp+16,len);
+				hdr = (struct ieee80211_hdr *)(pdata_tmp+16);
+				fc_type = ((hdr->frame_control)>>2)&3;
+				fc_subtype = ((hdr->frame_control)>>4)&0xf;
+
+	            // STA Actions
+	            if (fc_type == 0 && fc_subtype == 8) // check whether it is a Beacon
+                {
+				    // read the tsf from beacon
+		            u64 AP_stf = *((u64*)(pdata_tmp+16+24));
+					//my_tdma_node.AP_stf = *((u64*)(pdata_tmp+16+len-BEACON_EXT_SIZE));
+					my_tdma_node.AP_stf = *((u64*)((unsigned char*)(skb->data)+BEACON_GEN_SIZE));
+		            //printk("%s openwifi_rx_interrupt: I receive my Beacon: length: %04x AP's tsf %llu AP_stf_append %llu/%llu from address %04x%08x\n", sdr_compatible_str,skb->len, AP_stf, my_tdma_node.AP_stf, reverse64(my_tdma_node.AP_stf),reverse16(addr2_high16), reverse32(addr2_low32));
+	            }
 
 				rx_status.antenna = 0;
 				// def in ieee80211_rate openwifi_rates 0~11. 0~3 11b(1M~11M), 4~11 11a/g(6M~54M)
@@ -480,7 +510,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 
 			tx_result_report = (reg_val&0x1F);
 			if ( !(info->flags & IEEE80211_TX_CTL_NO_ACK) ) {
-				if ((tx_result_report&0x10)==0)
+                if ((tx_result_report&0x10)==0 || priv->drv_xpu_reg_val[0])
 					info->flags |= IEEE80211_TX_STAT_ACK;
 
 				// printk("%s openwifi_tx_interrupt: rate&try: %d %d %03x; %d %d %03x; %d %d %03x; %d %d %03x\n", sdr_compatible_str,
@@ -687,7 +717,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		cts_duration = traffic_pkt_duration + sifs + pkt_need_ack*(sifs+ack_duration);
 	}
 
-	if ( (!addr_flag) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
+	if ( ((!addr_flag) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2)) || (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&3) )
 		printk("%s openwifi_tx: %4dbytes %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
 			len_mac_pdu, wifi_rate_all[rate_hw_value],frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
@@ -1144,6 +1174,9 @@ static void openwifi_beacon_work(struct work_struct *work)
 	struct ieee80211_hw *dev = vif_priv->dev;
 	struct ieee80211_mgmt *mgmt;
 	struct sk_buff *skb;
+	unsigned char *tmp_skb;
+    u32 len;
+    u64 AP_stf;
 
 	/* don't overflow the tx ring */
 	if (ieee80211_queue_stopped(dev, 0))
@@ -1153,13 +1186,25 @@ static void openwifi_beacon_work(struct work_struct *work)
 	skb = ieee80211_beacon_get(dev, vif);
 	if (!skb)
 		goto resched;
+    len = skb->len;
+	printk("openwifi_beacon_work Before: Beacon length is %04x\n", len);
+
+	tmp_skb = skb_put(skb, BEACON_EXT_SIZE);
+    my_tdma_node.AP_stf = openwifi_get_tsf(dev, vif);
+	memcpy(tmp_skb, (unsigned char*)(&my_tdma_node.AP_stf), sizeof(u64));
+    len = skb->len;
+	AP_stf = *((u64*)((unsigned char*)(skb->data)+len-BEACON_EXT_SIZE));
+
+	//printk("openwifi_beacon_work: Beacon timestamp is %llu/%llu  %llu/%llu  Beacon length is %04x \n",openwifi_get_tsf(dev, vif), my_tdma_node.AP_stf, AP_stf, reverse64(AP_stf),len);
 
 	/*
 	 * update beacon timestamp w/ TSF value
 	 * TODO: make hardware update beacon timestamp
 	 */
+	//mgmt = (struct ieee80211_mgmt *)skb->data;
+	//mgmt->u.beacon.timestamp = cpu_to_le64(openwifi_get_tsf(dev, vif));
 	mgmt = (struct ieee80211_mgmt *)skb->data;
-	mgmt->u.beacon.timestamp = cpu_to_le64(openwifi_get_tsf(dev, vif));
+	mgmt->u.beacon.timestamp = cpu_to_le64(my_tdma_node.AP_stf);
 
 	/* TODO: use actual beacon queue */
 	skb_set_queue_mapping(skb, 0);

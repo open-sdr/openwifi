@@ -1,7 +1,27 @@
 // Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+// Modified by Lihao lihaocuhk@gmail.com
+#include "tdma_struct.h"
+#define BEACON_EXT_SIZE 8  // Size of vendor extension in beacon frame
+#define BEACON_FCS_SIZE 1
+#define BEACON_GEN_SIZE 75
 
 #ifndef OPENWIFI_SDR
 #define OPENWIFI_SDR
+
+// For our TDMA system - Lihao
+// Our appended information format would be like this:
+// |AP_tsf (8-byte)| Received TSF(i-th)(8-byte)|index i (2-byte)|
+struct tdma_node {
+    u64 my_stf; // 8-byte; 
+	u64 AP_stf; // 8-byte;
+
+	struct LOWADDRESS_AID lowaddress_aid[MAXIMUM_USER];
+	struct AID_TSF aid_tsf[MAXIMUM_USER]; // a map for received tsf of each STA
+	struct INDEX_AID index_aid[MAXIMUM_USER]; // a map for received tsf of each STA
+
+	u16 aid; // For AP, aid = 0 
+	int progress_index;
+};
 
 // -------------------for leds--------------------------------
 struct gpio_led_data { //pleas always align with the leds-gpio.c in linux kernel
@@ -54,7 +74,10 @@ struct openwifi_vif {
 	struct delayed_work beacon_work;
 	bool enable_beacon;
 };
-
+union u64_byte8 {
+	u64 a;
+	u8 c[8];
+};
 union u32_byte4 {
 	u32 a;
 	u8 c[4];
