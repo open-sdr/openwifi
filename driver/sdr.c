@@ -226,6 +226,24 @@ u64 reverse64(u64 d) {
 	return(tmp1.a);
 }
 
+static u64 my_get_tsf(void)
+{
+	u32 tsft_low, tsft_high;
+
+	tsft_low = xpu_api->XPU_REG_TSF_RUNTIME_VAL_LOW_read();
+	tsft_high = xpu_api->XPU_REG_TSF_RUNTIME_VAL_HIGH_read();
+	//printk("%s openwifi_get_tsf: %08x%08x\n", sdr_compatible_str,tsft_high,tsft_low);
+	return( ( (u64)tsft_low ) | ( ((u64)tsft_high)<<32 ) );
+}
+
+static void my_set_tsf(u64 tsf)
+{
+	u32 tsft_high = ((tsf >> 32)&0xffffffff);
+	u32 tsft_low  = (tsf&0xffffffff);
+	xpu_api->XPU_REG_TSF_LOAD_VAL_write(tsft_high,tsft_low);
+	printk("%s openwifi_set_tsf: %08x%08x\n", sdr_compatible_str,tsft_high,tsft_low);
+}
+
 static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 {
 	struct openwifi_ring *ring = &(priv->tx_ring[ring_idx]);
@@ -424,7 +442,9 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		            u64 AP_stf = *((u64*)(pdata_tmp+16+24));
 					//my_tdma_node.AP_stf = *((u64*)(pdata_tmp+16+len-BEACON_EXT_SIZE));
 					my_tdma_node.AP_stf = *((u64*)((unsigned char*)(skb->data)+BEACON_GEN_SIZE));
-		            //printk("%s openwifi_rx_interrupt: I receive my Beacon: length: %04x AP's tsf %llu AP_stf_append %llu/%llu from address %04x%08x\n", sdr_compatible_str,skb->len, AP_stf, my_tdma_node.AP_stf, reverse64(my_tdma_node.AP_stf),reverse16(addr2_high16), reverse32(addr2_low32));
+					//my_set_tsf(my_tdma_node.AP_stf);
+					my_tdma_node.my_stf = ( (u64)tsft_low ) | ( ((u64)tsft_high)<<32 );
+		            //printk("%s openwifi_rx_interrupt: I receive my Beacon: length: %04x Beacon's tsf %llu AP_append_tsf %llu My_Received_tsf %llu fcs:%d  from address %04x%08x\n", sdr_compatible_str,skb->len, AP_stf, my_tdma_node.AP_stf,my_tdma_node.my_stf, fcs_ok, reverse16(addr2_high16), reverse32(addr2_low32));
 	            }
 
 				rx_status.antenna = 0;
@@ -1187,7 +1207,7 @@ static void openwifi_beacon_work(struct work_struct *work)
 	if (!skb)
 		goto resched;
     len = skb->len;
-	printk("openwifi_beacon_work Before: Beacon length is %04x\n", len);
+	//printk("openwifi_beacon_work Before: Beacon length is %04x\n", len);
 
 	tmp_skb = skb_put(skb, BEACON_EXT_SIZE);
     my_tdma_node.AP_stf = openwifi_get_tsf(dev, vif);
@@ -1195,7 +1215,7 @@ static void openwifi_beacon_work(struct work_struct *work)
     len = skb->len;
 	AP_stf = *((u64*)((unsigned char*)(skb->data)+len-BEACON_EXT_SIZE));
 
-	//printk("openwifi_beacon_work: Beacon timestamp is %llu/%llu  %llu/%llu  Beacon length is %04x \n",openwifi_get_tsf(dev, vif), my_tdma_node.AP_stf, AP_stf, reverse64(AP_stf),len);
+	//printk("openwifi_beacon_work: Beacon timestamp is %llu/%llu  %llu Beacon length is %04x \n",openwifi_get_tsf(dev, vif), my_tdma_node.AP_stf, AP_stf,len);
 
 	/*
 	 * update beacon timestamp w/ TSF value

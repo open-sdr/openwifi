@@ -200,22 +200,28 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 - openwifi board 1 (AP):
 ```
   cd openwifi
-  ./fosdem.sh
+  ./setup_ap.sh 
 ```
 - openwifi board 2 (Client):
 ```
   cd openwifi
-  service network-manager stop
-  ./wgd.sh
-  iwconfig sdr0 mode managed
-  ifconfig sdr0 up
-  iwconfig sdr0 essid openwifi
+  ./connect_ap.sh 
   dhclient sdr0
   (Get IP from openwifi dhcp server. It could take a while)
   ./set_csma_normal.sh
   (Turn on random backoff. Another script set_csma_high.sh will turn off backoff)
   ping 192.168.13.1
 ```
+- Testing network bandwidth and latency using iperf
+
+  - openwifi board 1 (AP):
+  ```
+  iperf -s -u -p 12345 -i 1  (udp traffic)
+  ```
+- openwifi board 2 (Client):
+  ```
+  iperf -c 192.168.13.1 -p 12345 -u -b 100 -t 50
+  ```
 
 ## Build openwifi Linux img from scratch
 - Download [2019_R1-2020_02_04.img.xz](http://swdownloads.analog.com/cse/2019_R1-2020_02_04.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
