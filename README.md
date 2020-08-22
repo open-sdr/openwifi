@@ -5,7 +5,7 @@
 
 This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Project document](https://github.com/open-sdr/openwifi/tree/master/doc)]
 
-[Demo [video](https://youtu.be/NpjEaszd5u4) and video [download](https://users.ugent.be/~xjiao/openwifi-low-aac.mp4)]   [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)] [[Cite openwifi project](#Cite-openwifi-project)]
+[[Videos](#Videos)] [[Papers](#Papers)] [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)] [[Cite openwifi project](#Cite-openwifi-project)]
 
 Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opensource license, please contact Filip.Louagie@UGent.be. Openwifi project also leverages some 3rd party modules. It is user's duty to check and follow licenses of those modules according to the purpose/usage. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions. [[How to contribute]](https://github.com/open-sdr/openwifi/blob/master/CONTRIBUTING.md). 
 
@@ -54,8 +54,6 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|None
 [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)]
 [[Special note for 11b](#Special-note-for-11b)]
 [[Porting guide](#Porting-guide)]
-[[Cite openwifi project](#Cite-openwifi-project)]
-[[Openwifi paper](#Openwifi-paper)]
 
 ## Quick start
 - Burn openwifi board specific img file (from the table) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
@@ -231,6 +229,20 @@ This section explains the porting work by showing the differences between openwi
 - We use dtc command to get devicetree.dts converted from devicetree.dtb in [Analog Devices Linux image](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images), then do modification according to what we have added/modified to the reference design.
 - Please learn the script in [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to understand how we generate devicetree.dtb, BOOT.BIN and Linux kernel uImage and put them together to build the full SD card image.
 
+## Videos
+
+Demo [[youtube](https://youtu.be/NpjEaszd5u4)], [[link for CHN user](https://users.ugent.be/~xjiao/openwifi-low-aac.mp4)]
+
+FOSDEM2020 [[youtube]](https://youtu.be/Mq48cGthk7M)], [[link for CHN user](https://zhuanlan.zhihu.com/p/104894514)]
+
+Low latency for gaming and introduction [youtube (coming soon)], [[link for CHN user](https://www.zhihu.com/zvideo/1273823153371385856)]
+
+## Papers
+
+[openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://biblio.ugent.be/publication/8663043/file/8663044.pdf)
+
+Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2020 programme under agreement number 732174).
+
 ## Cite openwifi project
 
 Any use of openwifi project which results in a publication should include a citation via (bibtex example):
@@ -242,8 +254,3 @@ Any use of openwifi project which results in a publication should include a cita
             year = {2019},
 }
 ```
-## Openwifi paper
-
-[openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://biblio.ugent.be/publication/8663043/file/8663044.pdf)
-
-Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2020 programme under agreement number 732174).
