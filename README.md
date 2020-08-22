@@ -231,9 +231,9 @@ This section explains the porting work by showing the differences between openwi
 
 ## Videos
 
-Demo [[youtube](https://youtu.be/NpjEaszd5u4)], [[link for CHN user](https://users.ugent.be/~xjiao/openwifi-low-aac.mp4)]
+Demo [[youtube](https://youtu.be/NpjEaszd5u4)], [[link for CHN user](https://www.zhihu.com/zvideo/1280659393378041856)]
 
-FOSDEM2020 [[youtube]](https://youtu.be/Mq48cGthk7M)], [[link for CHN user](https://zhuanlan.zhihu.com/p/104894514)]
+FOSDEM2020 [[youtube]](https://youtu.be/Mq48cGthk7M)], [[link for CHN user](https://www.zhihu.com/zvideo/1280673506397425664)]
 
 Low latency for gaming and introduction [youtube (coming soon)], [[link for CHN user](https://www.zhihu.com/zvideo/1273823153371385856)]
 
