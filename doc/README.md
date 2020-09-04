@@ -140,7 +140,7 @@ reg_idx|meaning|comment
 31|openwifi MAC address high 32bit|check XPU_REG_MAC_ADDR_write in sdr.c to see how we set MAC address to FPGA when NIC start
 58|TSF runtime value low  32bit|read only
 59|TSF runtime value high 32bit|read only
-63|git revision when build the driver|example: return value 065272ac means git revision is 65272ac (the 1st 0 must be removed!)
+63|git revision when build the FPGA|example: return value 065272ac means git revision is 65272ac (the 1st 0 must be removed!)
 
 ## Rx packet flow and filtering config
 
