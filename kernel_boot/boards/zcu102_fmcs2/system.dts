@@ -2569,10 +2569,10 @@
 			dma-names = "tx";
 		};
 
-		axi-sysid-0@85000000 {
+		/*axi-sysid-0@85000000 {
 			compatible = "adi,axi-sysid-1.00.a";
 			reg = <0x85000000 0x10000>;
-		};
+		};*/
 	};
 
 	clocks {

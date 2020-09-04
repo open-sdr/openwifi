@@ -754,10 +754,10 @@
 			phandle = <0x15>;
 		};
 
-		axi-sysid-0@45000000 {
+		/*axi-sysid-0@45000000 {
 			compatible = "adi,axi-sysid-1.00.a";
 			reg = <0x45000000 0x10000>;
-		};
+		};*/
 
 		i2c@41620000 {
 			compatible = "xlnx,axi-iic-1.01.b", "xlnx,xps-iic-2.00.a";

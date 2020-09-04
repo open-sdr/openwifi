@@ -1002,10 +1002,10 @@
 			reg = <0x43c00000 0xffff>;
 		};
 
-		axi-sysid-0@45000000 {
+		/*axi-sysid-0@45000000 {
 			compatible = "adi,axi-sysid-1.00.a";
 			reg = <0x45000000 0x10000>;
-		};
+		};*/
 
 		dma@43000000 {
 			compatible = "adi,axi-dmac-1.00.a";
