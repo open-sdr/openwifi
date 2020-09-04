@@ -76,6 +76,8 @@ union u16_byte2 {
 #define DRV_RX_REG_IDX_FREQ_BW_CFG 1
 #define DRV_RX_REG_IDX_PRINT_CFG (MAX_NUM_DRV_REG-1)
 
+#define DRV_XPU_REG_IDX_GIT_REV (MAX_NUM_DRV_REG-1)
+
 // ------end of software reg definition ------------
 
 #define MAX_NUM_VIF 4

@@ -869,10 +869,10 @@
 			phandle = <0x13>;
 		};
 */
-		axi-sysid-0@45000000 {
+		/*axi-sysid-0@45000000 {
 			compatible = "adi,axi-sysid-1.00.a";
 			reg = <0x45000000 0x10000>;
-		};
+		};*/
 
 		dma@7c400000 {
 			compatible = "adi,axi-dmac-1.00.a";

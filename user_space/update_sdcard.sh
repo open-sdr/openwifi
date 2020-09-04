@@ -35,8 +35,8 @@ fi
 # detect SD card mounting status
 if [ -d "$SDCARD_DIR/BOOT/" ]; then
     echo "$SDCARD_DIR/BOOT/"
-    mkdir $SDCARD_DIR/BOOT/openwifi
-    rm -rf $SDCARD_DIR/BOOT/README.txt
+    sudo mkdir $SDCARD_DIR/BOOT/openwifi
+    sudo rm -rf $SDCARD_DIR/BOOT/README.txt
 else
     echo "$SDCARD_DIR/BOOT/ does not exist!"
     exit 1
@@ -95,23 +95,23 @@ do
 
     dtc -I dts -O dtb -o $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dtb_filename_tmp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dts_filename_tmp
     mkdir $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
-    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dtb_filename_tmp $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
-    cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
+    sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dtb_filename_tmp $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
+    sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
     sudo true
 done
 
-mkdir $SDCARD_DIR/BOOT/openwifi/zynq-common
-cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage  $SDCARD_DIR/BOOT/openwifi/zynq-common/
-mkdir $SDCARD_DIR/BOOT/openwifi/zynqmp-common
-cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/openwifi/zynqmp-common/
+sudo mkdir $SDCARD_DIR/BOOT/openwifi/zynq-common
+sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage  $SDCARD_DIR/BOOT/openwifi/zynq-common/
+sudo mkdir $SDCARD_DIR/BOOT/openwifi/zynqmp-common
+sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/openwifi/zynqmp-common/
 
 # Copy uImage BOOT.BIN and devicetree to SD card BOOT partition
-cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/$dtb_filename $SDCARD_DIR/BOOT/
-cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/
+sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/$dtb_filename $SDCARD_DIR/BOOT/
+sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/
 if [ "$BOARD_NAME" == "zcu102_fmcs2" ] || [ "$BOARD_NAME" == "zcu102_9371" ]; then
-    cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/
+    sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/
 else
-    cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage $SDCARD_DIR/BOOT/
+    suod cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage $SDCARD_DIR/BOOT/
 fi
 
 sudo mkdir $SDCARD_DIR/rootfs/root/openwifi

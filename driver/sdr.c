@@ -52,6 +52,7 @@
 #include "../user_space/sdrctl_src/nl80211_testmode_def.h"
 #include "hw_def.h"
 #include "sdr.h"
+#include "git_rev.h"
 
 // driver API of component driver
 extern struct tx_intf_driver_api *tx_intf_api;
@@ -312,7 +313,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct ieee80211_rx_status rx_status = {0};
 	struct sk_buff *skb;
 	struct ieee80211_hdr *hdr;
-	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0;//, ht_flag//;//, fc_di;
+	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag;//;//, fc_di;
 	// u32 dma_driver_buf_idx_mod;
 	u8 *pdata_tmp, fcs_ok, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
@@ -343,7 +344,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		// phy_rx_sn_hw = (fcs_ok&0x7f);//0x7f is FPGA limitation
 		// dma_driver_buf_idx_mod = (state.residue&0x7f);
 		fcs_ok = ((fcs_ok&0x80)!=0);
-		// ht_flag = ((rate_idx&0x10)!=0);
+		ht_flag = ((rate_idx&0x10)!=0);
 		rate_idx = (rate_idx&0xF);
 
 		if ( (len>=14 && (!len_overflow)) && (rate_idx>=8 && rate_idx<=15)) {
@@ -385,8 +386,8 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				sc = hdr->seq_ctrl;
 
 			if ( addr1_low32!=0xffffffff || addr1_high16!=0xffff )
-				printk("%s openwifi_rx_interrupt:%4dbytes %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
-					len, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
+				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
+					len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 					sc, fcs_ok, target_buf_idx_old, signal);
 		}
@@ -640,8 +641,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		addr3_low32  = *((u32*)(hdr->addr3+2));
 		addr3_high16 = *((u16*)(hdr->addr3));
 	}
-	if (len_mac_pdu>=28)
-		sc = hdr->seq_ctrl;
 
 	duration_id = hdr->duration_id;
 	frame_control=hdr->frame_control;
@@ -687,6 +686,20 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		cts_duration = traffic_pkt_duration + sifs + pkt_need_ack*(sifs+ack_duration);
 	}
 
+// this is 11b stuff
+//	if (info->flags&IEEE80211_TX_RC_USE_SHORT_PREAMBLE)
+//		printk("%s openwifi_tx: WARNING IEEE80211_TX_RC_USE_SHORT_PREAMBLE\n", sdr_compatible_str);
+
+	if (len_mac_pdu>=28) {
+		if (info->flags & IEEE80211_TX_CTL_ASSIGN_SEQ) {
+			if (info->flags & IEEE80211_TX_CTL_FIRST_FRAGMENT)
+				priv->seqno += 0x10;
+			hdr->seq_ctrl &= cpu_to_le16(IEEE80211_SCTL_FRAG);
+			hdr->seq_ctrl |= cpu_to_le16(priv->seqno);
+		}
+		sc = hdr->seq_ctrl;
+	}
+
 	if ( (!addr_flag) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
 		printk("%s openwifi_tx: %4dbytes %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
 			len_mac_pdu, wifi_rate_all[rate_hw_value],frame_control,duration_id, 
@@ -701,16 +714,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		// 	info->status.rates[2].idx,info->status.rates[2].count,info->status.rates[2].flags,
 		// 	info->status.rates[3].idx,info->status.rates[3].count,info->status.rates[3].flags);
 
-// this is 11b stuff
-//	if (info->flags&IEEE80211_TX_RC_USE_SHORT_PREAMBLE)
-//		printk("%s openwifi_tx: WARNING IEEE80211_TX_RC_USE_SHORT_PREAMBLE\n", sdr_compatible_str);
-
-	if (info->flags & IEEE80211_TX_CTL_ASSIGN_SEQ) {
-		if (info->flags & IEEE80211_TX_CTL_FIRST_FRAGMENT)
-			priv->seqno += 0x10;
-		hdr->seq_ctrl &= cpu_to_le16(IEEE80211_SCTL_FRAG);
-		hdr->seq_ctrl |= cpu_to_le16(priv->seqno);
-	}
 	// -----------end of preprocess some info from header and skb----------------
 
 	// /* HW will perform RTS-CTS when only RTS flags is set.
@@ -869,6 +872,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	memset(priv->drv_tx_reg_val, 0, sizeof(priv->drv_tx_reg_val));
 	memset(priv->drv_rx_reg_val, 0, sizeof(priv->drv_rx_reg_val));
 	memset(priv->drv_xpu_reg_val, 0, sizeof(priv->drv_xpu_reg_val));
+	priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_GIT_REV] = GIT_REV;
 
 	//turn on radio
 	if (priv->tx_intf_cfg == TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1) {
