@@ -3,7 +3,7 @@
 
 **openwifi:** Linux mac80211 compatible full-stack IEEE802.11/Wi-Fi design based on SDR (Software Defined Radio).
 
-This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Quick start](#Quick-start)], [[Project document](https://github.com/open-sdr/openwifi/tree/master/doc)], [[Application notes](doc/app_notes/README.md)]
+This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Quick start](#Quick-start)], [[Project document](doc)], [[Application notes](doc/app_notes/README.md)]
 
 [[Videos](#Videos)] [[Papers](#Papers)] [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)] [[Cite openwifi project](#Cite-openwifi-project)]
 
