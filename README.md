@@ -3,7 +3,7 @@
 
 **openwifi:** Linux mac80211 compatible full-stack IEEE802.11/Wi-Fi design based on SDR (Software Defined Radio).
 
-This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Quick start](#Quick-start)], [[Project document](doc)], [[Application notes](doc/app_notes/README.md)]
+This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. [[Quick start](#Quick-start)], [[Project document](doc)], [[Application notes](doc/app_notes)]
 
 [[Videos](#Videos)] [[Papers](#Papers)] [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)] [[Cite openwifi project](#Cite-openwifi-project)]
 
@@ -54,8 +54,9 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|None
 [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)]
 [[Special note for 11b](#Special-note-for-11b)]
 [[Porting guide](#Porting-guide)]
-[[Project document](https://github.com/open-sdr/openwifi/tree/master/doc)]
-[[Application notes](doc/app_notes/README.md)]
+
+[[Project document](doc)]
+[[Application notes](doc/app_notes)]
 
 ## Quick start
 - Burn openwifi board specific img file (from the table) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
