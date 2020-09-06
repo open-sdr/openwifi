@@ -10,6 +10,7 @@ Above figure shows software and hardware/FPGA modules that compose the openwifi 
 - [Regulation and channel config](#Regulation-and-channel-config)
 - [Analog and digital frequency design](#Analog-and-digital-frequency-design)
 - [Debug methods](#Debug-methods)
+- [Application notes](app_notes)
 
 ## Driver and software overall principle
 
