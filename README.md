@@ -224,7 +224,7 @@ $OPENWIFI_DIR/user_space/build_wpa_supplicant_wo11b.sh $OPENWIFI_DIR
 ```
 ## Porting guide
 
-This section explains the porting work by showing the differences between openwifi and Analog Devices reference design. openwifi is based on f61d9707 (2019 r1) of [HDL Reference Designs](https://github.com/analogdevicesinc/hdl).
+This section explains the porting work by showing the differences between openwifi and Analog Devices reference design. openwifi is based on 4fea7c5 (2019 r1) of [HDL Reference Designs](https://github.com/analogdevicesinc/hdl).
 - Open the fmcomms2 + zc706 reference design at hdl/projects/fmcomms2/zc706 (Please read Analog Devices help)
 - Open the openwifi design zc706_fmcs2 at openwifi-hw/boards/zc706_fmcs2 (Please read openwifi-hw repository)
 - "Open Block Design", you will see the differences between openwifi and the reference design. Both in "diagram" and in "Address Editor".
