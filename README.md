@@ -242,7 +242,8 @@ Low latency for gaming and introduction [[youtube](https://youtu.be/Notn9X482LI)
 
 ## Papers
 
-[openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://biblio.ugent.be/publication/8663043/file/8663044.pdf)
+- [openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://biblio.ugent.be/publication/8663043/file/8663044.pdf)
+- [csi murder](https://ans.unibs.it/projects/csi-murder/)
 
 Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2020 programme under agreement number 732174).
 
