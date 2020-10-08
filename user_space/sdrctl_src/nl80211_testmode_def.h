@@ -1,5 +1,5 @@
 //---nl80211 cmd testmode definitions
-//---should be used in driver sdr.c and user space app like sdrctl, iw
+//---should be used in driver sdr.c and user space app
 
 enum openwifi_testmode_attr {
 	__OPENWIFI_ATTR_INVALID = 0,

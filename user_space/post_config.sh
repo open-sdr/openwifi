@@ -32,6 +32,9 @@ sudo apt-get -y install libnl-genl-3-dev
 cd sdrctl_src
 make
 cp sdrctl ../
+cd ../side_ch_ctl_src/
+gcc -o side_ch_ctl side_ch_ctl.c
+cp side_ch_ctl ../
 cd ..
 
 # install and setup dhcp server
