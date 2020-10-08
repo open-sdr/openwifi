@@ -29,10 +29,10 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see 3 figures showing run-time **frequency offset**, **channel state/response** and **constellation form equalizer**. Meanwhile the python script prints the **timestamp**.
   
-  While running, all informations are also stored into a file side_info.txt. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.
+  While running, all informations are also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.
 
 ## Config the capture condition and interval
-  The quick start guide will monitor all CSI informations of all packets decoded by the WiFi ofdm receiver. To monitor only specific packets that match the specific FC (Frame Control), addr1 (target MAC address), addr2 (source MAC address), configuration command should be issued before executing "**side_ch_ctl g**". The configuration command is realized by feeding a different parameter to "**side_ch_ctl**". 
+  The quick start guide will monitor all CSI informations of all packets decoded by the WiFi ofdm receiver. To monitor only specific packets that match the specific conditions: FC (Frame Control), addr1 (target MAC address), addr2 (source MAC address), configuration command should be issued before executing "**side_ch_ctl g**". The configuration command is realized by feeding a different parameter to "**side_ch_ctl**". 
   
   A quick example: Capture only CSI of those packets from the device with MAC address 56:5b:01:ec:e2:8f
   ```
@@ -47,19 +47,19 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   The X is the register index, and the Y is the value in hex format. The remaining "w", "h" and "h" should be kept untouched.
   - To turn on conditional capture, X should be 1. For Y: bit11~bit0 should be 001(hex), bit12: on/off of FC match, bit13: on/off of addr1 match, bit14 : on/off of addr2 match. Examples:
   ```
-  Turn on FC match:
+  Turn on FC only match:
   ./side_ch_ctl wh1h1001
   
-  Turn on addr2 (source address) match:
+  Turn on addr2 (source address) only match:
   ./side_ch_ctl wh1h4001
   
-  Turn on FC and addr1 (target address) match:
+  Turn on both FC and addr1 (target address) match:
   ./side_ch_ctl wh1h3001
   
   Turn off conditional capture (all packets will be captured):
   ./side_ch_ctl wh1h0001
   ```
-  - To specify the condition matching target:
+  - To specify the condition matching target (when that type of match is turned on by above command):
   ```
   Specify the FC matching target:
   ./side_ch_ctl wh5hY
@@ -77,7 +77,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   The interval will become N*100ms
 
 ## Understand CSI feature
-  The CSI information is extracted via the openwifi **side channel** infrastructure. This figure explains the related module (and related source code file name) and how the information goes from the board to the computer.
+  The CSI information is extracted via the openwifi **side channel** infrastructure. This figure explains the related modules (also related source code file name) and how the information goes from the SDR board to the computer.
   ![](./csi-architecture.jpg)
 
   The CSI information format is shown in this figure.
@@ -104,9 +104,9 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   - When use the Matlab script, please change the num_eq variable in the script to 3 (3 is just an example).
 
 ## Run CSI together with mode other than monitor
-  The CSI could run with not only monitor mode. When you run openwifi in AP-Client or ad-hoc mode, after your communication functionality is fully up, you can start from "**insmod side_ch.ko**" and "**./side_ch_ctl g**" on board as described in the quick start section to extract CSI to your computer.
+  The openwifi CSI feature could run with not only monitor mode but also other modes, such as AP-Client or ad-hoc mode. After the communication functionality is fully up in those modes, you can start CSI feature from "**insmod side_ch.ko**" and "**./side_ch_ctl g**" on board as described in the previous sections to extract CSI to your computer.
 
 ## Map the CSI information to the WiFi packet
-  If you want to relate the CSI information to the WiFi packet, you need to capture WiFi packets (tcpdump/wireshark/etc) while capturing CSI. Then you can match the timestamp (TSF timer value) between WiFi packet and CSI information, because this is the unique same identity of a Wifi packet and related CSI.
+  If you want to relate the CSI information to the WiFi packet, you need to capture WiFi packets (tcpdump/wireshark/etc) while capturing CSI. Then you can match the timestamp (TSF timer value) between WiFi packet and CSI information, because this is the unique same identity of a Wifi packet and related CSI information.
   
-  Please read the python and Matlab script to extract CSI information per packet according to your requirement.
+  Please learn the python and Matlab script to extract CSI information per packet according to your requirement.
