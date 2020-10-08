@@ -1,3 +1,5 @@
+We extend the **CSI** (Channel State Information) to **CSI** (Chip State Information)!
+
 ## Quick start
 - Power on the SDR board.
 - Connect a computer to the SDR board via Ethernet cable. The computer should have static IP 192.168.10.1. Open a terminal on the computer, and then in the terminal:
