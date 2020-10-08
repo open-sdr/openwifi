@@ -31,6 +31,20 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   
   While running, all informations are also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.
 
+## Understand CSI feature
+  The CSI information is extracted via the openwifi **side channel** infrastructure. This figure explains the related modules (also related source code file name) and how the information goes from the SDR board to the computer.
+  ![](./csi-architecture.jpg)
+
+  The CSI information format is shown in this figure.
+  ![](./csi-information-format.jpg)
+
+  For each element, the actual size is 64bit.
+  - timestamp: 64bit TSF timer value, which is the same timestamp value shown by other sniffer software, like tcpdump, wireshark or openwifi printing in dmesg.
+  - freq_offset: Only the 1st 16bit is used.
+  - csi (channel state/response) and equalizer: Only the first two 16bit are used for I/Q of channel response and equalizer output. The remaining two 16bit are reserved for future multi-antenna cases.
+  
+  The python and Matlab scripts are recommended for you to understand the CSI packet format precisely.
+
 ## Config the capture condition and interval
   The quick start guide will monitor all CSI informations of all packets decoded by the WiFi ofdm receiver. To monitor only specific packets that match the specific conditions: FC (Frame Control), addr1 (target MAC address), addr2 (source MAC address), configuration command should be issued before executing "**side_ch_ctl g**". The configuration command is realized by feeding a different parameter to "**side_ch_ctl**". 
   
@@ -76,20 +90,6 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   The interval will become N*100ms
 
-## Understand CSI feature
-  The CSI information is extracted via the openwifi **side channel** infrastructure. This figure explains the related modules (also related source code file name) and how the information goes from the SDR board to the computer.
-  ![](./csi-architecture.jpg)
-
-  The CSI information format is shown in this figure.
-  ![](./csi-information-format.jpg)
-
-  For each element, the actual size is 64bit.
-  - timestamp: 64bit TSF timer value, which is the same timestamp value shown by other sniffer software, like tcpdump, wireshark or openwifi printing in dmesg.
-  - freq_offset: Only the 1st 16bit is used.
-  - csi (channel state/response) and equalizer: Only the first two 16bit are used for I/Q of channel response and equalizer output. The remaining two 16bit are reserved for future multi-antenna cases.
-  
-  The python and Matlab scripts are recommended for you to understand the CSI packet format precisely.
-  
 ## Config the num_eq
   The num_eq (number of equalizer output) is configurable in case you don't need so many equalizer informations. The valid value is 0~8. You should align the num_eq value at the side_ch.ko, side_info_display.py and test_side_info_file_display.m. 
   - When insert the kernel module, use:
