@@ -10,6 +10,7 @@ Above figure shows software and hardware/FPGA modules that compose the openwifi 
 - [Regulation and channel config](#Regulation-and-channel-config)
 - [Analog and digital frequency design](#Analog-and-digital-frequency-design)
 - [Debug methods](#Debug-methods)
+- [Application notes](app_notes)
 
 ## Driver and software overall principle
 
@@ -89,7 +90,7 @@ module_name: **drv_xpu**
 
 reg_idx|meaning|comment
 -------|-------|----
-x|x|to be defined
+7|git revision when build the driver|example: return value 0071bc74 means git revision is 071bc74 (the 1st 0 must be removed!)
 
 module_name: **rf**
 
@@ -140,6 +141,7 @@ reg_idx|meaning|comment
 31|openwifi MAC address high 32bit|check XPU_REG_MAC_ADDR_write in sdr.c to see how we set MAC address to FPGA when NIC start
 58|TSF runtime value low  32bit|read only
 59|TSF runtime value high 32bit|read only
+63|git revision when build the FPGA|example: return value 065272ac means git revision is 65272ac (the 1st 0 must be removed!)
 
 ## Rx packet flow and filtering config
 
