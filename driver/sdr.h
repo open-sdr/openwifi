@@ -68,15 +68,16 @@ union u16_byte2 {
 #define OPENWIFI_LED_MAX_NAME_LEN 32
 
 // ------------ software reg definition ------------
-#define MAX_NUM_DRV_REG 8
-#define DRV_TX_REG_IDX_RATE 0
+#define MAX_NUM_DRV_REG            8
+#define DRV_TX_REG_IDX_RATE        0
 #define DRV_TX_REG_IDX_FREQ_BW_CFG 1
-#define DRV_TX_REG_IDX_PRINT_CFG (MAX_NUM_DRV_REG-1)
+#define DRV_TX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
 #define DRV_RX_REG_IDX_FREQ_BW_CFG 1
-#define DRV_RX_REG_IDX_PRINT_CFG (MAX_NUM_DRV_REG-1)
+#define DRV_RX_REG_IDX_EXTRA_FO    2
+#define DRV_RX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
-#define DRV_XPU_REG_IDX_GIT_REV (MAX_NUM_DRV_REG-1)
+#define DRV_XPU_REG_IDX_GIT_REV    (MAX_NUM_DRV_REG-1)
 
 // ------end of software reg definition ------------
 

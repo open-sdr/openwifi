@@ -2438,12 +2438,10 @@
 
 		sdr: sdr {
 			compatible ="sdr,sdr";
-			dmas = <&rx_dma 0
-					&rx_dma 1
-					&tx_dma 0
-					&tx_dma 1>;
-			dma-names = "rx_dma_mm2s", "rx_dma_s2mm", "tx_dma_mm2s", "tx_dma_s2mm";
-			interrupt-names = "not_valid_anymore", "rx_pkt_intr", "tx_itrpt0", "tx_itrpt1";
+			dmas = <&rx_dma 1
+					&tx_dma 0>;
+			dma-names = "rx_dma_s2mm", "tx_dma_mm2s";
+			interrupt-names = "not_valid_anymore", "rx_pkt_intr", "tx_itrpt_useless", "tx_itrpt";
 			interrupts = <0 89 1 0 90 1 0 93 1 0 94 1>;
 		} ;
 
@@ -2510,19 +2508,19 @@
 		};
 
 		tx_intf_0: tx_intf@a0005000 {
-			clock-names = "s00_axi_aclk", "s00_axis_aclk", "s01_axis_aclk", "m00_axis_aclk";
-			clocks = <0x3 0x49>, <0x3 0x49>, <0x3 0x49>, <0x3 0x49>;
+			clock-names = "s00_axi_aclk", "s00_axis_aclk";//, "s01_axis_aclk", "m00_axis_aclk";
+			clocks = <0x3 0x49>, <0x3 0x49>;//, <0x3 0x49>, <0x3 0x49>;
 			compatible = "sdr,tx_intf";
-			interrupt-names = "tx_itrpt0", "tx_itrpt1";
-			interrupts = <0 93 1 0 94 1>;
+			interrupt-names = "tx_itrpt";
+			interrupts = <0 94 1>;
 			reg = <0xA0005000 0x1000>;
 			xlnx,s00-axi-addr-width = <0x7>;
 			xlnx,s00-axi-data-width = <0x20>;
 		};
 
 		rx_intf_0: rx_intf@a0004000 {
-			clock-names = "s00_axi_aclk", "s00_axis_aclk", "m00_axis_aclk";
-			clocks = <0x3 0x49>, <0x3 0x49>, <0x3 0x49>;
+			clock-names = "s00_axi_aclk", "m00_axis_aclk";//, "s00_axis_aclk";
+			clocks = <0x3 0x49>, <0x3 0x49>;//, <0x3 0x49>;
 			compatible = "sdr,rx_intf";
 			interrupt-names = "not_valid_anymore", "rx_pkt_intr";
 			interrupts = <0 89 1 0 90 1>;
@@ -2550,6 +2548,16 @@
 			clocks = <0x3 0x49>;
 			compatible = "sdr,xpu";
 			reg = <0xA0006000 0x1000>;
+		};
+
+		side_ch_0: side_ch@a0007000 {
+			clock-names = "s00_axi_aclk";
+			clocks = <0x3 0x49>;
+			compatible = "sdr,side_ch";
+			reg = <0xA0007000 0x1000>;
+			dmas = <&rx_dma 0
+					&tx_dma 1>;
+			dma-names = "rx_dma_mm2s", "tx_dma_s2mm";
 		};
 
 		cf-ad9361-lpc@99020000 {

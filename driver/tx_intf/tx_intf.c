@@ -283,8 +283,8 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0);
 		tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write(420);
-		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x4F); //.src_sel0(slv_reg14[2:0]), .src_sel1(slv_reg14[6:4]), 0-s00_axis_tlast,1-ap_start,2-tx_start_from_acc,3-tx_end_from_acc,4-xpu signal
-		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x3004F); //disable interrupt
+		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x4); //.src_sel(slv_reg14[2:0]), 0-s00_axis_tlast,1-ap_start,2-tx_start_from_acc,3-tx_end_from_acc,4-tx_try_complete from xpu
+		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30004); //disable interrupt
 		tx_intf_api->TX_INTF_REG_BB_GAIN_write(100);
 		tx_intf_api->TX_INTF_REG_ANT_SEL_write(ant_sel);
 		tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write((1<<3)|(2<<4));
