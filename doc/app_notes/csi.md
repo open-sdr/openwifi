@@ -31,7 +31,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   
   While running, all informations are also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.
 
-## Understand CSI feature
+## Understand the CSI feature
   The CSI information is extracted via the openwifi **side channel** infrastructure. This figure explains the related modules (also related source code file name) and how the information goes from the SDR board to the computer.
   ![](./csi-architecture.jpg)
 
@@ -103,7 +103,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   - When use the Matlab script, please change the num_eq variable in the script to 3 (3 is just an example).
 
-## Run CSI together with mode other than monitor
+## Run the CSI together with modes other than monitor
   The openwifi CSI feature could run with not only monitor mode but also other modes, such as AP-Client or ad-hoc mode. After the communication functionality is fully up in those modes, you can start CSI feature from "**insmod side_ch.ko**" and "**./side_ch_ctl g**" on board as described in the previous sections to extract CSI to your computer.
 
 ## Map the CSI information to the WiFi packet
