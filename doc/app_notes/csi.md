@@ -63,7 +63,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   Turn on FC only match:
   ./side_ch_ctl wh1h1001
-  
+  (1001 is the value in hex format)
   Turn on addr2 (source address) only match:
   ./side_ch_ctl wh1h4001
   
@@ -77,12 +77,13 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   Specify the FC matching target:
   ./side_ch_ctl wh5hY
-  
+  (Y is the FC value in hex format)
   Specify the addr1 (target address) matching target:
   ./side_ch_ctl wh6hY
   
   Specify the addr2 (source address) matching target:
   ./side_ch_ctl wh7hY
+  (Y is the MAC address in hex format. Only the last 32 bits are needed. Example: for 56:5b:01:ec:e2:8f, 01ece28f should be input.)
   ```  
   The command "**side_ch_ctl g**" will perform CSI capture every 100ms until you press ctrl+C. To use a different capture interval:
   ```
