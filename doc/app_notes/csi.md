@@ -52,6 +52,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   ./side_ch_ctl wh1h4001
   ./side_ch_ctl wh7h01ece28f
+  (01ece28f are the last 32 bits of MAC address 56:5b:01:ec:e2:8f)
   ./side_ch_ctl g
   ```
   The parameter string format is explained in detail:
