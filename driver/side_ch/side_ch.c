@@ -28,9 +28,13 @@
 #include "side_ch.h"
 
 static int num_eq_init = 8; // should be 0~8
+static int iq_len_init = 0; //if iq_len>0, iq capture enabled, csi disabled
 
 module_param(num_eq_init, int, 0);
 MODULE_PARM_DESC(num_eq_init, "num_eq_init. 0~8. number of equalizer output (52 each) appended to CSI");
+
+module_param(iq_len_init, int, 0);
+MODULE_PARM_DESC(iq_len_init, "iq_len_init. if iq_len_init>0, iq capture enabled, csi disabled");
 
 static void __iomem *base_addr; // to store driver specific base address needed for mmu to translate virtual address to physical address in our FPGA design
 
@@ -71,12 +75,12 @@ static inline void SIDE_CH_REG_NUM_DMA_SYMBOL_write(u32 value){
 	reg_write(SIDE_CH_REG_NUM_DMA_SYMBOL_ADDR, value);
 }
 
-static inline u32 SIDE_CH_REG_START_DMA_TO_PS_read(void){
-	return reg_read(SIDE_CH_REG_START_DMA_TO_PS_ADDR);
+static inline u32 SIDE_CH_REG_IQ_CAPTURE_read(void){
+	return reg_read(SIDE_CH_REG_IQ_CAPTURE_ADDR);
 }
 
-static inline void SIDE_CH_REG_START_DMA_TO_PS_write(u32 value){
-	reg_write(SIDE_CH_REG_START_DMA_TO_PS_ADDR, value);
+static inline void SIDE_CH_REG_IQ_CAPTURE_write(u32 value){
+	reg_write(SIDE_CH_REG_IQ_CAPTURE_ADDR, value);
 }
 
 static inline u32 SIDE_CH_REG_NUM_EQ_read(void){
@@ -109,6 +113,46 @@ static inline u32 SIDE_CH_REG_ADDR2_TARGET_read(void){
 
 static inline void SIDE_CH_REG_ADDR2_TARGET_write(u32 value){
 	reg_write(SIDE_CH_REG_ADDR2_TARGET_ADDR, value);
+}
+
+static inline u32 SIDE_CH_REG_IQ_TRIGGER_read(void){
+	return reg_read(SIDE_CH_REG_IQ_TRIGGER_ADDR);
+}
+
+static inline void SIDE_CH_REG_IQ_TRIGGER_write(u32 value){
+	reg_write(SIDE_CH_REG_IQ_TRIGGER_ADDR, value);
+}
+
+static inline u32 SIDE_CH_REG_RSSI_TH_read(void){
+	return reg_read(SIDE_CH_REG_RSSI_TH_ADDR);
+}
+
+static inline void SIDE_CH_REG_RSSI_TH_write(u32 value){
+	reg_write(SIDE_CH_REG_RSSI_TH_ADDR, value);
+}
+
+static inline u32 SIDE_CH_REG_GAIN_TH_read(void){
+	return reg_read(SIDE_CH_REG_GAIN_TH_ADDR);
+}
+
+static inline void SIDE_CH_REG_GAIN_TH_write(u32 value){
+	reg_write(SIDE_CH_REG_GAIN_TH_ADDR, value);
+}
+
+static inline u32 SIDE_CH_REG_PRE_TRIGGER_LEN_read(void){
+	return reg_read(SIDE_CH_REG_PRE_TRIGGER_LEN_ADDR);
+}
+
+static inline void SIDE_CH_REG_PRE_TRIGGER_LEN_write(u32 value){
+	reg_write(SIDE_CH_REG_PRE_TRIGGER_LEN_ADDR, value);
+}
+
+static inline u32 SIDE_CH_REG_IQ_LEN_read(void){
+	return reg_read(SIDE_CH_REG_IQ_LEN_ADDR);
+}
+
+static inline void SIDE_CH_REG_IQ_LEN_write(u32 value){
+	reg_write(SIDE_CH_REG_IQ_LEN_ADDR, value);
 }
 
 static inline u32 SIDE_CH_REG_M_AXIS_DATA_COUNT_read(void){
@@ -298,7 +342,7 @@ static int init_side_channel(void) {
 	return(0);
 }
 
-static int get_side_info(int num_eq) {
+static int get_side_info(int num_eq, int iq_len) {
 	// int err = 0;//, i;
 	struct scatterlist chan_to_ps_sg[1];
 	enum dma_status status;
@@ -323,7 +367,10 @@ static int get_side_info(int num_eq) {
 
 	set_user_nice(current, 10);
 
-	num_dma_symbol_per_trans = HEADER_LEN + CSI_LEN + num_eq*EQUALIZER_LEN;
+	if (iq_len>0)
+		num_dma_symbol_per_trans = 1+iq_len;
+	else
+		num_dma_symbol_per_trans = HEADER_LEN + CSI_LEN + num_eq*EQUALIZER_LEN;
 	//set number of dma symbols expected to ps
 	num_dma_symbol = SIDE_CH_REG_M_AXIS_DATA_COUNT_read();
 	printk("%s get_side_info m axis data count %d per trans %d\n", side_ch_compatible_str, num_dma_symbol, num_dma_symbol_per_trans);
@@ -420,8 +467,8 @@ static void side_ch_nl_recv_msg(struct sk_buff *skb) {
 	pid = nlh->nlmsg_pid; /*pid of sending process */
 
 	if (action_flag==ACTION_SIDE_INFO_GET) {
-		res = get_side_info(num_eq_init);
-		printk(KERN_INFO "%s recv msg: get_side_info(%d) res %d\n", side_ch_compatible_str, num_eq_init, res);
+		res = get_side_info(num_eq_init, iq_len_init);
+		printk(KERN_INFO "%s recv msg: get_side_info(%d,%d) res %d\n", side_ch_compatible_str, num_eq_init, iq_len_init, res);
 		if (res>0) {
 			msg_size = res;
 			// printk("%s recv msg: %d %d %d %d %d %d %d %d\n", side_ch_compatible_str, msg[0], msg[1], msg[2], msg[3], msg[4], msg[5], msg[6], msg[7]);
@@ -513,6 +560,28 @@ static int dev_probe(struct platform_device *pdev) {
 	}
 
 	//-----------------initialize fpga----------------
+	printk("%s dev_probe: num_eq_init %d iq_len_init %d\n",side_ch_compatible_str, num_eq_init, iq_len_init);
+	
+	// disable potential any action from side channel
+	SIDE_CH_REG_MULTI_RST_write(4);
+	// SIDE_CH_REG_CONFIG_write(0X6001); // match addr1 and addr2; bit12 FC; bit13 addr1; bit14 addr2
+	SIDE_CH_REG_CONFIG_write(0x7001); // the most strict condition to prevent side channel action
+	SIDE_CH_REG_IQ_TRIGGER_write(10); // set iq trigger to rssi, which will never happen when rssi_th is 0
+	SIDE_CH_REG_NUM_EQ_write(num_eq_init);      // capture CSI + 8*equalizer by default
+	if (iq_len_init>0) {//initialize the side channel into iq capture mode
+		//Max UDP 65507 bytes; (65507/8)-1 = 8187
+		if (iq_len_init>8187) {
+			iq_len_init = 8187;
+			printk("%s dev_probe: limit iq_len_init to 8187!\n",side_ch_compatible_str);
+		}
+		SIDE_CH_REG_IQ_CAPTURE_write(1);
+		SIDE_CH_REG_PRE_TRIGGER_LEN_write(8190);
+		SIDE_CH_REG_IQ_LEN_write(iq_len_init);
+		SIDE_CH_REG_IQ_TRIGGER_write(0); // trigger is set to fcs ok/nok (both)
+	}
+
+	SIDE_CH_REG_CONFIG_write(0x0001); // allow all packets by default; bit12 FC; bit13 addr1; bit14 addr2
+
 	//rst
 	for (i=0;i<8;i++)
 		SIDE_CH_REG_MULTI_RST_write(0);
@@ -542,11 +611,6 @@ static int dev_probe(struct platform_device *pdev) {
 
 	err = init_side_channel();
 	printk("%s dev_probe: init_side_channel() err %d\n",side_ch_compatible_str, err);
-
-	printk("%s dev_probe: num_eq_init %d\n",side_ch_compatible_str, num_eq_init);
-	// SIDE_CH_REG_CONFIG_write(0X6001); // match addr1 and addr2; bit12 FC; bit13 addr1; bit14 addr2
-	SIDE_CH_REG_CONFIG_write(0x0001); // match all packets by default; bit12 FC; bit13 addr1; bit14 addr2
-	SIDE_CH_REG_NUM_EQ_write(num_eq_init);      // capture CSI + 8*equalizer by default
 
 	return(err);
 

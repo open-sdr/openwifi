@@ -149,7 +149,7 @@ After FPGA receives a packet, no matter the FCS/CRC is correct or not it will ra
 
 - frame filtering
 
-The FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c. This is needed by [mac80211 frame filtering](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#frame-filtering). The filter_flag together with **HIGH_PRIORITY_DISCARD_FLAG** finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering. Openwifi has the capability to capture all received packets even if the CRC is bad. You just need to set the NIC to monitor mode by iwconfig command (check monitor_ch.sh in user_space directory). In monitor mode, openwifi_configure_filter() will set **MONITOR_ALL** to the frame filtering module pkt_filter_ctl.v in FPGA. This makes sure transfer all received packets to Linux mac80211 via rx interrupt. 
+The FPGA frame filtering configuration is done in real-time by function openwifi_configure_filter() in sdr.c. The filter_flag together with **HIGH_PRIORITY_DISCARD_FLAG** finally go to pkt_filter_ctl.v of xpu module in FPGA, and control how FPGA does frame filtering. Openwifi has the capability to capture all received packets even if the CRC is bad. You just need to set the NIC to monitor mode by iwconfig command (check monitor_ch.sh in user_space directory). In monitor mode, openwifi_configure_filter() will set **MONITOR_ALL** to the frame filtering module pkt_filter_ctl.v in FPGA. This makes sure transfer all received packets to Linux mac80211 via rx interrupt. 
 
 - main rx interrupt operations in openwifi_rx_interrupt()
   - get raw content from DMA buffer. When Linux receives interrupt from FPGA rx_intf module, the content has been ready in Linux DMA buffer

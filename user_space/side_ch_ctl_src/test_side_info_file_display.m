@@ -6,9 +6,12 @@ close all;
 num_eq = 8;
 
 a = load('side_info.txt');
+len_a = floor(length(a)/4)*4;
+a = a(1:len_a);
+
 b = reshape(a, [4, length(a)/4])';
 num_data_in_each_side_info = 2+56+num_eq*52;
-num_side_info = size(b,1)/num_data_in_each_side_info;
+num_side_info = floor(size(b,1)/num_data_in_each_side_info);
 
 side_info = zeros(num_data_in_each_side_info, num_side_info);
 timestamp = zeros(1, num_side_info);

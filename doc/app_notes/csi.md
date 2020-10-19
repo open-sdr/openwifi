@@ -90,7 +90,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   side_ch_ctl gN
   ```
-  The interval will become N*100ms
+  The interval will become N*1ms
 
 ## Config the num_eq
   The num_eq (number of equalizer output) is configurable in case you don't need so many equalizer informations. The valid value is 0~8. You should align the num_eq value at the side_ch.ko, side_info_display.py and test_side_info_file_display.m. 
@@ -104,6 +104,17 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   side_info_display.py 3
   ```
   - When use the Matlab script, please change the num_eq variable in the script to 3 (3 is just an example).
+
+## Compile the side channel driver and user space program
+  - side_ch.ko
+  ```
+  $OPENWIFI_DIR/driver/side_ch/make_driver.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
+(For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
+  ```
+  - side_ch_ctl (take user_space/side_ch_ctl_src/side_ch_ctl.c and compile it on board!)
+  ```
+  gcc -o side_ch_ctl side_ch_ctl.c
+  ```
 
 ## Run the CSI together with modes other than monitor
   The openwifi CSI feature could run with not only monitor mode but also other modes, such as AP-Client or ad-hoc mode. After the communication functionality is fully up in those modes, you can start CSI feature from "**insmod side_ch.ko**" and "**./side_ch_ctl g**" on board as described in the previous sections to extract CSI to your computer.

@@ -114,6 +114,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 sock.bind((UDP_IP, UDP_PORT))
 
 # align with side_ch_control.v and all related user space, remote files
+MAX_NUM_DMA_SYMBOL = 8192
 CSI_LEN = 56 # length of single CSI
 EQUALIZER_LEN = (56-4) # for non HT, four {32767,32767} will be padded to achieve 52 (non HT should have 48)
 HEADER_LEN = 2 # timestamp and frequency offset
@@ -135,7 +136,7 @@ side_info_fd=open('side_info.txt','a')
 
 while True:
     try:
-        data, addr = sock.recvfrom(32768) # buffer size
+        data, addr = sock.recvfrom(MAX_NUM_DMA_SYMBOL*8) # buffer size
         # print(addr)
         print(len(data), num_byte_per_trans)
         test_residual = len(data)%num_byte_per_trans
