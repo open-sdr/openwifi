@@ -623,7 +623,7 @@
 		#address-cells = <0x1>;
 		#size-cells = <0x1>;
 		ranges;
-
+/*
 		i2c@41600000 {
 			compatible = "xlnx,axi-iic-1.01.b", "xlnx,xps-iic-2.00.a";
 			reg = <0x41600000 0x10000>;
@@ -679,7 +679,6 @@
 			};
 		};
 
-/*
 		dma@43000000 {
 			compatible = "adi,axi-dmac-1.00.a";
 			reg = <0x43000000 0x10000>;
@@ -740,7 +739,6 @@
 			linux,phandle = <0x13>;
 			phandle = <0x13>;
 		};
-*/
 
 		axi-i2s@77600000 {
 			compatible = "adi,axi-i2s-1.00.a";
@@ -754,7 +752,7 @@
 			phandle = <0x15>;
 		};
 
-		/*axi-sysid-0@45000000 {
+		axi-sysid-0@45000000 {
 			compatible = "adi,axi-sysid-1.00.a";
 			reg = <0x45000000 0x10000>;
 		};*/

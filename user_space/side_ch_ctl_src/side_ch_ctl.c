@@ -18,7 +18,7 @@
 #include <arpa/inet.h>
 
 // #define NETLINK_USER 31
-#define MAX_NUM_DMA_SYMBOL 4096   //align with side_ch.v side_ch.h
+#define MAX_NUM_DMA_SYMBOL 8192   //align with side_ch.v side_ch.h
 
 #define MAX_PAYLOAD (8*MAX_NUM_DMA_SYMBOL) /* maximum payload size*/
 struct sockaddr_nl src_addr, dest_addr;
@@ -134,8 +134,8 @@ long int hextoi_my(char *para) {
 // write 987   to hardware register  3: wh3d987  (w--write; h--hardware; 3 --register idx; d--decimal; 987--value)
 // write 0x3db to software register 19: ws19h3db (w--write; s--software; 19--register idx; h--hex;     3db--value 0x3db)
 //           read software register 23: rs23     (r-- read; s--software; 23--register idx)
-//        get csi and equalizer output: g4       (g--  get; 4--every 4*100ms; no/wrong input means default 100ms)
-int parse_para_string(char *para, int *action_flag, int *reg_type, int *reg_idx, unsigned int *reg_val, int *interval_100ms) {
+//        get csi and equalizer output: g400     (g--  get; 400--every 400ms; no/wrong input means default 100ms)
+int parse_para_string(char *para, int *action_flag, int *reg_type, int *reg_idx, unsigned int *reg_val, int *interval_ms) {
     int i, para_string_len, num_char_reg_idx, num_char_reg_val, hex_flag;
 
     para_string_len = strlen(para);
@@ -150,17 +150,17 @@ int parse_para_string(char *para, int *action_flag, int *reg_type, int *reg_idx,
         (*action_flag) = ACTION_SIDE_INFO_GET;
         
         if (para_string_len == 1) { // no explict input
-            (*interval_100ms) = 1;
-            printf("The default 1*100ms side info getting period is taken!\n");
+            (*interval_ms) = 100;
+            printf("The default 100ms side info getting period is taken!\n");
             return(0);
         }
 
         // there is something input
-        (*interval_100ms) = atoi_my(para+1);
-        if ( (*interval_100ms)<0 ) { // for invalid input, we set it to the default 100ms = 1*100ms;
-            (*interval_100ms) = 1;
+        (*interval_ms) = atoi_my(para+1);
+        if ( (*interval_ms)<0 ) { // for invalid input, we set it to the default 100ms
+            (*interval_ms) = 100;
             printf("Invalid side info getting period!\n");
-            printf("The default 1*100ms side info getting period is taken!\n");
+            printf("The default 100ms side info getting period is taken!\n");
         }
         
         return(0);
@@ -269,7 +269,7 @@ void print_usage(void) {
     printf("write 987   to hardware register  3: wh3d987  (w--write; h--hardware; 3 --register idx; d--decimal; 987--value)\n");
     printf("write 0x3db to software register 19: ws19h3db (w--write; s--software; 19--register idx; h--hex;     3db--value 0x3db)\n");
     printf("          read software register 23: rs23     (r-- read; s--software; 23--register idx)\n");
-    printf("       get csi and equalizer output: g2       (g--  get; 4--every 4*100ms; no/wrong input means default 100ms)\n");
+    printf("       get csi and equalizer output: g400     (g--  get; 400--every 400ms; no/wrong input means default 100ms)\n");
 }
 
 volatile bool do_exit = false;
@@ -282,7 +282,7 @@ void sigint_callback_handler(int signum)
 
 int main(const int argc, char * const argv[])
 {
-    int action_flag, reg_type, reg_idx, interval_100ms, s, side_info_size, socket_ok = 1, loop_count=0, side_info_count=0;
+    int action_flag, reg_type, reg_idx, interval_ms, s, side_info_size, socket_ok = 1, loop_count=0, side_info_count=0;
     unsigned int reg_val, *cmd_buf;
     unsigned short port;
     struct sockaddr_in server;
@@ -294,9 +294,9 @@ int main(const int argc, char * const argv[])
         return(ret);
     }
 
-    ret = parse_para_string(argv[1], &action_flag, &reg_type, &reg_idx, &reg_val, &interval_100ms);
+    ret = parse_para_string(argv[1], &action_flag, &reg_type, &reg_idx, &reg_val, &interval_ms);
     printf("parse: ret %d\n", ret);
-    printf("   tx: action_flag %d reg_type %d reg_idx %d reg_val %u interval_100ms %d\n", action_flag, reg_type, reg_idx, reg_val, interval_100ms);
+    printf("   tx: action_flag %d reg_type %d reg_idx %d reg_val %u interval_ms %d\n", action_flag, reg_type, reg_idx, reg_val, interval_ms);
     if (ret<0) {
         printf("Wrong input!\n");
         print_usage();
@@ -378,7 +378,7 @@ int main(const int argc, char * const argv[])
         // printf("Received message payload: %s\n", (char *)NLMSG_DATA(nlh));
 
         side_info_size = nlh->nlmsg_len-NLMSG_HDRLEN;
-        // printf("%d %d %d %d %d %d %d %d\n", cmd_buf[0], cmd_buf[1], cmd_buf[2], cmd_buf[3], cmd_buf[4], cmd_buf[5], cmd_buf[6], cmd_buf[7]);
+        // printf("num_dma_symbol %d\n", side_info_size/8);
 
         if (action_flag!=ACTION_SIDE_INFO_GET) {
             printf("   rx: size %d val %d 0x%08x\n", side_info_size, cmd_buf[0], cmd_buf[0]);
@@ -394,7 +394,7 @@ int main(const int argc, char * const argv[])
         if ((loop_count%64) == 0)
             printf("loop %d side info count %d\n", loop_count, side_info_count);
 
-        usleep(interval_100ms*100*1000);
+        usleep(interval_ms*1000);
     }
     
     close(s);
