@@ -25,7 +25,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 - Easy to change bandwidth and frequency: 
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
-- CSI monitor (timestamp, frequency offset, channel response, equalizer) [[CSI notes](doc/app_notes/csi.md)]
+- CSI (Channel State Information, also freq offset, equalizer) [[CSI notes](doc/app_notes/csi.md)]
 - On roadmap: **802.11ax**
 
 **Performance (AP: openwifi at channel 44, client: TL-WDN4200 N900 USB Dongle):**
@@ -243,6 +243,8 @@ Demo [[youtube](https://youtu.be/NpjEaszd5u4)], [[link for CHN user](https://www
 FOSDEM2020 [[youtube](https://youtu.be/Mq48cGthk7M)], [[link for CHN user](https://www.zhihu.com/zvideo/1280673506397425664)]
 
 Low latency for gaming and introduction [[youtube](https://youtu.be/Notn9X482LI)], [[link for CHN user](https://www.zhihu.com/zvideo/1273823153371385856)]
+
+CSI (Channel State Information) [[twitter](https://twitter.com/i/status/1314207380561780738)], [[link for CHN user](https://www.zhihu.com/zvideo/1297662571618148352)]
 
 ## Papers
 
