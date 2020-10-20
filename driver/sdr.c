@@ -123,7 +123,7 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				  struct ieee80211_conf *conf)
 {
 	struct openwifi_priv *priv = dev->priv;
-	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz;
+	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz + priv->drv_rx_reg_val[DRV_RX_REG_IDX_EXTRA_FO];
 	u32 actual_tx_lo;
 	bool change_flag = (actual_rx_lo != priv->actual_rx_lo);
 
@@ -810,7 +810,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		goto openwifi_tx_early_out_after_lock;
 	}
 
-	// sg_init_table(&tx_sg, 1); // only need to be initialized once in openwifi_start
+	sg_init_table(&(priv->tx_sg), 1); // only need to be initialized once in openwifi_start
 	sg_dma_address( &(priv->tx_sg) ) = dma_mapping_addr;
 	sg_dma_len( &(priv->tx_sg) ) = num_dma_byte;
 	
@@ -969,7 +969,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	printk("%s openwifi_start: rx_intf_cfg %d openofdm_rx_cfg %d tx_intf_cfg %d openofdm_tx_cfg %d\n",sdr_compatible_str, priv->rx_intf_cfg, priv->openofdm_rx_cfg, priv->tx_intf_cfg, priv->openofdm_tx_cfg);
 	printk("%s openwifi_start: rx_freq_offset_to_lo_MHz %d tx_freq_offset_to_lo_MHz %d\n",sdr_compatible_str, priv->rx_freq_offset_to_lo_MHz, priv->tx_freq_offset_to_lo_MHz);
 
-	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x3004F); //disable tx interrupt
+	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30004); //disable tx interrupt
 	rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write(0x100); // disable rx interrupt by interrupt test mode
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(1); // hold M AXIS in reset status
 
@@ -1033,7 +1033,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	}
 
 	rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write(0x000); // enable rx interrupt get normal fcs valid pass through ddc to ARM
-	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x4F); //enable tx interrupt
+	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x4); //enable tx interrupt
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(0); // release M AXIS
 	xpu_api->XPU_REG_TSF_LOAD_VAL_write(0,0); // reset tsf timer
 
@@ -1080,7 +1080,7 @@ static void openwifi_stop(struct ieee80211_hw *dev)
 
 	//ieee80211_stop_queue(dev, 0);
 
-	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x3004F); //disable tx interrupt
+	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30004); //disable tx interrupt
 	rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write(0x100); // disable fcs_valid by interrupt test mode
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(1); // hold M AXIS in reset status
 

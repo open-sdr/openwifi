@@ -120,12 +120,14 @@ sudo wget -P $SDCARD_DIR/rootfs/root/openwifi/webserver/ https://users.ugent.be/
 
 # build openwifi driver
 $OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR 32
+$OPENWIFI_DIR/driver/side_ch/make_driver.sh $OPENWIFI_DIR $XILINX_DIR 32
 # Copy files to SD card rootfs partition
 sudo mkdir $SDCARD_DIR/rootfs/root/openwifi/drv32
 sudo find $OPENWIFI_DIR/driver -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/root/openwifi/drv32 \;
 
 # build openwifi driver
 $OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR 64
+$OPENWIFI_DIR/driver/side_ch/make_driver.sh $OPENWIFI_DIR $XILINX_DIR 64
 # Copy files to SD card rootfs partition
 sudo mkdir $SDCARD_DIR/rootfs/root/openwifi/drv64
 sudo find $OPENWIFI_DIR/driver -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/root/openwifi/drv64 \;
