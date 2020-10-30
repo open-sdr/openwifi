@@ -145,7 +145,7 @@ reg_idx|meaning|comment
 
 ## Rx packet flow and filtering config
 
-After FPGA receives a packet, no matter the FCS/CRC is correct or not it will raise interrupt to Linux if the frame filtering rule allows. openwifi_rx_interrupt() function in sdr.c will be triggered to do necessary operation and give the information to upper layer (Linux mac80211 subsystem).
+After FPGA receives a packet, no matter the FCS/CRC is correct or not it will raise interrupt to Linux if the frame filtering rule allows (See also [mac80211 frame filtering](https://www.kernel.org/doc/html/v4.9/80211/mac80211.html#frame-filtering)). openwifi_rx_interrupt() function in sdr.c will be triggered to do necessary operation and give the information to upper layer (Linux mac80211 subsystem).
 
 - frame filtering
 
