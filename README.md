@@ -43,7 +43,7 @@ adrv9364z7020|ADRV9364-Z7020 + ADRV1CRR-BOB|Done|[32bit img](https://users.ugent
 adrv9361z7035|ADRV9361-Z7035 + ADRV1CRR-BOB/FMC|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-6-32bit.img.xz)
 zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-6-32bit.img.xz)
 zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.1.0-taiyuan-6-64bit.img.xz)
-zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|None
+zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
 - Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
