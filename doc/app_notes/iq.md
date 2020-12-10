@@ -54,7 +54,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   The python and Matlab scripts are recommended for you to understand the IQ packet format precisely.
 
 ## Config the IQ capture and interval
-  The quick start guide capture a period of history IQ when the packet FCS checksum is checked by Wifi receiver (no matter pass or fail). To initiate the capture with different trigger condition and length, configuration command should be issued before executing "**side_ch_ctl g**". The configuration command is realized by feeding a different parameter to "**side_ch_ctl**". The main parameters that are configurable are explained in this figure.
+  The quick start guide captures a period of history IQ when the packet FCS checksum is checked by Wifi receiver (no matter pass or fail). To initiate the capture with different trigger conditions and length, configuration commands should be issued before executing "**side_ch_ctl g**". The configuration command is realized by feeding a different parameter to "**side_ch_ctl**". The main parameters that are configurable are explained in this figure.
   ![](./iq-capture-parameter.jpg)
   
   **iq_len** is the number of IQ samples captured per trigger condition met. The capture is started from the time **pre_trigger_len** IQ samples before the trigger moment. **iq_len** is set only one time when you insert the side_ch.ko. Please check the next section for **iq_len** configuration. This section introduces the setting of pre_trigger_len and trigger condition.
@@ -62,7 +62,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   ```
   ./side_ch_ctl wh11dY
   ```
-  The parameter **Y** specifies the pre_trigger_len. Valid range 0 ~ 8190. It is limited by the FPGA fifo size. For **small FPGA** (zed_fmcs2, adrv9364z7020, zc702), valid range is 0 ~ **4094**.
+  The parameter **Y** specifies the pre_trigger_len. Valid range 0 ~ 8190. It is limited by the FPGA fifo size. For **small FPGA** (zed_fmcs2, adrv9364z7020, zc702), the valid range is 0 ~ **4094**.
   - trigger condition
   ```
   ./side_ch_ctl wh8dY
@@ -107,7 +107,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   The interval will become N*1ms
 
 ## Config the iq_len
-  The **iq_len** (number of IQ sample per capture) is configurable in case you want less IQ samples per capture so that it can be triggered more times during a specific analysis period. The valid value is 1~**8187**. For **small FPGA** (zed_fmcs2, adrv9364z7020, zc702), valid range is 0 ~ **4095**. It is independant form pre_trigger_len, and it can be less than pre_trigger_len if you want. You should align the **iq_len** value at the side_ch.ko, iq_capture.py and test_iq_file_display.m. 
+  The **iq_len** (number of IQ sample per capture) is configurable in case you want less IQ samples per capture so that it can be triggered more times during a specific analysis period. The valid value is 1~**8187**. For **small FPGA** (zed_fmcs2, adrv9364z7020, zc702), the valid range is 0 ~ **4095**. It is independant from pre_trigger_len, and it can be less than pre_trigger_len if you want. You should align the **iq_len** value at the side_ch.ko, iq_capture.py and test_iq_file_display.m. 
   - When insert the kernel module, use:
   ```
   insmod side_ch.ko iq_len_init=3000
