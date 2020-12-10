@@ -85,7 +85,7 @@ static inline u32 hw_init(enum openofdm_tx_mode mode){
 	for (i=0;i<8;i++)
 		openofdm_tx_api->OPENOFDM_TX_REG_MULTI_RST_write(0);
 
-	openofdm_tx_api->OPENOFDM_TX_REG_INIT_PILOT_STATE_write(0x7E);
+	openofdm_tx_api->OPENOFDM_TX_REG_INIT_PILOT_STATE_write(0x7F);
 	openofdm_tx_api->OPENOFDM_TX_REG_INIT_DATA_STATE_write(0x7F);
 
 	printk("%s hw_init err %d\n", openofdm_tx_compatible_str, err);
