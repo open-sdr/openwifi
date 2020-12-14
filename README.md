@@ -26,7 +26,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
 - CSI (Channel State Information, freq offset, equalizer to computer) [[CSI notes](doc/app_notes/csi.md)]
-- IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)]
+- IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)][[IQ notes for dual antenna](doc/app_notes/iq_2ant.md)]
 - On roadmap: **802.11ax**
 
 **Performance (AP: openwifi at channel 44, client: TL-WDN4200 N900 USB Dongle):**

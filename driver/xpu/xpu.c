@@ -132,6 +132,14 @@ static inline u32 XPU_REG_BAND_CHANNEL_read(void){
 	return reg_read(XPU_REG_BAND_CHANNEL_ADDR);
 }
 
+static inline void XPU_REG_DIFS_ADVANCE_write(u32 Data) {
+	reg_write(XPU_REG_DIFS_ADVANCE_ADDR, Data);
+}
+
+static inline u32 XPU_REG_DIFS_ADVANCE_read(void){
+	return reg_read(XPU_REG_DIFS_ADVANCE_ADDR);
+}
+
 static inline u32 XPU_REG_TRX_STATUS_read(void){
 	return reg_read(XPU_REG_TRX_STATUS_ADDR);
 }
@@ -331,7 +339,8 @@ static inline u32 hw_init(enum xpu_mode mode){
 
 	//xpu_api->XPU_REG_MAX_NUM_RETRANS_write(3); // if this > 0, it will override mac80211 set value, and set static retransmission limit
 	
-	xpu_api->XPU_REG_BB_RF_DELAY_write(49);
+	// xpu_api->XPU_REG_BB_RF_DELAY_write((1<<8)|47);
+	xpu_api->XPU_REG_BB_RF_DELAY_write((10<<8)|40); // extended rf is ongoing for perfect muting. (10<<8)|40 is verified good for zcu102/zed
 
 	// setup time schedule of 4 slices
 	// slice 0
@@ -391,13 +400,15 @@ static inline u32 hw_init(enum xpu_mode mode){
 	//xpu_api->XPU_REG_CSMA_DEBUG_write((1<<31)|(20<<24)|(4<<19)|(3<<14)|(10<<7)|(5));
 	xpu_api->XPU_REG_CSMA_DEBUG_write(0);
 	
-	//xpu_api->XPU_REG_CSMA_CFG_write(3); //normal CSMA
-	xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); //high priority
+	xpu_api->XPU_REG_CSMA_CFG_write(3); //normal CSMA
+	// xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); //high priority
 
 	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
 
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+
+	xpu_api->XPU_REG_DIFS_ADVANCE_write(2); //us
 
 	printk("%s hw_init err %d\n", xpu_compatible_str, err);
 	return(err);
@@ -457,6 +468,9 @@ static int dev_probe(struct platform_device *pdev)
 
 	xpu_api->XPU_REG_BAND_CHANNEL_write=XPU_REG_BAND_CHANNEL_write;
 	xpu_api->XPU_REG_BAND_CHANNEL_read=XPU_REG_BAND_CHANNEL_read;
+
+	xpu_api->XPU_REG_DIFS_ADVANCE_write=XPU_REG_DIFS_ADVANCE_write;
+	xpu_api->XPU_REG_DIFS_ADVANCE_read=XPU_REG_DIFS_ADVANCE_read;
 
 	xpu_api->XPU_REG_TRX_STATUS_read=XPU_REG_TRX_STATUS_read;
 	xpu_api->XPU_REG_TX_RESULT_read=XPU_REG_TX_RESULT_read;

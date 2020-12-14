@@ -148,7 +148,9 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		} else {
 			priv->rssi_correction = 148;
 		}
-		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1);
+
+		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1);
+		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-68)<<1); // make the threshold lower to avoid ping pang around the signal tail after some rx packet
 
 		if (actual_rx_lo < 2500) {
 			//priv->slot_time = 20; //20 is default slot time in ERP(OFDM)/11g 2.4G; short one is 9.
@@ -987,8 +989,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	// rssi_half_db_th = 87<<1; // -62dBm // will settup in runtime in _rf_set_channel
 	// xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
 
-	// // xpu_api->XPU_REG_CSMA_CFG_write(3); // cw_min
-	// xpu_api->XPU_REG_CSMA_CFG_write(3);
+	// xpu_api->XPU_REG_CSMA_CFG_write(3); // cw_min -- already set in xpu.c
 
 	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((40)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
 	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
@@ -999,8 +1000,8 @@ static int openwifi_start(struct ieee80211_hw *dev)
 
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 	
-	//xpu_api->XPU_REG_BB_RF_DELAY_write(51); // fine tuned value at 0.005us. old: dac-->ant port: 0.6us, 57 taps fir at 40MHz: 1.425us; round trip: 2*(0.6+1.425)=4.05us; 4.05*10=41
-	xpu_api->XPU_REG_BB_RF_DELAY_write(49);//add .5us for slightly longer fir
+	// //xpu_api->XPU_REG_BB_RF_DELAY_write(51); // fine tuned value at 0.005us. old: dac-->ant port: 0.6us, 57 taps fir at 40MHz: 1.425us; round trip: 2*(0.6+1.425)=4.05us; 4.05*10=41
+	// xpu_api->XPU_REG_BB_RF_DELAY_write(47);//add .5us for slightly longer fir -- already in xpu.c
 	xpu_api->XPU_REG_MAC_ADDR_write(priv->mac_addr);
 
 	// setup time schedule of 4 slices
@@ -1401,7 +1402,7 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
 	u32 filter_flag;
 
 	(*total_flags) &= SDR_SUPPORTED_FILTERS;
-//	(*total_flags) |= FIF_ALLMULTI; //because we always pass all multicast (no matter it is for us or not) to upper layer
+	(*total_flags) |= FIF_ALLMULTI; //because we need to pass all multicast (no matter it is for us or not) to upper layer
 
 	filter_flag = (*total_flags);
 

@@ -5,3 +5,4 @@ Application notes collect many small topics about using openwifi in different sc
 - [Communication between two SDR boards under ad-hoc mode](ad-hoc-two-sdr.md)
 - [From CSI (Channel State Information) to CSI (Chip State Information)](csi.md)
 - [Capture IQ sample, AGC gain, RSSI with many types of trigger condition](iq.md)
+- [Capture dual antenna IQ for multi-purpose (capture collision)](iq_2ant.md)

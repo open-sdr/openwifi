@@ -245,6 +245,7 @@ const char *xpu_compatible_str = "sdr,xpu";
 #define XPU_REG_TSF_LOAD_VAL_LOW_ADDR     (2*4)
 #define XPU_REG_TSF_LOAD_VAL_HIGH_ADDR    (3*4)
 #define XPU_REG_BAND_CHANNEL_ADDR         (4*4)
+#define XPU_REG_DIFS_ADVANCE_ADDR         (5*4)
 #define XPU_REG_RSSI_DB_CFG_ADDR          (7*4)
 #define XPU_REG_LBT_TH_ADDR               (8*4)
 #define XPU_REG_CSMA_DEBUG_ADDR           (9*4)
@@ -336,6 +337,9 @@ struct xpu_driver_api {
 
 	void (*XPU_REG_BAND_CHANNEL_write)(u32 value);
 	u32  (*XPU_REG_BAND_CHANNEL_read)(void);
+
+	void (*XPU_REG_DIFS_ADVANCE_write)(u32 value);
+	u32  (*XPU_REG_DIFS_ADVANCE_read)(void);
 
 	u32  (*XPU_REG_TRX_STATUS_read)(void);
 	u32  (*XPU_REG_TX_RESULT_read)(void);
