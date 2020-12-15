@@ -16,6 +16,94 @@
 #include "nl80211_testmode_def.h"
 
 
+static int cb_openwifi_ack_ri_handler(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *attrs[NL80211_ATTR_MAX + 1];
+	struct nlattr *tb[OPENWIFI_ATTR_MAX + 1];
+	struct genlmsghdr *gnlh = nlmsg_data(nlmsg_hdr(msg));
+	unsigned int ack_ri;
+
+	nla_parse(attrs, NL80211_ATTR_MAX, genlmsg_attrdata(gnlh, 0), genlmsg_attrlen(gnlh, 0), NULL);
+
+	if (!attrs[NL80211_ATTR_TESTDATA])
+		return NL_SKIP;
+
+	nla_parse(tb, OPENWIFI_ATTR_MAX, nla_data(attrs[NL80211_ATTR_TESTDATA]), nla_len(attrs[NL80211_ATTR_TESTDATA]), NULL);
+
+	ack_ri = nla_get_u32(tb[OPENWIFI_ATTR_ACK_RI]);
+	printf("openwifi ACK reception interval (us) for 2.4 GHz: %d\n", (ack_ri & 0xEFFF));
+	printf("openwifi ACK reception interval (us) for 5 GHz: %d\n", ack_ri >> 16);
+
+	return NL_SKIP;
+}
+
+static int handle_set_ack_ri(struct nl80211_state *state,
+			  struct nl_cb *cb,
+			  struct nl_msg *msg,
+			  int argc, char **argv,
+			  enum id_input id)
+{
+	struct nlattr *tmdata;
+	char *end;
+	unsigned int ack_ri2, ack_ri5; // ACK RI for 2.4 GHz and for 5 GHz
+	unsigned int max_value = 0xEFFF; // 15 bits of registry
+
+	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+	if (!tmdata)
+		return 1;
+
+	switch (argc) {
+		case 1:
+			ack_ri2 = ack_ri5 = strtoul(argv[0], &end, 10);
+			break;
+		case 2:
+			ack_ri2 = strtoul(argv[0], &end, 10);
+			ack_ri5 = strtoul(argv[1], &end, 10);
+			break;
+		default:
+			printf("Wrong number of arguments.\n");
+			return 1;
+	}
+	if (ack_ri2 > max_value || ack_ri5 > max_value) {
+		printf("Max ACK interval value is %d\n", max_value);
+		return 1;
+	}
+
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_SET_ACK_RI);
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_ACK_RI, (ack_ri5<<16)|ack_ri2);
+
+	nla_nest_end(msg, tmdata);
+	return 0;
+
+ nla_put_failure:
+	return -ENOBUFS;
+}
+COMMAND(set, ack_ri, "<us>|<us for 2.4GHz> <us for 5GHz>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_set_ack_ri, "set ACK reception interval of openwifi radio");
+
+static int handle_get_ack_ri(struct nl80211_state *state,
+			   struct nl_cb *cb,
+			   struct nl_msg *msg,
+			   int argc, char **argv,
+			   enum id_input id)
+{
+	struct nlattr *tmdata;
+
+	tmdata = nla_nest_start(msg, NL80211_ATTR_TESTDATA);
+	if (!tmdata)
+		return 1;
+
+	NLA_PUT_U32(msg, OPENWIFI_ATTR_CMD, OPENWIFI_CMD_GET_ACK_RI);
+
+	nla_nest_end(msg, tmdata);
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, cb_openwifi_ack_ri_handler, NULL);
+	return 0;
+
+ nla_put_failure:
+	return -ENOBUFS;
+}
+COMMAND(get, ack_ri, "<ACK interval in us>", NL80211_CMD_TESTMODE, 0, CIB_NETDEV, handle_get_ack_ri, "get the ACK reception interval of openwifi radio");
+
 static int cb_reg_handler(struct nl_msg *msg, void *arg)
 {
 	struct nlattr *attrs[NL80211_ATTR_MAX + 1];

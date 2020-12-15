@@ -1702,6 +1702,31 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		if (nla_put_u32(skb, REG_ATTR_VAL, tmp))
 			goto nla_put_failure;
 		return cfg80211_testmode_reply(skb);
+	case OPENWIFI_CMD_SET_ACK_RI:
+		if (!tb[OPENWIFI_ATTR_ACK_RI])
+			return -EINVAL;
+		tmp = nla_get_u32(tb[OPENWIFI_ATTR_ACK_RI]);
+		/* LSBs of tmp are the ACK_RI for 2.4 GHz, while MSBs are the ACK_RI for 5 GHz */
+		reg_val = (tmp>>16)&0xEFFF;  // 5 GHz
+		tmp = (tmp&0xEFFF);          // 2.4 GHz
+		if ((tmp <= 0xEFFF/10) && (reg_val <= 0xEFFF/10)) {  // Assuming 10 MHz clock
+			xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write(((tmp*10)<<16) | 10); // 2.4GHz
+			xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write(((reg_val*10)<<16) | 10); // 5GHz
+		} else
+			return -EINVAL;
+		return 0;
+	case OPENWIFI_CMD_GET_ACK_RI:
+		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		if (!skb)
+			return -ENOMEM;
+		tmp = xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_read(); // 2.4 GHz
+		tmp = ((tmp >> 16)&0xEFFF)/10; // Assuming 10 MHz clock
+		reg_val = xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_read(); // 5 GHz
+		reg_val = ((reg_val >> 16)&0xEFFF)/10;
+		tmp |= (reg_val<<16);
+		if (nla_put_u32(skb, OPENWIFI_ATTR_ACK_RI, tmp))
+			goto nla_put_failure;
+		return cfg80211_testmode_reply(skb);
 
 	default:
 		return -EOPNOTSUPP;

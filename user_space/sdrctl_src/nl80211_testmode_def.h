@@ -20,6 +20,8 @@ enum openwifi_testmode_attr {
 	REG_ATTR_ADDR = 14,
 	REG_ATTR_VAL = 15,
 
+	OPENWIFI_ATTR_ACK_RI = 16,
+
 	/* keep last */
 	__OPENWIFI_ATTR_AFTER_LAST,
 	OPENWIFI_ATTR_MAX	= __OPENWIFI_ATTR_AFTER_LAST - 1
@@ -60,6 +62,9 @@ enum openwifi_testmode_cmd {
 
 	REG_CMD_SET = 21,
 	REG_CMD_GET = 22,
+
+	OPENWIFI_CMD_SET_ACK_RI = 23,
+	OPENWIFI_CMD_GET_ACK_RI = 24,
 };
 
 static const struct nla_policy openwifi_testmode_policy[OPENWIFI_ATTR_MAX + 1] = {
@@ -79,4 +84,6 @@ static const struct nla_policy openwifi_testmode_policy[OPENWIFI_ATTR_MAX + 1] =
 
 	[REG_ATTR_ADDR] = { .type = NLA_U32 },
 	[REG_ATTR_VAL] = { .type = NLA_U32 },
+
+	[OPENWIFI_ATTR_ACK_RI] = { .type = NLA_U32 },
 };
