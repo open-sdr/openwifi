@@ -18,7 +18,7 @@ In this app note, we show how to use the dual antenna I/Q capture to capture the
   - Setup the side channel:
   ```
   insmod side_ch.ko iq_len_init=8187
-  (8187 should be <4096 if smaller FPGA, like z7020, is used)
+  (iq_len_init should be <4096, like 4095, if smaller FPGA, like z7020, is used)
   ./side_ch_ctl wh11d2000
   (Set a smaller pre_trigger_len 2000, because we want to see what happens after the trigger instead of long period stored before the trigger)
   ```
