@@ -149,8 +149,8 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 			priv->rssi_correction = 148;
 		}
 
-		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1);
-		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-68)<<1); // make the threshold lower to avoid ping pang around the signal tail after some rx packet
+		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
+		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
 
 		if (actual_rx_lo < 2500) {
 			//priv->slot_time = 20; //20 is default slot time in ERP(OFDM)/11g 2.4G; short one is 9.
