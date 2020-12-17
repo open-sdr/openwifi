@@ -101,8 +101,8 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   27|negative edge of tx_rf_is_ongoing and this tx packet needs ACK
   28|tx_bb_is_ongoing and I/Q amplitude from the other antenna is above rssi_or_iq_th
   29|tx_rf_is_ongoing and I/Q amplitude from the other antenna is above rssi_or_iq_th
-  30|demod_is_ongoing from openofdm_rx and phy_tx_start is issued
-  31|demod_is_ongoing from openofdm_rx and tx_bb_is_ongoing from xpu core is valid
+  30|start tx, meanwhile I/Q amplitude from the other antenna is above rssi_or_iq_th
+  31|start tx and need for ACK, meanwhile I/Q amplitude from the other antenna is above rssi_or_iq_th
   
   To set the RSSI threshold
   ```
