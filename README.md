@@ -17,15 +17,16 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 - 20MHz bandwidth; 70 MHz to 6 GHz frequency range
 - Mode tested: Ad-hoc; Station; AP, Monitor
 - DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)
+- [802.11 packet injection](doc/app_notes/inject_80211.md)
+- CSI (Channel State Information, freq offset, equalizer to computer) [[CSI notes](doc/app_notes/csi.md)]
+- IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)][[IQ notes for dual antenna](doc/app_notes/iq_2ant.md)]
 - Configurable channel access priority parameters:
   - duration of RTS/CTS, CTS-to-self
   - SIFS/DIFS/xIFS/slot-time/CW/etc
-- Time slicing based on MAC address
+- Time slicing based on MAC address (time gated/scheduled FPGA queues)
 - Easy to change bandwidth and frequency: 
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
-- CSI (Channel State Information, freq offset, equalizer to computer) [[CSI notes](doc/app_notes/csi.md)]
-- IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)][[IQ notes for dual antenna](doc/app_notes/iq_2ant.md)]
 - On roadmap: **802.11ax**
 
 **Performance (AP: openwifi at channel 44, client: TL-WDN4200 N900 USB Dongle):**
