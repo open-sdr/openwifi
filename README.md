@@ -13,8 +13,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 
 **Features:**
 
-- 802.11a/g
-- 802.11n MCS 0~7 (Only PHY rx for now. Full system support of 802.11n will come soon)
+- 802.11a/g/n [[IEEE 802.11n (Wi-Fi 4)](doc/app_notes/ieee80211n.md)]
 - 20MHz bandwidth; 70 MHz to 6 GHz frequency range
 - Mode tested: Ad-hoc; Station; AP, Monitor
 - DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)
@@ -26,7 +25,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
 - CSI (Channel State Information, freq offset, equalizer to computer) [[CSI notes](doc/app_notes/csi.md)]
-- IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)]
+- IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)][[IQ notes for dual antenna](doc/app_notes/iq_2ant.md)]
 - On roadmap: **802.11ax**
 
 **Performance (AP: openwifi at channel 44, client: TL-WDN4200 N900 USB Dongle):**

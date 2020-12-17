@@ -65,14 +65,19 @@ home_dir=$(pwd)
 
 set -x
 
-cd $OPENWIFI_DIR/user_space/
-./prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR 32 build
-sudo true
-./prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR 64 build
-sudo true
-
 LINUX_KERNEL_SRC_DIR_NAME32=adi-linux
 LINUX_KERNEL_SRC_DIR_NAME64=adi-linux-64
+
+cd $OPENWIFI_DIR/user_space/
+# special case, we need our xilinx_dma.c is there when building kernel to avoid version issue
+cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/drivers/dma/xilinx/xilinx_dma.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/drivers/dma/xilinx/xilinx_dma.c.bak
+cp $OPENWIFI_DIR/driver/xilinx_dma/xilinx_dma.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/drivers/dma/xilinx -rf
+./prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR 32 build
+sudo true
+cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/drivers/dma/xilinx/xilinx_dma.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/drivers/dma/xilinx/xilinx_dma.c.bak
+cp $OPENWIFI_DIR/driver/xilinx_dma/xilinx_dma.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/drivers/dma/xilinx -rf
+./prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR 64 build
+sudo true
 
 $OPENWIFI_DIR/user_space/get_fpga.sh $OPENWIFI_DIR
 

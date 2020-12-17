@@ -148,7 +148,9 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		} else {
 			priv->rssi_correction = 148;
 		}
-		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1);
+
+		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
+		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
 
 		if (actual_rx_lo < 2500) {
 			//priv->slot_time = 20; //20 is default slot time in ERP(OFDM)/11g 2.4G; short one is 9.
@@ -313,7 +315,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct ieee80211_rx_status rx_status = {0};
 	struct sk_buff *skb;
 	struct ieee80211_hdr *hdr;
-	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag;//;//, fc_di;
+	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi;//, fc_di;
 	// u32 dma_driver_buf_idx_mod;
 	u8 *pdata_tmp, fcs_ok, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
@@ -337,6 +339,8 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		len_overflow = (len>(RX_BD_BUF_SIZE-16)?true:false);
 
 		rate_idx =     (*((u16*)(pdata_tmp+14)));
+		short_gi =     ((rate_idx&0x20)!=0);
+		rate_idx =     (rate_idx&0xDF);
 
 		fcs_ok = ( len_overflow?0:(*(( u8*)(pdata_tmp+16+len-1))) );
 
@@ -345,9 +349,8 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		// dma_driver_buf_idx_mod = (state.residue&0x7f);
 		fcs_ok = ((fcs_ok&0x80)!=0);
 		ht_flag = ((rate_idx&0x10)!=0);
-		rate_idx = (rate_idx&0xF);
 
-		if ( (len>=14 && (!len_overflow)) && (rate_idx>=8 && rate_idx<=15)) {
+		if ( (len>=14 && (!len_overflow)) && (rate_idx>=8 && rate_idx<=23)) {
 			// if ( phy_rx_sn_hw!=dma_driver_buf_idx_mod) {
 			// 	printk("%s openwifi_rx_interrupt: WARNING sn %d next buf_idx %d!\n", sdr_compatible_str,phy_rx_sn_hw,dma_driver_buf_idx_mod);
 			// }
@@ -386,7 +389,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				sc = hdr->seq_ctrl;
 
 			if ( addr1_low32!=0xffffffff || addr1_high16!=0xffff )
-				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
+				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 					sc, fcs_ok, target_buf_idx_old, signal);
@@ -408,8 +411,13 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				rx_status.flag |= RX_FLAG_MACTIME_START;
 				if (!fcs_ok)
 					rx_status.flag |= RX_FLAG_FAILED_FCS_CRC;
-				rx_status.encoding = RX_ENC_LEGACY;
+				if (rate_idx <= 15)
+					rx_status.encoding = RX_ENC_LEGACY;
+				else
+					rx_status.encoding = RX_ENC_HT;
 				rx_status.bw = RATE_INFO_BW_20;
+				if (short_gi)
+					rx_status.enc_flags |= RX_ENC_FLAG_SHORT_GI;
 
 				memcpy(IEEE80211_SKB_RXCB(skb), &rx_status, sizeof(rx_status)); // put rx_status into skb->cb, from now on skb->cb is not dma_dsts any more.
 				ieee80211_rx_irqsafe(dev, skb); // call mac80211 function
@@ -469,7 +477,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 				}
 			}
 
-			if ( ((*(u32*)(&(skb->data[0])))&0xFF000000) || (*(u32*)(&(skb->data[12]))) || (*(u32*)(&(skb->data[8]))) || (*(u32*)(&(skb->data[4]))) ) {
+			if ( (*(u32*)(&(skb->data[4]))) || ((*(u32*)(&(skb->data[12])))&0xFFFF0000) ) {
 				printk("%s openwifi_tx_interrupt: WARNING %08x %08x %08x %08x\n", sdr_compatible_str, *(u32*)(&(skb->data[12])), *(u32*)(&(skb->data[8])), *(u32*)(&(skb->data[4])), *(u32*)(&(skb->data[0])));
 				continue;
 			}
@@ -522,18 +530,56 @@ u32 gen_parity(u32 v){
 	return (v >> 28) & 1;
 }
 
-u32 calc_phy_header(u8 rate_hw_value, u32 len, u8 *bytes){
+u8 gen_ht_sig_crc(u64 m)
+{
+	u8 i, temp, c[8] = {1, 1, 1, 1, 1, 1, 1, 1}, ht_sig_crc;
+
+	for (i = 0; i < 34; i++)
+	{
+		temp = c[7] ^ ((m >> i) & 0x01);
+
+		c[7] = c[6];
+		c[6] = c[5];
+		c[5] = c[4];
+		c[4] = c[3];
+		c[3] = c[2];
+		c[2] = c[1] ^ temp;
+		c[1] = c[0] ^ temp;
+		c[0] = temp;
+	}
+	ht_sig_crc = ((~c[7] & 0x01) << 0) | ((~c[6] & 0x01) << 1) | ((~c[5] & 0x01) << 2) | ((~c[4] & 0x01) << 3) | ((~c[3] & 0x01) << 4) | ((~c[2] & 0x01) << 5) | ((~c[1] & 0x01) << 6) | ((~c[0] & 0x01) << 7);
+
+	return ht_sig_crc;
+}
+
+u32 calc_phy_header(u8 rate_hw_value, bool use_ht_rate, bool use_short_gi, u32 len, u8 *bytes){
 	//u32 signal_word = 0 ;
-	u8  SIG_RATE = 0 ;
+	u8  SIG_RATE = 0, HT_SIG_RATE;
 	u8	len_2to0, len_10to3, len_msb,b0,b1,b2, header_parity ;
+	u32 l_len, ht_len, ht_sig1, ht_sig2;
 
-	// rate_hw_value = (rate_hw_value<=4?0:(rate_hw_value-4));
-	// SIG_RATE = wifi_mcs_table_phy_tx[rate_hw_value];
-	SIG_RATE = wifi_mcs_table_11b_force_up[rate_hw_value];
+	// printk("rate_hw_value=%u\tuse_ht_rate=%u\tuse_short_gi=%u\tlen=%u\n", rate_hw_value, use_ht_rate, use_short_gi, len);
 
-	len_2to0 = len & 0x07 ;
-	len_10to3 = (len >> 3 ) & 0xFF ;
-	len_msb = (len >> 11) & 0x01 ;
+	// HT-mixed mode ht signal
+
+	if(use_ht_rate)
+	{
+		SIG_RATE = wifi_mcs_table_11b_force_up[4];
+		HT_SIG_RATE = rate_hw_value;
+		l_len  = 24 * len / wifi_n_dbps_ht_table[rate_hw_value];
+		ht_len = len;
+	}
+	else
+	{
+		// rate_hw_value = (rate_hw_value<=4?0:(rate_hw_value-4));
+		// SIG_RATE = wifi_mcs_table_phy_tx[rate_hw_value];
+		SIG_RATE = wifi_mcs_table_11b_force_up[rate_hw_value];
+		l_len = len;
+	}
+
+	len_2to0 = l_len & 0x07 ;
+	len_10to3 = (l_len >> 3 ) & 0xFF ;
+	len_msb = (l_len >> 11) & 0x01 ;
 
 	b0=SIG_RATE | (len_2to0 << 5) ;
 	b1 = len_10to3 ;
@@ -544,9 +590,30 @@ u32 calc_phy_header(u8 rate_hw_value, u32 len, u8 *bytes){
 	bytes[0] = b0 ;
 	bytes[1] = b1 ; 
     bytes[2] = b2;
-	//signal_word = b0+(b1<<8)+(b2<<16) ;
-	//return signal_word;
-	return(SIG_RATE);
+
+	// HT-mixed mode signal
+	if(use_ht_rate)
+	{
+		ht_sig1 = (HT_SIG_RATE & 0x7F) | ((ht_len << 8) & 0xFFFF00);
+		ht_sig2 = 0x04 | (use_short_gi << 7);
+		ht_sig2 = ht_sig2 | (gen_ht_sig_crc(ht_sig1 | ht_sig2 << 24) << 10);
+
+	    bytes[3]  = 1;
+	    bytes[8]  = (ht_sig1 & 0xFF);
+	    bytes[9]  = (ht_sig1 >> 8)  & 0xFF;
+	    bytes[10] = (ht_sig1 >> 16) & 0xFF;
+	    bytes[11] = (ht_sig2 & 0xFF);
+	    bytes[12] = (ht_sig2 >> 8)  & 0xFF;
+	    bytes[13] = (ht_sig2 >> 16) & 0xFF;
+
+		return(HT_SIG_RATE);
+	}
+	else
+	{
+		//signal_word = b0+(b1<<8)+(b2<<16) ;
+		//return signal_word;
+		return(SIG_RATE);
+	}
 }
 
 static inline struct gpio_led_data * //please align with the implementation in leds-gpio.c
@@ -571,7 +638,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	u32 pkt_need_ack, addr1_low32=0, addr2_low32=0, addr3_low32=0, queue_idx=2, dma_reg, cts_reg;//, openofdm_state_history;
 	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value = 0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration;
 	u8 fc_flag,fc_type,fc_subtype,retry_limit_raw,*dma_buf,retry_limit_hw_value,rc_flags;
-	bool use_rts_cts, use_cts_protect, addr_flag, cts_use_traffic_rate=false, force_use_cts_protect=false;
+	bool use_rts_cts, use_cts_protect, use_ht_rate=false, use_short_gi, addr_flag, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 dma_fifo_no_room_flag, hw_queue_len;
 	enum dma_status status;
@@ -670,6 +737,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	rc_flags = info->control.rates[0].flags;
 	use_rts_cts = ((rc_flags&IEEE80211_TX_RC_USE_RTS_CTS)!=0);
 	use_cts_protect = ((rc_flags&IEEE80211_TX_RC_USE_CTS_PROTECT)!=0);
+	use_ht_rate = ((rc_flags&IEEE80211_TX_RC_MCS)!=0);
+	use_short_gi = ((rc_flags&IEEE80211_TX_RC_SHORT_GI)!=0);
 
 	if (use_rts_cts)
 		printk("%s openwifi_tx: WARNING sn %d use_rts_cts is not supported!\n", sdr_compatible_str, ring->bd_wr_idx);
@@ -701,8 +770,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 
 	if ( (!addr_flag) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
-		printk("%s openwifi_tx: %4dbytes %2dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
-			len_mac_pdu, wifi_rate_all[rate_hw_value],frame_control,duration_id, 
+		printk("%s openwifi_tx: %4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
+			len_mac_pdu, (use_ht_rate == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
 			sc, info->flags, retry_limit_raw, pkt_need_ack, prio, queue_idx,
 			// use_rts_cts,use_cts_protect|force_use_cts_protect,wifi_rate_all[cts_rate_hw_value],cts_duration,
@@ -747,7 +816,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 	
 	skb_push( skb, LEN_PHY_HEADER );
-	rate_signal_value = calc_phy_header(rate_hw_value, len_mac_pdu+LEN_PHY_CRC, skb->data); //fill the phy header
+	rate_signal_value = calc_phy_header(rate_hw_value, use_ht_rate, use_short_gi, len_mac_pdu+LEN_PHY_CRC, skb->data); //fill the phy header
+
 
 	//make sure dma length is integer times of DDC_NUM_BYTE_PER_DMA_SYMBOL
 	if (skb_tailroom(skb)<num_byte_pad) {
@@ -795,7 +865,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		goto openwifi_tx_early_out_after_lock;
 	}
 
-	if ( ((*(u32*)(&(skb->data[0])))&0xFF000000) || (*(u32*)(&(skb->data[12]))) || (*(u32*)(&(skb->data[8]))) || (*(u32*)(&(skb->data[4]))) ) {
+	if ( (*(u32*)(&(skb->data[4]))) || ((*(u32*)(&(skb->data[12])))&0xFFFF0000) ) {
 		printk("%s openwifi_tx: WARNING 1 %d %08x %08x %08x %08x\n", sdr_compatible_str, num_byte_pad, *(u32*)(&(skb->data[12])), *(u32*)(&(skb->data[8])), *(u32*)(&(skb->data[4])), *(u32*)(&(skb->data[0])));
 		goto openwifi_tx_early_out_after_lock;
 	}
@@ -837,7 +907,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 	dma_async_issue_pending(priv->tx_chan);
 
-	if ( ((*(u32*)(&(skb->data[0])))&0xFF000000) || (*(u32*)(&(skb->data[12]))) || (*(u32*)(&(skb->data[8]))) || (*(u32*)(&(skb->data[4]))) )
+	if ( (*(u32*)(&(skb->data[4]))) || ((*(u32*)(&(skb->data[12])))&0xFFFF0000) )
 		printk("%s openwifi_tx: WARNING 2 %08x %08x %08x %08x\n", sdr_compatible_str, *(u32*)(&(skb->data[12])), *(u32*)(&(skb->data[8])), *(u32*)(&(skb->data[4])), *(u32*)(&(skb->data[0])));
 
 	spin_unlock_irqrestore(&priv->lock, flags);
@@ -919,8 +989,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	// rssi_half_db_th = 87<<1; // -62dBm // will settup in runtime in _rf_set_channel
 	// xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
 
-	// // xpu_api->XPU_REG_CSMA_CFG_write(3); // cw_min
-	// xpu_api->XPU_REG_CSMA_CFG_write(3);
+	// xpu_api->XPU_REG_CSMA_CFG_write(3); // cw_min -- already set in xpu.c
 
 	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((40)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
 	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
@@ -931,8 +1000,8 @@ static int openwifi_start(struct ieee80211_hw *dev)
 
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 	
-	//xpu_api->XPU_REG_BB_RF_DELAY_write(51); // fine tuned value at 0.005us. old: dac-->ant port: 0.6us, 57 taps fir at 40MHz: 1.425us; round trip: 2*(0.6+1.425)=4.05us; 4.05*10=41
-	xpu_api->XPU_REG_BB_RF_DELAY_write(49);//add .5us for slightly longer fir
+	// //xpu_api->XPU_REG_BB_RF_DELAY_write(51); // fine tuned value at 0.005us. old: dac-->ant port: 0.6us, 57 taps fir at 40MHz: 1.425us; round trip: 2*(0.6+1.425)=4.05us; 4.05*10=41
+	// xpu_api->XPU_REG_BB_RF_DELAY_write(47);//add .5us for slightly longer fir -- already in xpu.c
 	xpu_api->XPU_REG_MAC_ADDR_write(priv->mac_addr);
 
 	// setup time schedule of 4 slices
@@ -1333,7 +1402,7 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
 	u32 filter_flag;
 
 	(*total_flags) &= SDR_SUPPORTED_FILTERS;
-//	(*total_flags) |= FIF_ALLMULTI; //because we always pass all multicast (no matter it is for us or not) to upper layer
+	(*total_flags) |= FIF_ALLMULTI; //because we need to pass all multicast (no matter it is for us or not) to upper layer
 
 	filter_flag = (*total_flags);
 
@@ -1983,6 +2052,11 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_2GHz.n_channels = ARRAY_SIZE(priv->channels_2GHz);
 	priv->band_2GHz.bitrates = priv->rates_2GHz;
 	priv->band_2GHz.n_bitrates = ARRAY_SIZE(priv->rates_2GHz);
+	priv->band_2GHz.ht_cap.ht_supported = true;
+	priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
+	memset(&priv->band_2GHz.ht_cap.mcs, 0, sizeof(priv->band_2GHz.ht_cap.mcs));
+	priv->band_2GHz.ht_cap.mcs.rx_mask[0] = 0xff;
+	priv->band_2GHz.ht_cap.mcs.tx_params = IEEE80211_HT_MCS_TX_DEFINED;
 	dev->wiphy->bands[NL80211_BAND_2GHZ] = &(priv->band_2GHz);
 
 	priv->band_5GHz.band = NL80211_BAND_5GHZ;
@@ -1990,6 +2064,11 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_5GHz.n_channels = ARRAY_SIZE(priv->channels_5GHz);
 	priv->band_5GHz.bitrates = priv->rates_5GHz;
 	priv->band_5GHz.n_bitrates = ARRAY_SIZE(priv->rates_5GHz);
+	priv->band_5GHz.ht_cap.ht_supported = true;
+	priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
+	memset(&priv->band_5GHz.ht_cap.mcs, 0, sizeof(priv->band_5GHz.ht_cap.mcs));
+	priv->band_5GHz.ht_cap.mcs.rx_mask[0] = 0xff;
+	priv->band_5GHz.ht_cap.mcs.tx_params = IEEE80211_HT_MCS_TX_DEFINED;
 	dev->wiphy->bands[NL80211_BAND_5GHZ] = &(priv->band_5GHz);
 
 	printk("%s openwifi_dev_probe: band_2GHz.n_channels %d n_bitrates %d band_5GHz.n_channels %d n_bitrates %d\n",sdr_compatible_str,

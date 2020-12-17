@@ -260,11 +260,12 @@ static const struct ieee80211_iface_combination openwifi_if_comb = {
 					BIT(NL80211_CHAN_WIDTH_80),
 };
 
-static const u8  wifi_rate_table_mapping[16] =     { 0,  0,  0,  0,  0,  0,  0,  0, 10,   8,   6,   4, 11,  9,  7, 5};
-static const u8  wifi_rate_table[16] =             { 0,  0,  0,  0,  0,  0,  0,  0, 48,  24,  12,   6, 54, 36, 18, 9};
-static const u8  wifi_rate_all[16] =               { 1,  2,  5, 11,  6,  9, 12, 18, 24,  36,  48,  54,  0,  0,  0, 0};
-static const u8  wifi_mcs_table_11b_force_up[16] = {11, 11, 11, 11, 11, 15, 10, 14,  9,  13,   8,  12,  0,  0,  0, 0};
-static const u16 wifi_n_dbps_table[16] =           {24, 24, 24, 24, 24, 36, 48, 72, 96, 144, 192, 216,  0,  0,  0, 0};
+static const u8  wifi_rate_table_mapping[24] =     { 0,  0,  0,   0,  0,  0,   0,   0,  10,   8,   6,   4,  11,   9,   7,  5,   0,    1,   2,   3,   4,   5,   6,   7};
+static const u16 wifi_rate_table[24] =             { 0,  0,  0,   0,  0,  0,   0,   0, 480, 240, 120,  60, 540, 360, 180, 90,  65,  130, 195, 260, 390, 520, 585, 650};
+static const u16 wifi_rate_all[20] =               {10, 20, 55, 110, 60, 90, 120, 180, 240, 360, 480, 540,  65, 130, 195, 260, 390, 520, 585, 650};
+static const u8  wifi_mcs_table_11b_force_up[16] = {11, 11, 11,  11, 11, 15,  10,  14,   9,  13,   8,  12,   0,   0,   0,  0};
+static const u16 wifi_n_dbps_table[16] =           {24, 24, 24,  24, 24, 36,  48,  72,  96, 144, 192, 216,   0,   0,   0,  0};
+static const u16 wifi_n_dbps_ht_table[16] =        {26, 26, 26,  26, 26, 52,  78, 104, 156, 208, 234, 260,   0,   0,   0,  0};
 // static const u8 wifi_mcs_table[8] =             {6,9,12,18,24,36,48,54};
 // static const u8 wifi_mcs_table_phy_tx[8]    =   {11,15,10,14,9,13,8,12};
 
