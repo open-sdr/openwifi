@@ -188,6 +188,24 @@ then
 fi
 sleep 0.5
 
+SUBMODULE=wp4-p4
+if [ $last_input == "remote" ]
+  then
+    rm $SUBMODULE.ko
+    sync
+    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
+    sync
+fi
+rmmod $SUBMODULE
+insmod $SUBMODULE.ko
+
+echo check $SUBMODULE module is loaded or not
+checkModule $SUBMODULE
+if [ $? -eq 1 ]
+then
+  return
+fi
+
 PROG=sdr
 if [ $last_input == "remote" ]
   then

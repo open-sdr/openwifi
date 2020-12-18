@@ -1,8 +1,8 @@
   
 #!/bin/bash
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 7 ]; then
     echo "You have input $# arguments."
-    echo "You must enter exactly 4 arguments: \$OPENWIFI_DIR \$XILINX_DIR \$BOARD_NAME \$SDCARD_DIR"
+    echo "You must enter exactly 7 arguments: \$OPENWIFI_DIR \$XILINX_DIR \$BOARD_NAME \$SDCARD_DIR \$OPENWIFI_IP \$OPENWIFI_NETMASK \$OPENWIFI_GW"
     exit 1
 fi
 
@@ -10,6 +10,9 @@ OPENWIFI_DIR=$1
 XILINX_DIR=$2
 BOARD_NAME=$3
 SDCARD_DIR=$4
+OPENWIFI_IP=$5
+OPENWIFI_NETMASK=$6
+OPENWIFI_GW=$7
 
 if [ -f "$OPENWIFI_DIR/LICENSE" ]; then
     echo "\$OPENWIFI_DIR is found!"
@@ -152,7 +155,7 @@ sudo cp $OPENWIFI_DIR/kernel_boot/70-persistent-net.rules $SDCARD_DIR/rootfs/etc
 sudo mv $SDCARD_DIR/rootfs/lib/udev/rules.d/75-persistent-net-generator.rules $SDCARD_DIR/rootfs/lib/udev/rules.d/75-persistent-net-generator.rules.bak
 
 # Some setup
-sudo echo -e "\nauto lo eth0\niface lo inet loopback\niface eth0 inet static\naddress 192.168.10.122\nnetmask 255.255.255.0\n" | sudo tee -a $SDCARD_DIR/rootfs/etc/network/interfaces
+sudo echo -e "\nauto lo eth0\niface lo inet loopback\niface eth0 inet static\naddress "$OPENWIFI_IP"\nnetmask "$OPENWIFI_NETMASK"\ngateway "$OPENWIFI_GW"\n" | sudo tee -a $SDCARD_DIR/rootfs/etc/network/interfaces
 sudo echo -e "\nnameserver 8.8.8.8\nnameserver 4.4.4.4\n" | sudo tee -a $SDCARD_DIR/rootfs/etc/resolv.conf
 sudo echo -e "\nUseDNS no\n" | sudo tee -a $SDCARD_DIR/rootfs/etc/ssh/sshd_config
 sudo echo -e "\nnet.ipv4.ip_forward=1\n" | sudo tee -a $SDCARD_DIR/rootfs/etc/sysctl.conf
