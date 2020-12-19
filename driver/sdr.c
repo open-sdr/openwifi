@@ -70,6 +70,18 @@ MODULE_LICENSE("GPL v2");
 module_param(test_mode, int, 0);
 MODULE_PARM_DESC(myint, "test_mode. 0 normal; 1 rx test");
 
+static inline void dump_rx_packet(u8 *ptr)
+{
+	int i;
+
+	printk("###############################################\n");
+	for (i = 0; i < 64; i = i + 16)
+		printk("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", *(ptr + i),
+		*(ptr + i + 1), *(ptr + i + 2) , *(ptr + i + 3) , *(ptr + i + 4), *(ptr + i + 5), *(ptr + i + 6), *(ptr + i + 7),
+		*(ptr + i + 8), *(ptr + i + 9), *(ptr + i + 10) , *(ptr + i + 11) , *(ptr + i + 12), *(ptr + i + 13), *(ptr + i + 14), *(ptr + i + 15));
+	printk("###############################################\n\n");
+}
+
 // ---------------rfkill---------------------------------------
 static bool openwifi_is_radio_enabled(struct openwifi_priv *priv)
 {
@@ -316,6 +328,8 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct sk_buff *skb;
 	struct ieee80211_hdr *hdr;
 	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi;//, fc_di;
+	int aux_val_1, aux_val_2;
+	u32 aux_val_3, aux_val_4;
 	// u32 dma_driver_buf_idx_mod;
 	u8 *pdata_tmp, fcs_ok, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
@@ -335,14 +349,18 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		tsft_high =    (*((u32*)(pdata_tmp+4 )));
 		rssi_val =     (*((u16*)(pdata_tmp+8 )));
 		len =          (*((u16*)(pdata_tmp+12)));
-
-		len_overflow = (len>(RX_BD_BUF_SIZE-16)?true:false);
-
 		rate_idx =     (*((u16*)(pdata_tmp+14)));
+
+		aux_val_1 =	   (*((int*)(pdata_tmp+16)));
+		aux_val_2 =	   (*((int*)(pdata_tmp+20)));
+		aux_val_3 =	   (*((u32*)(pdata_tmp+24)));
+		aux_val_4 =	   (*((u32*)(pdata_tmp+28)));
+
+		len_overflow = (len>(RX_BD_BUF_SIZE-32)?true:false);
 		short_gi =     ((rate_idx&0x20)!=0);
 		rate_idx =     (rate_idx&0xDF);
 
-		fcs_ok = ( len_overflow?0:(*(( u8*)(pdata_tmp+16+len-1))) );
+		fcs_ok = ( len_overflow?0:(*(( u8*)(pdata_tmp+32+len-1))) );
 
 		//phy_rx_sn_hw = (fcs_ok&(NUM_RX_BD-1));
 		// phy_rx_sn_hw = (fcs_ok&0x7f);//0x7f is FPGA limitation
@@ -374,7 +392,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		// addr3_high16 = (*((u16*)(pdata_tmp+16+12+4)));
 		// addr3_low32  = (*((u32*)(pdata_tmp+16+12+4+2)));
 		if ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&2) || ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) && fcs_ok==0 ) ) {
-			hdr = (struct ieee80211_hdr *)(pdata_tmp+16);
+			hdr = (struct ieee80211_hdr *)(pdata_tmp+32);
 			addr1_low32  = *((u32*)(hdr->addr1+2));
 			addr1_high16 = *((u16*)(hdr->addr1));
 			if (len>=20) {
@@ -395,11 +413,15 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 					sc, fcs_ok, target_buf_idx_old, signal);
 		}
 		
+		printk("\n** Packet received - Size = %d bytes : RSSI = %d : Signal = %d **\n", len, rssi_val, signal);
+		dump_rx_packet(pdata_tmp);
+		printk("aux_vals: %d %d %08X %08X\n", aux_val_1, aux_val_2, aux_val_3, aux_val_4);
+
 		// priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
 		if (content_ok) {
 			skb = dev_alloc_skb(len);
 			if (skb) {
-				skb_put_data(skb,pdata_tmp+16,len);
+				skb_put_data(skb,pdata_tmp+32,len);
 
 				rx_status.antenna = 0;
 				// def in ieee80211_rate openwifi_rates 0~11. 0~3 11b(1M~11M), 4~11 11a/g(6M~54M)
@@ -489,7 +511,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 
 			tx_result_report = (reg_val&0x1F);
 			if ( !(info->flags & IEEE80211_TX_CTL_NO_ACK) ) {
-				if ((tx_result_report&0x10)==0)
+				if ((tx_result_report&0x10)==0 || priv->drv_xpu_reg_val[0])
 					info->flags |= IEEE80211_TX_STAT_ACK;
 
 				// printk("%s openwifi_tx_interrupt: rate&try: %d %d %03x; %d %d %03x; %d %d %03x; %d %d %03x\n", sdr_compatible_str,
