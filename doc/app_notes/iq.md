@@ -34,6 +34,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   (for zed, adrv9364z7020, zc702 board, add argument that euqals to iq_len_init, like 4095)
   ```
   The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see 3 figures showing run-time **IQ sample**, **AGC gain and lock status** and **RSSI (uncalibrated)**. Meanwhile the python script prints the **timestamp**.
+  ![](./iq-screen-shot.jpg)
   
   While running, all informations are also stored into a file **iq.txt**. A matlab script **test_iq_file_display.m** is offered to help you do analysis on the IQ Information offline. For zed, adrv9364z7020, zc702 board, do not forget to change the **iq_len** in the matlab script to 4095.
 
