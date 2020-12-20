@@ -74,12 +74,12 @@ static inline void dump_rx_packet(u8 *ptr)
 {
 	int i;
 
-	printk("###############################################\n");
+	printk("\n###############################################\n");
 	for (i = 0; i < 64; i = i + 16)
 		printk("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", *(ptr + i),
 		*(ptr + i + 1), *(ptr + i + 2) , *(ptr + i + 3) , *(ptr + i + 4), *(ptr + i + 5), *(ptr + i + 6), *(ptr + i + 7),
 		*(ptr + i + 8), *(ptr + i + 9), *(ptr + i + 10) , *(ptr + i + 11) , *(ptr + i + 12), *(ptr + i + 13), *(ptr + i + 14), *(ptr + i + 15));
-	printk("###############################################\n\n");
+	printk("###############################################\n");
 }
 
 // ---------------rfkill---------------------------------------
@@ -327,7 +327,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct ieee80211_rx_status rx_status = {0};
 	struct sk_buff *skb;
 	struct ieee80211_hdr *hdr;
-	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi;//, fc_di;
+	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi, fc_di;
 	int aux_val_1, aux_val_2;
 	u32 aux_val_3, aux_val_4;
 	// u32 dma_driver_buf_idx_mod;
@@ -351,10 +351,10 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		len =          (*((u16*)(pdata_tmp+12)));
 		rate_idx =     (*((u16*)(pdata_tmp+14)));
 
-		aux_val_1 =	   (*((int*)(pdata_tmp+16)));
-		aux_val_2 =	   (*((int*)(pdata_tmp+20)));
-		aux_val_3 =	   (*((u32*)(pdata_tmp+24)));
-		aux_val_4 =	   (*((u32*)(pdata_tmp+28)));
+		aux_val_1 =	   (*((int*)(pdata_tmp+16)));	// phase_offset_full_out
+		aux_val_2 =	   (*((int*)(pdata_tmp+20)));	// pilot_phase_out
+		aux_val_3 =	   (*((u32*)(pdata_tmp+24)));	// mag_sq_out
+		aux_val_4 =	   (*((u32*)(pdata_tmp+28)));	// unused
 
 		len_overflow = (len>(RX_BD_BUF_SIZE-32)?true:false);
 		short_gi =     ((rate_idx&0x20)!=0);
@@ -384,13 +384,15 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		else
 			signal = rssi_val - priv->rssi_correction;
 
-		// fc_di =        (*((u32*)(pdata_tmp+16)));
-		// addr1_high16 = (*((u16*)(pdata_tmp+16+4)));
-		// addr1_low32  = (*((u32*)(pdata_tmp+16+4+2)));
-		// addr2_high16 = (*((u16*)(pdata_tmp+16+6+4)));
-		// addr2_low32  = (*((u32*)(pdata_tmp+16+6+4+2)));
-		// addr3_high16 = (*((u16*)(pdata_tmp+16+12+4)));
-		// addr3_low32  = (*((u32*)(pdata_tmp+16+12+4+2)));
+		hdr = (struct ieee80211_hdr *)(pdata_tmp+32);
+		fc_di =        (*((u32*)(pdata_tmp+32)));
+		addr1_high16 = (*((u16*)(pdata_tmp+32+4)));
+		addr1_low32  = (*((u32*)(pdata_tmp+32+4+2)));
+		addr2_high16 = (*((u16*)(pdata_tmp+32+6+4)));
+		addr2_low32  = (*((u32*)(pdata_tmp+32+6+4+2)));
+		addr3_high16 = (*((u16*)(pdata_tmp+32+12+4)));
+		addr3_low32  = (*((u32*)(pdata_tmp+32+12+4+2)));
+
 		if ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&2) || ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) && fcs_ok==0 ) ) {
 			hdr = (struct ieee80211_hdr *)(pdata_tmp+32);
 			addr1_low32  = *((u32*)(hdr->addr1+2));
@@ -413,9 +415,9 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 					sc, fcs_ok, target_buf_idx_old, signal);
 		}
 		
-		printk("\n** Packet received - Size = %d bytes : RSSI = %d : Signal = %d **\n", len, rssi_val, signal);
 		dump_rx_packet(pdata_tmp);
-		printk("aux_vals: %d %d %08X %08X\n", aux_val_1, aux_val_2, aux_val_3, aux_val_4);
+		printk("** Packet received: %4d bytes / ht: %d %3dM / FC: %04x / DI: %04x / addr1/2/3: %04x%08x/%04x%08x/%04x%08x / SC: %04x / fcs: %d / buf_idx: %d / RSSI: %d / Signal: %ddBm\n", len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), sc, fcs_ok, target_buf_idx_old, rssi_val, signal);
+		printk("** Phase offset: %d / Pilot offset: %d / Mag Sq: %d / Unused: %08X\n\n",  aux_val_1, aux_val_2, aux_val_3, aux_val_4);
 
 		// priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
 		if (content_ok) {
