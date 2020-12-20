@@ -28,6 +28,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   python3 side_info_display.py
   ```
   The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see 3 figures showing run-time **frequency offset**, **channel state/response** and **constellation form equalizer**. Meanwhile the python script prints the **timestamp**.
+  ![](./csi-screen-shot.jpg)
   
   While running, all informations are also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.
 
