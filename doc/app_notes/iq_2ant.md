@@ -1,6 +1,7 @@
 Instead of [**normal IQ sample capture**](iq.md), this app note introduces how to enable the I/Q capture for dual antennas. Besides the I/Q from the main antenna (that is selected by baseband), the I/Q samples from the other antenna (monitoring antenna) is captured as well (coherently synchronized) in this dual antenna mode. You are suggested to read the [**normal IQ sample capture**](iq.md) to understand how we use the side channel to capture I/Q samples by different trigger conditions.
 
 In this app note, we show how to use the dual antenna I/Q capture to capture the collision.
+![](./iq_2ant-setup.png)
 
 ## Quick start
   The main antenna rx0 (by default selected by baseband if you do not select explicitly by set_ant.sh) is always used for communication and I/Q capture. Meanwhile, the other antenna (rx1 -- monitoring antenna) will be also available for capturing rx I/Q if you are using AD9361 based RF board, such as fmcomms2/3 and adrv9361z7035, by turning on the **dual antenna capture** mode. In this case, you can place the other antenna (rx1) close to the communication peer (for example, the other WiFi node) to capture the potential collision by monitoring rx1 I/Q. The nature of collision is that both sides of a communication link are trying to do transmission at the same time.
