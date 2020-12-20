@@ -40,7 +40,9 @@ In this app note, we show how to use the dual antenna I/Q capture to capture the
   python3 iq_capture_2ant.py
   (if smaller FPGA, like z7020, is used, add a argument that equals to iq_len_init, like 4095)
   ```
-  Above script will plot the real-time rx0 and rx1 I/Q captured each time trigger condition met. Meanwhile the script also prints the maximum amplitutde of the rx0 and rx1 I/Q samples. Check the 3rd column that is displayed by the script: Those small value printing indicate noise (most probably, because the rx1 gain is very low). The big value printing indicate a packet from rx1 (although rx1 has very low gain, rx1 is very close to the peer WiFi node). Go through the noise and the packet max I/Q amplitude numbers from rx1 printing (the 3rd column), and decide a threshold value that is significantly higher than the noise but less than those big values (packets).
+  Above script will plot the real-time rx0 and rx1 I/Q captured each time trigger condition met. 
+  ![](./iq_2ant-screen-shot.jpg)
+  Meanwhile the script also prints the maximum amplitutde of the rx0 and rx1 I/Q samples. Check the 3rd column that is displayed by the script: Those small value printing indicate noise (most probably, because the rx1 gain is very low). The big value printing indicate a packet from rx1 (although rx1 has very low gain, rx1 is very close to the peer WiFi node). Go through the noise and the packet max I/Q amplitude numbers from rx1 printing (the 3rd column), and decide a threshold value that is significantly higher than the noise but less than those big values (packets).
   - Set trigger condition to 29, which means that rx1 I/Q is found larger than a threshold while SDR is transmitting -- this means a collision condition is captured because rx1 I/Q implies the transmitting from the peer WiFi node. The threshold value is decided in the previous step (2500 is assumed here).
   ```
   (Quit side_ch_ctl by Ctrl+C)
