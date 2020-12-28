@@ -400,7 +400,7 @@ static inline u32 hw_init(enum xpu_mode mode){
 	//xpu_api->XPU_REG_CSMA_DEBUG_write((1<<31)|(20<<24)|(4<<19)|(3<<14)|(10<<7)|(5));
 	xpu_api->XPU_REG_CSMA_DEBUG_write(0);
 	
-	xpu_api->XPU_REG_CSMA_CFG_write(3); //normal CSMA
+	xpu_api->XPU_REG_CSMA_CFG_write(268435459); // 0x10000003, min CSMA cw exp = 3, set bit 28 high for dynamic CW 
 	// xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); //high priority
 
 	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately

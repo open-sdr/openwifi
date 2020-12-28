@@ -442,7 +442,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 	struct openwifi_ring *ring;
 	struct sk_buff *skb;
 	struct ieee80211_tx_info *info;
-	u32 reg_val, hw_queue_len, prio, queue_idx, dma_fifo_no_room_flag, loop_count=0;//, i;
+	u32 reg_val, hw_queue_len, prio, queue_idx, dma_fifo_no_room_flag, cw, loop_count=0;//, i;
 	u8 tx_result_report;
 	// u16 prio_rd_idx_store[64]={0};
 
@@ -450,8 +450,9 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 
 	while(1) { // loop all packets that have been sent by FPGA
 		reg_val = tx_intf_api->TX_INTF_REG_PKT_INFO_read();
-		if (reg_val!=0x7FFFF) {
-			prio = (reg_val>>(5+NUM_BIT_MAX_PHY_TX_SN+NUM_BIT_MAX_NUM_HW_QUEUE));
+		if (reg_val!=0x7FFFFF) {
+			prio = ((0x7FFFF & reg_val)>>(5+NUM_BIT_MAX_PHY_TX_SN+NUM_BIT_MAX_NUM_HW_QUEUE));
+			cw = (reg_val>>(2+5+NUM_BIT_MAX_PHY_TX_SN+NUM_BIT_MAX_NUM_HW_QUEUE));
 			ring = &(priv->tx_ring[prio]);
 			ring->bd_rd_idx = ((reg_val>>5)&MAX_PHY_TX_SN);
 			skb = ring->bds[ring->bd_rd_idx].skb_linked;
@@ -506,6 +507,8 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 			
 			if ( (tx_result_report&0x10) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
 				printk("%s openwifi_tx_interrupt: WARNING tx_result %02x prio%d wr%d rd%d\n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx);
+			if ( ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
+				printk("%s openwifi_tx_interrupt: tx_result %02x prio%d wr%d rd%d cw %d\n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx, cw);
 
 			ieee80211_tx_status_irqsafe(dev, skb);
 			
@@ -981,7 +984,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	xpu_api->hw_init(priv->xpu_cfg);
 
 	agc_gain_delay = 50; //samples
-	rssi_half_db_offset = 150;
+	rssi_half_db_offset = 134; // to be consistent 
 	xpu_api->XPU_REG_RSSI_DB_CFG_write(0x80000000|((rssi_half_db_offset<<16)|agc_gain_delay) );
 	xpu_api->XPU_REG_RSSI_DB_CFG_write((~0x80000000)&((rssi_half_db_offset<<16)|agc_gain_delay) );
 	
