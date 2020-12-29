@@ -978,7 +978,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
 
 	rx_intf_api->hw_init(priv->rx_intf_cfg,8,8);
-	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8);
+	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8,priv->fpga_type);
 	openofdm_tx_api->hw_init(priv->openofdm_tx_cfg);
 	openofdm_rx_api->hw_init(priv->openofdm_rx_cfg);
 	xpu_api->hw_init(priv->xpu_cfg);
@@ -1836,7 +1836,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	struct ieee80211_hw *dev;
 	struct openwifi_priv *priv;
 	int err=1, rand_val;
-	const char *chip_name;
+	const char *chip_name, *fpga_model;
 	u32 reg;//, reg1;
 
 	struct device_node *np = pdev->dev.of_node;
@@ -1870,6 +1870,19 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
 	priv = dev->priv;
 	priv->pdev = pdev;
+
+	err = of_property_read_string(of_find_node_by_path("/"), "model", &fpga_model);
+	if(err < 0) {
+		printk("%s openwifi_dev_probe: WARNING unknown openwifi FPGA model %d\n",sdr_compatible_str, err);
+		priv->fpga_type = SMALL_FPGA;
+	} else {
+		// LARGE FPGAs (i.e. ZCU102, Z7035, ZC706)
+		if(strstr(fpga_model, "ZCU102") != NULL || strstr(fpga_model, "Z7035") != NULL || strstr(fpga_model, "ZC706") != NULL)
+			priv->fpga_type = LARGE_FPGA;
+		// SMALL FPGA: (i.e. ZED, ZC702, Z7020)
+		else if(strstr(fpga_model, "ZED") != NULL || strstr(fpga_model, "ZC702") != NULL || strstr(fpga_model, "Z7020") != NULL)
+			priv->fpga_type = SMALL_FPGA;
+	}
 
 	// //-------------find ad9361-phy driver for lo/channel control---------------
 	priv->actual_rx_lo = 0;
@@ -2024,7 +2037,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	printk("%s openwifi_dev_probe: ad9361_update_rf_bandwidth %dHz err %d\n",sdr_compatible_str, priv->rf_bw,err);
 
 	rx_intf_api->hw_init(priv->rx_intf_cfg,8,8);
-	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8);
+	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8,priv->fpga_type);
 	openofdm_tx_api->hw_init(priv->openofdm_tx_cfg);
 	openofdm_rx_api->hw_init(priv->openofdm_rx_cfg);
 	printk("%s openwifi_dev_probe: rx_intf_cfg %d openofdm_rx_cfg %d tx_intf_cfg %d openofdm_tx_cfg %d\n",sdr_compatible_str, priv->rx_intf_cfg, priv->openofdm_rx_cfg, priv->tx_intf_cfg, priv->openofdm_tx_cfg);

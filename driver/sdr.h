@@ -304,6 +304,7 @@ struct openwifi_priv {
 	struct ieee80211_vif *vif[MAX_NUM_VIF];
 
 	const struct openwifi_rf_ops *rf;
+	enum openwifi_fpga_type fpga_type;
 
 	struct cf_axi_dds_state *dds_st;  //axi_ad9361 hdl ref design module, dac channel
 	struct axiadc_state *adc_st;      //axi_ad9361 hdl ref design module, adc channel

@@ -194,7 +194,7 @@ static struct tx_intf_driver_api tx_intf_driver_api_inst;
 static struct tx_intf_driver_api *tx_intf_api = &tx_intf_driver_api_inst;
 EXPORT_SYMBOL(tx_intf_api);
 
-static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps){
+static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps, enum openwifi_fpga_type fpga_type){
 	int err=0, i;
 	u32 mixer_cfg=0, duc_input_ch_sel = 0, ant_sel=0;
 
@@ -208,7 +208,12 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 	for (i=0;i<8;i++)
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 
-	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+
+	if(fpga_type == LARGE_FPGA)	// LARGE FPGA: MAX_NUM_DMA_SYMBOL = 8192
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+	else if(fpga_type == SMALL_FPGA)	// SMALL FPGA: MAX_NUM_DMA_SYMBOL = 4096
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+
 	switch(mode)
 	{
 		case TX_INTF_AXIS_LOOP_BACK:
@@ -378,9 +383,9 @@ static int dev_probe(struct platform_device *pdev)
 
 	printk("%s dev_probe succeed!\n", tx_intf_compatible_str);
 
-	//err = hw_init(TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1, 8, 8);
-	//err = hw_init(TX_INTF_BYPASS, 8, 8);
-	err = hw_init(TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1, 8, 8); // make sure dac is connected to original ad9361 dma
+	//err = hw_init(TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1, 8, 8, SMALL_FPGA);
+	//err = hw_init(TX_INTF_BYPASS, 8, 8, SMALL_FPGA);
+	err = hw_init(TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1, 8, 8, SMALL_FPGA); // make sure dac is connected to original ad9361 dma
 
 	return err;
 }
