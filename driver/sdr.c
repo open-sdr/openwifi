@@ -984,7 +984,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	xpu_api->hw_init(priv->xpu_cfg);
 
 	agc_gain_delay = 50; //samples
-	rssi_half_db_offset = 134; // to be consistent 
+	rssi_half_db_offset = 150; // to be consistent 
 	xpu_api->XPU_REG_RSSI_DB_CFG_write(0x80000000|((rssi_half_db_offset<<16)|agc_gain_delay) );
 	xpu_api->XPU_REG_RSSI_DB_CFG_write((~0x80000000)&((rssi_half_db_offset<<16)|agc_gain_delay) );
 	
