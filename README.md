@@ -270,3 +270,7 @@ Any use of openwifi project which results in a publication should include a cita
             year = {2019},
 }
 ```
+
+## License
+
+This project is available as open source under the terms of the AGPL 3.0 Or later. However, some elements are being licensed under GPL 2-0 or later and BSD 3 license . For accurate information, please check individual files.
