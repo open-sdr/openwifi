@@ -1,10 +1,8 @@
 /*
  * AD9361
- *
- * Copyright 2013-2018 Analog Devices Inc.
- *
- * Licensed under the GPL-2.
- */
+ * SPDX-FileCopyrightText: Copyright 2013-2018 Analog Devices Inc..
+ * SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #ifndef IIO_AD9361_REGS_H_
 #define IIO_AD9361_REGS_H_

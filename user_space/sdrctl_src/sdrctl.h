@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+*/
+
 #ifndef __IW_H
 #define __IW_H
 

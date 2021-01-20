@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+
 checkModule () {
   MODULE="$1"
   if lsmod | grep "$MODULE" &> /dev/null ; then

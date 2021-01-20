@@ -1,12 +1,9 @@
 /*
- * AD9361 - Private definitions to be used only in the ad9361.c file
- *
- * Copyright 2013-2018 Analog Devices Inc.
- * 
+ * AD9361 - Private definitions to be used only in the ad9361.c fileer
+ * SPDX-FileCopyrightText: Copyright 2013-2018 Analog Devices Inc.
  * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
- *
- * Licensed under the GPL-2.
- */
+ * SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #ifndef IIO_AD9361_PRIVATE_H_
 #define IIO_AD9361_PRIVATE_H_

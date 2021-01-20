@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # openwifi
 <img src="./openwifi-arch.jpg" width="900">
 

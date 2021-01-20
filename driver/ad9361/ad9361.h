@@ -1,12 +1,9 @@
 /*
  * AD9361
- *
- * Copyright 2013-2018 Analog Devices Inc.
- * 
+ * SPDX-FileCopyrightText: Copyright 2013-2018 Analog Devices Inc
  * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
- *
- * Licensed under the GPL-2.
- */
+ * SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #ifndef IIO_FREQUENCY_AD9361_H_
 #define IIO_FREQUENCY_AD9361_H_

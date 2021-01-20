@@ -1,4 +1,7 @@
-
+<!--
+SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
 ===============Following are obsolete content=================
 
 Currently used driver xilinx_dma-orig.c is based on 552d3f11e374ca0d435aa93a571507819eabdda2 of https://github.com/Xilinx/linux-xlnx )

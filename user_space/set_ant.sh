@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 if [ "$#" -ne 2 ]; then
     echo "Need 2 arguments. The 1st select rx antenna. The 2nd for tx antenna."
     echo "Eg, "

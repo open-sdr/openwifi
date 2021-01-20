@@ -1,4 +1,5 @@
-// Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+// SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 const char *sdr_compatible_str = "sdr,sdr";
 

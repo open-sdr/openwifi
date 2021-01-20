@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+
 if [ "$#" -ne 1 ]; then
     echo "You must enter exactly 1 arguments: \$OPENWIFI_DIR"
     exit 1

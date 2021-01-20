@@ -1,8 +1,9 @@
 /*
  * nl80211 userspace tool
  *
- * Copyright 2007, 2008	Johannes Berg <johannes@sipsolutions.net>
- * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be;
+ * SPDX-FileCopyrightText: Copyright 2007, 2008 Johannes Berg <johannes@sipsolutions.net>
+ * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 #include <errno.h>
