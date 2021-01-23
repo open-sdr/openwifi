@@ -1,0 +1,1 @@
+cmd_/home/paul/Documents/GitHub/openwifi/driver/ad9361/ad9361_drv.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/paul/Documents/GitHub/openwifi/driver/ad9361/ad9361_drv.ko /home/paul/Documents/GitHub/openwifi/driver/ad9361/ad9361_drv.o /home/paul/Documents/GitHub/openwifi/driver/ad9361/ad9361_drv.mod.o ;  true

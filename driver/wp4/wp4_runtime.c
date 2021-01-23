@@ -1,0 +1,215 @@
+/*
+Copyright 2020 Paul Zanna.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+#include <linux/fs.h>
+#include <linux/debugfs.h>
+#include <linux/slab.h>
+#include <linux/mm.h>
+#include <linux/skbuff.h>  
+#include <linux/ftrace.h>
+
+#include "wp4_runtime.h"
+
+// length of the two memory areas
+#define FTPAGES      256
+#define PBPAGES      4 
+#ifndef VM_RESERVED
+# define  VM_RESERVED   (VM_DONTEXPAND | VM_DONTDUMP)
+#endif
+
+//  Local variables
+struct flow_table *flow_table;
+struct pbuffer *pk_buffer;
+struct dentry  *fileret, *dirret;
+struct mmap_info *op_info;
+
+// original pointer for kmalloc'd area as returned by kmalloc
+static void *flow_table_ptr;
+static void *pk_buffer_ptr;
+
+// Function declarations
+void mmap_open(struct vm_area_struct *vma);
+void mmap_close(struct vm_area_struct *vma);
+static int mmap_mmap(struct file *filp, struct vm_area_struct *vma);
+int mmap_kmem(struct file *filp, struct vm_area_struct *vma);
+
+// helper function, mmap's the kmalloc'd area which is physically contiguous
+int mmap_kmem_flow_table(struct file *filp, struct vm_area_struct *vma)
+{
+    int ret;
+    long length = vma->vm_end - vma->vm_start;
+
+    /* check length - do not allow larger mappings than the number of pages allocated */
+    if (length > FTPAGES * PAGE_SIZE) return -EIO;
+
+    /* map the whole physically contiguous area in one piece */
+    if ((ret = remap_pfn_range(vma, vma->vm_start, virt_to_phys((void *)flow_table) >> PAGE_SHIFT, length, vma->vm_page_prot)) < 0)
+    {
+        return ret;
+    }
+    
+    printk("WP4: flow table - vma->vm_start = %lx , vma->vm_end = %lx , length = %ld\n",vma->vm_start, vma->vm_end, length);
+    return 0;
+}
+
+int mmap_kmem_pk_buffer(struct file *filp, struct vm_area_struct *vma)
+{
+    int ret;
+    long length = vma->vm_end - vma->vm_start;
+
+    /* check length - do not allow larger mappings than the number of pages allocated */
+    if (length > PBPAGES * PAGE_SIZE) return -EIO;
+
+    /* set to not cache */
+    vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+    //vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+    
+    /* map the whole physically contiguous area in one piece */
+    if ((ret = remap_pfn_range(vma, vma->vm_start, virt_to_phys((void *)pk_buffer) >> PAGE_SHIFT, length, vma->vm_page_prot)) < 0)
+    {
+        return ret;
+    }
+    
+    printk("WP4: pk buffer - vma->vm_start = %lx , vma->vm_end = %lx , length = %ld\n",vma->vm_start, vma->vm_end, length);
+    return 0;
+}
+
+int mmapfop_close(struct inode *inode, struct file *filp)
+{
+	printk("WP4: mmap file closed\n");
+    return 0;
+}
+ 
+int mmapfop_open(struct inode *inode, struct file *filp)
+{
+    printk("WP4: mmap file opened.\n");
+    return 0;
+}
+ 
+static const struct file_operations mmap_fops = {
+    .open = mmapfop_open,
+    .release = mmapfop_close,
+    .mmap = mmap_mmap,
+    .owner = THIS_MODULE,
+};
+
+/* character device mmap method */
+static int mmap_mmap(struct file *filp, struct vm_area_struct *vma)
+{
+    printk("WP4: Called mmap - offset = %ld.\n", vma->vm_pgoff);
+    /* at offset 0 we map the kmalloc'd area */
+    if (vma->vm_pgoff == 0)
+    {
+        return mmap_kmem_flow_table(filp, vma);
+    }
+    /* at offset FTPAGES we map the kmalloc'd area */
+    if (vma->vm_pgoff == FTPAGES) {
+        return mmap_kmem_pk_buffer(filp, vma);
+    }
+
+    /* at any other offset we return an error */
+    return -EIO;
+}
+
+int table_init(void)
+{
+    /* allocate a memory area with kmalloc. Will be rounded up to a page boundary */
+    if ((flow_table_ptr = kmalloc((FTPAGES + 2) * PAGE_SIZE, GFP_KERNEL)) == NULL) 
+    {
+        return -1;
+    }
+    /* round it up to the page bondary */
+    flow_table = (struct flow_table *)((((unsigned long)flow_table_ptr) + PAGE_SIZE - 1) & PAGE_MASK);
+    printk("WP4: flow_table allocated at %p\n", (void*)flow_table);
+
+
+    /* allocate a memory area with kmalloc. Will be rounded up to a page boundary */
+    if ((pk_buffer_ptr = kmalloc((PBPAGES + 2) * PAGE_SIZE, GFP_KERNEL)) == NULL) 
+    {
+        return -1;
+    }
+    /* round it up to the page bondary */
+    pk_buffer = (struct pbuffer *)((((unsigned long)pk_buffer_ptr) + PAGE_SIZE - 1) & PAGE_MASK);
+    printk("WP4: pk_buffer allocated at %p\n", (void*)pk_buffer);
+
+
+    /* mark the pages reserved */
+    for (int i = 0; i < FTPAGES * PAGE_SIZE; i+= PAGE_SIZE)
+    {
+        SetPageReserved(virt_to_page(((unsigned long)flow_table) + i));
+    }
+
+    /* mark the pages reserved */
+    for (int i = 0; i < PBPAGES * PAGE_SIZE; i+= PAGE_SIZE)
+    {
+        SetPageReserved(virt_to_page(((unsigned long)pk_buffer) + i));
+    }
+    
+    memset(flow_table, 0, FTPAGES * PAGE_SIZE);
+    memset(pk_buffer, 0, PBPAGES * PAGE_SIZE);
+
+    dirret = debugfs_create_dir("openflow", NULL);
+    fileret = debugfs_create_file("data", 0644, dirret, NULL, &mmap_fops);
+
+    return 0;
+}
+
+void table_exit(void)
+{
+    debugfs_remove_recursive(dirret);
+    return;
+}
+
+/*
+ *  Packet poll request
+ *
+ *  @param skb - pointer to the packet buffer.
+ *  @param dev - pointer to the device.
+ *
+ */
+struct packet_out CPU_Port(int buffer_id)
+{
+    struct packet_out pkt_out;
+
+    pkt_out.inport = 0;
+    pkt_out.outport = -1;
+    pkt_out.dev = NULL;
+    pkt_out.skb = NULL;
+
+    if(pk_buffer->buffer[buffer_id].type == PB_PENDING || pk_buffer->buffer[buffer_id].type == PB_PACKETIN) pk_buffer->buffer[buffer_id].age++;
+    
+    // Buffer entry has timed out so remove entry
+    if (pk_buffer->buffer[buffer_id].age > 4)
+    {
+        pk_buffer->buffer[buffer_id].age = 0;
+        pk_buffer->buffer[buffer_id].type = PB_EMPTY;
+        printk("WP4: Packet Buffer %d timed out!\n", buffer_id);
+        kfree_skb(pk_buffer->buffer[buffer_id].skb);
+        return pkt_out;
+    }
+
+    // Buffer entry is a PACKET OUT so return details
+    if(pk_buffer->buffer[buffer_id].type == PB_PACKETOUT)
+    {
+        pkt_out.skb = pk_buffer->buffer[buffer_id].skb;
+        pkt_out.inport = pk_buffer->buffer[buffer_id].inport;
+        pkt_out.outport = pk_buffer->buffer[buffer_id].outport;
+        printk("WP4: Packet out found in buffer %d - dev = 0x%p, skb = 0x%p, outport = 0x%x, inport = %d\n", buffer_id, (void*)pkt_out.dev, (void*)pkt_out.skb, pkt_out.outport, pkt_out.inport);
+        pk_buffer->buffer[buffer_id].type = PB_EMPTY;     
+        return pkt_out;
+    }
+    return pkt_out;
+}

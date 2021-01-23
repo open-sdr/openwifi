@@ -9,7 +9,7 @@
 #include <linux/mm.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
-
+#include "wp4_runtime.h"
 
 #include "wp4-p4.h"
 
@@ -18,6 +18,7 @@
 
 static int __init wp4_init(void) {
    printk(KERN_INFO "WP4: Loading WP4 LKM!\n");
+   table_init();
    return 0;
 }
 

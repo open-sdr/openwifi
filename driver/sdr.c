@@ -415,9 +415,10 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 					sc, fcs_ok, target_buf_idx_old, signal);
 		}
 		
-		dump_rx_packet(pdata_tmp);
-		printk("** Packet received: %4d bytes / ht: %d %3dM / FC: %04x / DI: %04x / addr1/2/3: %04x%08x/%04x%08x/%04x%08x / SC: %04x / fcs: %d / buf_idx: %d / RSSI: %d / Signal: %ddBm\n", len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), sc, fcs_ok, target_buf_idx_old, rssi_val, signal);
-		printk("** Phase offset: %d / Pilot offset: %d / Mag Sq: %d / Unused: %08X\n\n",  aux_val_1, aux_val_2, aux_val_3, aux_val_4);
+		//dump_rx_packet(pdata_tmp);
+		//printk("** Packet received: %4d bytes / ht: %d %3dM / FC: %04x / DI: %04x / addr1/2/3: %04x%08x/%04x%08x/%04x%08x / SC: %04x / fcs: %d / buf_idx: %d / RSSI: %d / Signal: %ddBm\n", len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), sc, fcs_ok, target_buf_idx_old, rssi_val, signal);
+		//printk("** Phase offset: %d / Pilot offset: %d / Mag Sq: %d / Unused: %08X\n\n",  aux_val_1, aux_val_2, aux_val_3, aux_val_4);
+		printk(",***,%lld,%04x%08x,%d,%d,%d,%d,%d,%d\n", (((u64)tsft_low) | (((u64)tsft_high)<<32)), reverse16(addr2_high16), reverse32(addr2_low32), aux_val_1, aux_val_2, aux_val_3, len, rssi_val, signal);
 
 		// priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
 		if (content_ok) {

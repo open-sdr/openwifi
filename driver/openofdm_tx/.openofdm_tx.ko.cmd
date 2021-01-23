@@ -1,0 +1,1 @@
+cmd_/home/paul/Documents/GitHub/openwifi/driver/openofdm_tx/openofdm_tx.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/paul/Documents/GitHub/openwifi/driver/openofdm_tx/openofdm_tx.ko /home/paul/Documents/GitHub/openwifi/driver/openofdm_tx/openofdm_tx.o /home/paul/Documents/GitHub/openwifi/driver/openofdm_tx/openofdm_tx.mod.o ;  true

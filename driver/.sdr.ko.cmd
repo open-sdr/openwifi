@@ -1,0 +1,1 @@
+cmd_/home/paul/Documents/GitHub/openwifi/driver/sdr.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/paul/Documents/GitHub/openwifi/driver/sdr.ko /home/paul/Documents/GitHub/openwifi/driver/sdr.o /home/paul/Documents/GitHub/openwifi/driver/sdr.mod.o ;  true
