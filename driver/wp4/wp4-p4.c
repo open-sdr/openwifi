@@ -24,18 +24,7 @@ static int __init wp4_init(void) {
 
 static void __exit wp4_exit(void) {
    printk(KERN_INFO "WP4: Removing WP4 LKM!\n");
-}
-
-static inline void dump_rx_packet(u8 *ptr)
-{
-    int i;
-    printk("\n");
-    printk("***********************************************\n");
-    for (i = 0; i < 64; i = i + 16)
-        printk("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", *(ptr + i),
-        *(ptr + i + 1), *(ptr + i + 2) , *(ptr + i + 3) , *(ptr + i + 4), *(ptr + i + 5), *(ptr + i + 6), *(ptr + i + 7),
-        *(ptr + i + 8), *(ptr + i + 9), *(ptr + i + 10) , *(ptr + i + 11) , *(ptr + i + 12), *(ptr + i + 13), *(ptr + i + 14), *(ptr + i + 15));
-    printk("***********************************************\n");
+   table_exit();
 }
 
 int wp4_packet_in(u8 *p_uc_data, u16 wp4_ul_size, u8 port){

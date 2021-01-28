@@ -17,7 +17,6 @@ limitations under the License.
 #include <linux/types.h>
 
 #define MAX_FLOWS    512
-#define MAX_TABLES      16
 #define SHARED_BUFFER_LEN 16384
 #define PACKET_BUFFER 32
 #define PACKET_BUFFER_SIZE 256
@@ -26,7 +25,9 @@ limitations under the License.
 #define PB_PACKETOUT 2
 #define PB_PENDING 3
 
+void dump_rx_packet(u8 *ptr);
 int table_init(void);
+void table_exit(void);
 struct packet_out CPU_Port(int buffer_id);
 
 struct flows_counter
@@ -64,7 +65,6 @@ struct packet_out
     u32 inport;
     u32 outport;
     struct sk_buff *skb; 
-    struct net_device *dev;
 };
 
 struct pbuffer

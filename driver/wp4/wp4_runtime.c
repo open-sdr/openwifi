@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #include <linux/fs.h>
-#include <linux/debugfs.h>
+#include <linux/proc_fs.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
 #include <linux/skbuff.h>  
@@ -24,8 +24,8 @@ limitations under the License.
 #include "wp4_runtime.h"
 
 // length of the two memory areas
-#define FTPAGES      256
-#define PBPAGES      4 
+#define FTPAGES      16
+#define PBPAGES      16 
 #ifndef VM_RESERVED
 # define  VM_RESERVED   (VM_DONTEXPAND | VM_DONTDUMP)
 #endif
@@ -34,7 +34,7 @@ limitations under the License.
 struct flow_table *flow_table;
 struct pbuffer *pk_buffer;
 struct dentry  *fileret, *dirret;
-struct mmap_info *op_info;
+//struct mmap_info *op_info;
 
 // original pointer for kmalloc'd area as returned by kmalloc
 static void *flow_table_ptr;
@@ -44,7 +44,31 @@ static void *pk_buffer_ptr;
 void mmap_open(struct vm_area_struct *vma);
 void mmap_close(struct vm_area_struct *vma);
 static int mmap_mmap(struct file *filp, struct vm_area_struct *vma);
-int mmap_kmem(struct file *filp, struct vm_area_struct *vma);
+int mmap_kmem_flow_table(struct file *filp, struct vm_area_struct *vma);
+int mmap_kmem_pk_buffer(struct file *filp, struct vm_area_struct *vma);
+
+static int mmap_fault(struct vm_fault *vmf);
+
+void dump_rx_packet(u8 *ptr)
+{
+    int i;
+    printk("\n");
+    printk("***********************************************\n");
+    for (i = 0; i < 64; i = i + 16)
+        printk("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", *(ptr + i),
+        *(ptr + i + 1), *(ptr + i + 2) , *(ptr + i + 3) , *(ptr + i + 4), *(ptr + i + 5), *(ptr + i + 6), *(ptr + i + 7),
+        *(ptr + i + 8), *(ptr + i + 9), *(ptr + i + 10) , *(ptr + i + 11) , *(ptr + i + 12), *(ptr + i + 13), *(ptr + i + 14), *(ptr + i + 15));
+    printk("***********************************************\n");
+    flow_table->iLastFlow++;
+    printk("iLastFlow %d\n", flow_table->iLastFlow);
+}
+
+
+struct mmap_info {
+    char *data;
+    int reference;
+};
+
 
 // helper function, mmap's the kmalloc'd area which is physically contiguous
 int mmap_kmem_flow_table(struct file *filp, struct vm_area_struct *vma)
@@ -98,13 +122,53 @@ int mmapfop_open(struct inode *inode, struct file *filp)
     printk("WP4: mmap file opened.\n");
     return 0;
 }
- 
-static const struct file_operations mmap_fops = {
+
+
+void mmap_open(struct vm_area_struct *vma)
+{
+    struct mmap_info *info = (struct mmap_info *)vma->vm_private_data;
+    info->reference++;
+}
+
+void mmap_close(struct vm_area_struct *vma)
+{
+    struct mmap_info *info = (struct mmap_info *)vma->vm_private_data;
+    info->reference--;
+}
+
+static int mmap_fault(struct vm_fault *vmf)
+{
+    printk("WP4: mmap fault.\n");
+    struct page *page;
+    struct mmap_info *info;
+    unsigned long address = (unsigned long)vmf->address;
+    //if (address > vma->vm_end) {
+    //    printk("WP4: mmap no data\n");
+    //    return VM_FAULT_SIGBUS;
+    //}
+    page = virt_to_page(info->data);
+    get_page(page);
+    vmf->page = page;
+    return 0;
+}
+
+
+static const struct file_operations mmap_fops = 
+{
     .open = mmapfop_open,
     .release = mmapfop_close,
     .mmap = mmap_mmap,
     .owner = THIS_MODULE,
 };
+
+
+struct vm_operations_struct mmap_vm_ops =
+{
+    .open = mmap_open,
+    .close = mmap_close,
+    .fault = mmap_fault,
+};
+
 
 /* character device mmap method */
 static int mmap_mmap(struct file *filp, struct vm_area_struct *vma)
@@ -161,15 +225,17 @@ int table_init(void)
     memset(flow_table, 0, FTPAGES * PAGE_SIZE);
     memset(pk_buffer, 0, PBPAGES * PAGE_SIZE);
 
-    dirret = debugfs_create_dir("openflow", NULL);
-    fileret = debugfs_create_file("data", 0644, dirret, NULL, &mmap_fops);
+    //dirret = debugfs_create_dir("wp4", NULL);
+    //fileret = debugfs_create_file("data", 0644, dirret, NULL, &mmap_fops);
+    proc_create("wp4_data", 0, NULL, &mmap_fops);
 
     return 0;
 }
 
 void table_exit(void)
 {
-    debugfs_remove_recursive(dirret);
+    //debugfs_remove_recursive(dirret);
+    remove_proc_entry("wp4_data", NULL);
     return;
 }
 
@@ -186,7 +252,6 @@ struct packet_out CPU_Port(int buffer_id)
 
     pkt_out.inport = 0;
     pkt_out.outport = -1;
-    pkt_out.dev = NULL;
     pkt_out.skb = NULL;
 
     if(pk_buffer->buffer[buffer_id].type == PB_PENDING || pk_buffer->buffer[buffer_id].type == PB_PACKETIN) pk_buffer->buffer[buffer_id].age++;
@@ -207,7 +272,7 @@ struct packet_out CPU_Port(int buffer_id)
         pkt_out.skb = pk_buffer->buffer[buffer_id].skb;
         pkt_out.inport = pk_buffer->buffer[buffer_id].inport;
         pkt_out.outport = pk_buffer->buffer[buffer_id].outport;
-        printk("WP4: Packet out found in buffer %d - dev = 0x%p, skb = 0x%p, outport = 0x%x, inport = %d\n", buffer_id, (void*)pkt_out.dev, (void*)pkt_out.skb, pkt_out.outport, pkt_out.inport);
+        printk("WP4: Packet out found in buffer %d, skb = 0x%p, outport = 0x%x, inport = %d\n", buffer_id, (void*)pkt_out.skb, pkt_out.outport, pkt_out.inport);
         pk_buffer->buffer[buffer_id].type = PB_EMPTY;     
         return pkt_out;
     }
