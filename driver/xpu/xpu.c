@@ -284,7 +284,7 @@ EXPORT_SYMBOL(xpu_api);
 
 static inline u32 hw_init(enum xpu_mode mode){
 	int err=0, i, rssi_half_db_th, rssi_half_db_offset, agc_gain_delay;
-	u32 filter_flag = 0;
+	u32 filter_flag = 0, reg_val;
 
 	printk("%s hw_init mode %d\n", xpu_compatible_str, mode);
 
@@ -395,7 +395,8 @@ static inline u32 hw_init(enum xpu_mode mode){
 	
 	//rssi_half_db_th = 70<<1; // with splitter
 	rssi_half_db_th = 87<<1; // -62dBm
-	xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
+	reg_val=xpu_api->XPU_REG_LBT_TH_read();
+	xpu_api->XPU_REG_LBT_TH_write((reg_val & 0xFFFF0000) | rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
 
 	//xpu_api->XPU_REG_CSMA_DEBUG_write((1<<31)|(20<<24)|(4<<19)|(3<<14)|(10<<7)|(5));
 	xpu_api->XPU_REG_CSMA_DEBUG_write(0);
