@@ -1,1 +1,0 @@
-cmd_/home/paul/Documents/GitHub/openwifi/driver/tx_intf/tx_intf.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/paul/Documents/GitHub/openwifi/driver/tx_intf/tx_intf.ko /home/paul/Documents/GitHub/openwifi/driver/tx_intf/tx_intf.o /home/paul/Documents/GitHub/openwifi/driver/tx_intf/tx_intf.mod.o ;  true

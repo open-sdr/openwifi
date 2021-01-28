@@ -1,1 +1,0 @@
-cmd_/home/paul/Documents/GitHub/openwifi/driver/wp4/wp4_p4_drv.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/paul/Documents/GitHub/openwifi/driver/wp4/wp4_p4_drv.ko /home/paul/Documents/GitHub/openwifi/driver/wp4/wp4_p4_drv.o /home/paul/Documents/GitHub/openwifi/driver/wp4/wp4_p4_drv.mod.o ;  true

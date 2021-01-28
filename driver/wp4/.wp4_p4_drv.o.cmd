@@ -1,1 +1,0 @@
-cmd_/home/paul/Documents/GitHub/openwifi/driver/wp4/wp4_p4_drv.o := arm-linux-gnueabihf-ld -EL    -r -o /home/paul/Documents/GitHub/openwifi/driver/wp4/wp4_p4_drv.o /home/paul/Documents/GitHub/openwifi/driver/wp4/wp4-p4.o /home/paul/Documents/GitHub/openwifi/driver/wp4/wp4_runtime.o 

@@ -1,1 +1,0 @@
-cmd_/home/paul/Documents/GitHub/openwifi/driver/xpu/xpu.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/paul/Documents/GitHub/openwifi/driver/xpu/xpu.ko /home/paul/Documents/GitHub/openwifi/driver/xpu/xpu.o /home/paul/Documents/GitHub/openwifi/driver/xpu/xpu.mod.o ;  true
