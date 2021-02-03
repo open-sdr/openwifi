@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz/software/linux/zynqmp
 
