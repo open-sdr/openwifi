@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 home_dir=$(pwd)
 
 if test -f "openwifi_ad9361_fir.ftr"; then

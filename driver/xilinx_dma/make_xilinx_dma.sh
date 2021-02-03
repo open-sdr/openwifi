@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 if [ "$#" -ne 3 ]; then
     echo "You must enter exactly 3 arguments: \$OPENWIFI_DIR \$XILINX_DIR \$ARCH(32 or 64)"
     exit 1

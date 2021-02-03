@@ -1,10 +1,8 @@
 /*
  * AD9361 Agile RF Transceiver
- *
- * Copyright 2013-2017 Analog Devices Inc.
- *
- * Licensed under the GPL-2.
- */
+ * SPDX-FileCopyrightText: Copyright 2013-2017 Analog Devices Inc
+ * SPDX-License-Identifier: GPL-2.0-or-later
+*/
 
 #include <linux/module.h>
 #include <linux/device.h>

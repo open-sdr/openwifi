@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz/software/linux/zynq_2014r2
 
 if [ "$#" -ne 1 ]; then

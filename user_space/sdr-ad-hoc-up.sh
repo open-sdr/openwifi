@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 if [ $# -ne 3 ]
   then
     echo "Please input NIC_name ch_number ip_addr as input parameter!"

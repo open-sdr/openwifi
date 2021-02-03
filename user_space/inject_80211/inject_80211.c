@@ -1,5 +1,7 @@
-// (c)2007 Andy Green <andy@warmcat.com>
-// (r)2020 Michael Tetemke Mehari <michael.mehari@ugent.be>
+// Modified by: Michael Mehari
+// SPDX-FileCopyrightText: 2020 UGent
+// SPDX-FileCopyrightText: 2007 Andy Green <andy@warmcat.com>
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 /*
  *   This program is free software; you can redistribute it and/or modify

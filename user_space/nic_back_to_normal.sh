@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 if [ $# -ne 1 ]
   then
     echo "Please input NIC name as input parameter!"

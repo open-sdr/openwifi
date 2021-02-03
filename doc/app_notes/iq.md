@@ -1,3 +1,10 @@
+<!--
+Author: Xianjun jiao
+SPDX-FileCopyrightText: 2019 UGent
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+
 We implement the **IQ sample capture** with interesting extensions: many **trigger conditions**; **RSSI**, RF chip **AGC** **status (lock/unlock)** and **gain**.
 
 ## Quick start

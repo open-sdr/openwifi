@@ -1,12 +1,9 @@
 /*
  * ADI-AIM ADI ADC Interface Module
- *
- * Copyright 2012-2017 Analog Devices Inc.
- *
- * Licensed under the GPL-2.
- *
+ * SPDX-FileCopyrightText: Copyright 2012-2017 Analog Devices Inc.
+ * SPDX-License-Identifier: GPL-2.0-or-later
  * http://wiki.analog.com/resources/fpga/xilinx/fmc/ad9467
- */
+*/
 
 #ifndef ADI_AXI_ADC_H_
 #define ADI_AXI_ADC_H_

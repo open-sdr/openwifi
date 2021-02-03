@@ -1,3 +1,10 @@
+<!--
+Author: Xianjun jiao
+SPDX-FileCopyrightText: 2019 UGent
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+
 Instead of [**normal IQ sample capture**](iq.md), this app note introduces how to enable the I/Q capture for dual antennas. Besides the I/Q from the main antenna (that is selected by baseband), the I/Q samples from the other antenna (monitoring antenna) is captured as well (coherently synchronized) in this dual antenna mode. You are suggested to read the [**normal IQ sample capture**](iq.md) to understand how we use the side channel to capture I/Q samples by different trigger conditions.
 
 In this app note, we show how to use the dual antenna I/Q capture to capture the collision.

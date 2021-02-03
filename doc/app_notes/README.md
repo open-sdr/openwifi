@@ -1,3 +1,9 @@
+<!--
+Author: Xianjun jiao
+SPDX-FileCopyrightText: 2019 UGent
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 Application notes collect many small topics about using openwifi in different scenarios/modes.
 
 - [Use openwifi on the w-iLab.t testbed remotely](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html)

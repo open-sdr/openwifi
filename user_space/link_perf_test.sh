@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Michael Mehari
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 PL_MIN=100
 PL_INC=100
 PL_MAX=1500

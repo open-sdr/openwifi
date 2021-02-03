@@ -1,5 +1,10 @@
   
 #!/bin/bash
+
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 if [ "$#" -ne 4 ]; then
     echo "You have input $# arguments."
     echo "You must enter exactly 4 arguments: \$OPENWIFI_DIR \$XILINX_DIR \$BOARD_NAME \$SDCARD_DIR"

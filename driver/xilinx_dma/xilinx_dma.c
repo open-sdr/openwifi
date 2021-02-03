@@ -1,11 +1,9 @@
 /*
  * DMA driver for Xilinx Video DMA Engine
- *
- * Copyright (C) 2010-2014 Xilinx, Inc. All rights reserved.
- *
- * Based on the Freescale DMA driver.
- * 
- * Modified by Xianjun Jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+ * SPDX-FileCopyrightText: Copyright (C) 2010-2014 Xilinx, Inc. All rights reserved
+ * Based on the Freescale DMA driver
+ * Modified by Xianjun Jiao
+ * SPDX-License-Identifier: GPL-2.0-or-later
  * 
  * Description:
  * The AXI Video Direct Memory Access (AXI VDMA) core is a soft Xilinx IP

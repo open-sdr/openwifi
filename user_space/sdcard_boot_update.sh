@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 if [ "$#" -ne 1 ]; then
     echo "You must enter the \$BOARD_NAME as argument"
     echo "Like: adrv9364z7020 adrv9361z7035 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 zcu102_fmcs2 zcu102_9371"
