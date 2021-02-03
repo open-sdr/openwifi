@@ -2,7 +2,7 @@
  * DMA driver for Xilinx Video DMA Engine
  * SPDX-FileCopyrightText: Copyright (C) 2010-2014 Xilinx, Inc. All rights reserved
  * Based on the Freescale DMA driver
- * Modified by Xianjun Jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+ * Modified by Xianjun Jiao
  * SPDX-License-Identifier: GPL-2.0-or-later
  * 
  * Description:
