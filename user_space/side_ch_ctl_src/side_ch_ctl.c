@@ -1,6 +1,7 @@
 /*
  * openwifi side channel user space program
- * SPDX-FileCopyrightText: 2019 Jiao Xianjun <putaoshu@msn.com>
+ * Author: Xianjun Jiao
+ * SPDX-FileCopyrightText: 2019 UGent
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
