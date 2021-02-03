@@ -1,7 +1,7 @@
 /*
  * AD9361 Agile RF Transceiver
  * SPDX-FileCopyrightText: Copyright 2013-2015 Analog Devices Inc.
- * Modified by Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+ * Modified by Xianjun jiao
  * SPDX-License-Identifier: GPL-2.0-or-later
 */
 //#define DEBUG
