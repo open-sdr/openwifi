@@ -3,14 +3,15 @@
 /*
  * 802.11 netlink interface public header
  *
- * Copyright 2006-2010 Johannes Berg <johannes@sipsolutions.net>
- * Copyright 2008 Michael Wu <flamingice@sourmilk.net>
- * Copyright 2008 Luis Carlos Cobo <luisca@cozybit.com>
- * Copyright 2008 Michael Buesch <m@bues.ch>
- * Copyright 2008, 2009 Luis R. Rodriguez <lrodriguez@atheros.com>
- * Copyright 2008 Jouni Malinen <jouni.malinen@atheros.com>
- * Copyright 2008 Colin McCabe <colin@cozybit.com>
- * Copyright 2015-2017	Intel Deutschland GmbH
+ * SPDX-FileCopyrightText: 2006-2010 Johannes Berg <johannes@sipsolutions.net>
+ * SPDX-FileCopyrightText: 2008 Michael Wu <flamingice@sourmilk.net>
+ * SPDX-FileCopyrightText: 2008 Luis Carlos Cobo <luisca@cozybit.com>
+ * SPDX-FileCopyrightText: 2008 Michael Buesch <m@bues.ch>
+ * SPDX-FileCopyrightText: 2008, 2009 Luis R. Rodriguez <lrodriguez@atheros.com>
+ * SPDX-FileCopyrightText: 2008 Jouni Malinen <jouni.malinen@atheros.com>
+ * SPDX-FileCopyrightText: 2008 Colin McCabe <colin@cozybit.com>
+ * SPDX-FileCopyrightText: 2015-2017	Intel Deutschland GmbH
+ * SPDX-License-Identifier: ISC
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
