@@ -233,7 +233,7 @@ static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 	for (i = 0; i < NUM_TX_BD; i++) {
 		ring->bds[i].skb_linked=0; // for tx, skb is from upper layer
 		//at first right after skb allocated, head, data, tail are the same.
-		ring->bds[i].dma_mapping_addr = 0; // for tx, mapping is done after skb is received from uppler layer in tx routine
+		ring->bds[i].dma_mapping_addr = 0; // for tx, mapping is done after skb is received from upper layer in tx routine
 	}
 
 	return 0;
