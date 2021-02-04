@@ -2280,7 +2280,7 @@
 #define POWER_DOWN_VARACTOR_REF		     (1 << 3) /* Power Down Varactor Ref */
 #define PWR_DOWN_VARACT_REF_TCF		     (1 << 2) /* Pwr Down Varact Ref Tcf */
 #define POWER_DOWN_CAL_TCF		     (1 << 1) /* Power Down Cal Tcf */
-#define POWER_DOWN_VCO_BUFFFER		     (1 << 0) /* Power Down VCO Bufffer */
+#define POWER_DOWN_VCO_BUFFER		     (1 << 0) /* Power Down VCO Buffer */
 
 /*
  * REG_RX_CP_OVERRANGE_VCO_LOCK
@@ -2515,7 +2515,7 @@
 #define POWER_DOWN_VARACTOR_REF		     (1 << 3) /* Power Down Varactor Ref */
 #define POWER_DOWN_VARACT_REF_TCF	     (1 << 2) /* Power Down Varact Ref Tcf */
 #define POWER_DOWN_CAL_TCF		     (1 << 1) /* Power Down Cal Tcf */
-#define POWER_DOWN_VCO_BUFFFER		     (1 << 0) /* Power Down VCO Bufffer */
+#define POWER_DOWN_VCO_BUFFER		     (1 << 0) /* Power Down VCO Buffer */
 
 /*
  * REG_TX_CP_OVERRANGE_VCO_LOCK

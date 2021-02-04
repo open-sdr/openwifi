@@ -2249,12 +2249,12 @@ int xilinx_vdma_channel_set_config(struct dma_chan *dchan,
 	else
 		chan->config.park_frm = -1;
 
-	chan->config.coalesc = cfg->coalesc;
+	chan->config.coalesce = cfg->coalesce;
 	chan->config.delay = cfg->delay;
 
-	if (cfg->coalesc <= XILINX_DMA_DMACR_FRAME_COUNT_MAX) {
-		dmacr |= cfg->coalesc << XILINX_DMA_DMACR_FRAME_COUNT_SHIFT;
-		chan->config.coalesc = cfg->coalesc;
+	if (cfg->coalesce <= XILINX_DMA_DMACR_FRAME_COUNT_MAX) {
+		dmacr |= cfg->coalesce << XILINX_DMA_DMACR_FRAME_COUNT_SHIFT;
+		chan->config.coalesce = cfg->coalesce;
 	}
 
 	if (cfg->delay <= XILINX_DMA_DMACR_DELAY_MAX) {
