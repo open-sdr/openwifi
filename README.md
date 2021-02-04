@@ -70,8 +70,8 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
 
 ## Quick start
 - Burn openwifi board specific img file (from the table) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
-  - Copy files in **openwifi/board_name** to the base directory of BOOT partiton.
-  - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partiton
+  - Copy files in **openwifi/board_name** to the base directory of BOOT partition.
+  - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partition
 - Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on. 
 - Login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with password **openwifi**.
   ```
@@ -81,7 +81,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
   ```
   ~/openwifi/fosdem.sh
   ```
-- After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your deivce, you should see the webpage hosted by the webserver on board.
+- After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your device, you should see the webpage hosted by the webserver on board.
   - Note 1: If your device doesn't support 5GHz (ch44), please change the **hostapd-openwifi.conf** on board and re-run fosdem.sh.
   - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just power cycle the board if it happens. (If output of "./sdrctl dev sdr0 get reg rx 20" is always the same, it means the decoder halts)
 - To give the Wi-Fii client internet access, configure routing/NAT **on the PC**:
@@ -115,7 +115,7 @@ The board actually is an Linux/Ubuntu computer which is running **hostapd** to o
 
 ## Update FPGA
 
-Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to udpate the fpga bitstream on board.
+Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to update the fpga bitstream on board.
 
 - Install Vivado/SDK 2018.3 (If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
 - Setup environment variables (use absolute path):
@@ -146,7 +146,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 
 ## Update Driver
 
-Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to udpate the driver on board.
+Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to update the driver on board.
 - Prepare Analog Devices Linux kernel source code (only need to run once):
   ```
   $OPENWIFI_DIR/user_space/prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
@@ -239,7 +239,7 @@ This section explains the porting work by showing the differences between openwi
 - Open the fmcomms2 + zc706 reference design at hdl/projects/fmcomms2/zc706 (Please read Analog Devices help)
 - Open the openwifi design zc706_fmcs2 at openwifi-hw/boards/zc706_fmcs2 (Please read openwifi-hw repository)
 - "Open Block Design", you will see the differences between openwifi and the reference design. Both in "diagram" and in "Address Editor".
-- The address/interrupts of FPGA blocks hooked to the ARM bus should be put/aligned to the devicetree file openwifi/kernel_boot/boards/zc706_fmcs2/devicetree.dts. Linux will parse the devicetree.dtb when booting to know information of attached deivce (FPGA blocks in our case).
+- The address/interrupts of FPGA blocks hooked to the ARM bus should be put/aligned to the devicetree file openwifi/kernel_boot/boards/zc706_fmcs2/devicetree.dts. Linux will parse the devicetree.dtb when booting to know information of attached device (FPGA blocks in our case).
 - We use dtc command to get devicetree.dts converted from devicetree.dtb in [Analog Devices Linux image](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images), then do modification according to what we have added/modified to the reference design.
 - Please learn the script in [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to understand how we generate devicetree.dtb, BOOT.BIN and Linux kernel uImage and put them together to build the full SD card image.
 

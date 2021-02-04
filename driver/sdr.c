@@ -232,7 +232,7 @@ static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 
 	for (i = 0; i < NUM_TX_BD; i++) {
 		ring->bds[i].skb_linked=0; // for tx, skb is from upper layer
-		//at frist right after skb allocated, head, data, tail are the same.
+		//at first right after skb allocated, head, data, tail are the same.
 		ring->bds[i].dma_mapping_addr = 0; // for tx, mapping is done after skb is received from uppler layer in tx routine
 	}
 
@@ -697,7 +697,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 				}
 			}
 		//}
-		queue_idx = (i>=MAX_NUM_HW_QUEUE?2:i); // if no address is hit, use FPGA queue 2. becuase the queue 2 is the longest.
+		queue_idx = (i>=MAX_NUM_HW_QUEUE?2:i); // if no address is hit, use FPGA queue 2. because the queue 2 is the longest.
 	}
 	// -------------------- end of Map Linux/SW "prio" to hardware "queue_idx" ------------------
 
@@ -851,8 +851,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	 */
 	//wmb();
 	// entry->flags = cpu_to_le32(tx_flags);
-	/* We must be sure this has been written before followings HW
-	 * register write, because this write will made the HW attempts
+	/* We must be sure this has been written before following HW
+	 * register write, because this write will make the HW attempts
 	 * to DMA the just-written data
 	 */
 	//wmb();
@@ -911,7 +911,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		goto openwifi_tx_after_dma_mapping;
 	}
 
-	// seems everything ok. let's mark this pkt in bd descriptor ring
+	// seems everything is ok. let's mark this pkt in bd descriptor ring
 	ring->bds[ring->bd_wr_idx].skb_linked = skb;
 	ring->bds[ring->bd_wr_idx].dma_mapping_addr = dma_mapping_addr;
 
@@ -998,7 +998,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	xpu_api->XPU_REG_RSSI_DB_CFG_write((~0x80000000)&((rssi_half_db_offset<<16)|agc_gain_delay) );
 	
 	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write(0);
-	// rssi_half_db_th = 87<<1; // -62dBm // will settup in runtime in _rf_set_channel
+	// rssi_half_db_th = 87<<1; // -62dBm // will setup in runtime in _rf_set_channel
 	// xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
 	reg=xpu_api->XPU_REG_LBT_TH_read();
 	xpu_api->XPU_REG_LBT_TH_write((reg & 0xFF00FFFF) | (75 << 16) ); // bit 23:16 of LBT TH reg is set to control the duration to force ch_idle after decoding a packet due to imperfection of agc and signals
@@ -2197,7 +2197,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	}
 
 	// // //--------------------hook leds (not complete yet)--------------------------------
-	// tmp_dev = bus_find_device( &platform_bus_type, NULL, "leds", custom_match_platform_dev ); //leds is the name in devicetree, not "compatiable" field
+	// tmp_dev = bus_find_device( &platform_bus_type, NULL, "leds", custom_match_platform_dev ); //leds is the name in devicetree, not "compatible" field
 	// if (!tmp_dev) {
 	// 	printk(KERN_ERR "%s bus_find_device platform_bus_type leds-gpio failed\n",sdr_compatible_str);
 	// 	err = -ENOMEM;

@@ -6,7 +6,7 @@
 #define OPENWIFI_SDR
 
 // -------------------for leds--------------------------------
-struct gpio_led_data { //pleas always align with the leds-gpio.c in linux kernel
+struct gpio_led_data { //please always align with the leds-gpio.c in linux kernel
 	struct led_classdev cdev;
 	struct gpio_desc *gpiod;
 	u8 can_sleep;
@@ -14,7 +14,7 @@ struct gpio_led_data { //pleas always align with the leds-gpio.c in linux kernel
 	gpio_blink_set_t platform_gpio_blink_set;
 };
 
-struct gpio_leds_priv { //pleas always align with the leds-gpio.c in linux kernel
+struct gpio_leds_priv { //please always align with the leds-gpio.c in linux kernel
 	int num_leds;
 	struct gpio_led_data leds[];
 };

@@ -289,7 +289,7 @@ static inline u32 hw_init(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		
 		//rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write(0x000);
 		rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write(0x100);
-		//0x000-normal; 0x100-sig and fcs valid are controled by bit4 and bit0;
+		//0x000-normal; 0x100-sig and fcs valid are controlled by bit4 and bit0;
 		//0x111-sig and fcs high; 0x110-sig high fcs low; 0x101-sig low fcs high; 0x100-sig and fcs low
 
 		rx_intf_api->RX_INTF_REG_IQ_SRC_SEL_write(0);
