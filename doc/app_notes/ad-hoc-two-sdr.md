@@ -19,7 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   (Above command setup ad-hoc network at channel 44 with static IP assigned to sdr0 NIC)
   iwconfig sdr0
   ```
-- You shold see output like:
+- You should see output like:
   ```
   sdr0    IEEE 802.11  ESSID:"sdr-ad-hoc"  
           Mode:Ad-Hoc  Frequency:5.22 GHz  Cell: 92:CA:14:27:1E:B0   
@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   ./sdr-ad-hoc-up.sh sdr0 44 192.168.13.1
   iwconfig sdr0
   ```
-- You shold see output like:
+- You should see output like:
   ```
   sdr0    IEEE 802.11  ESSID:"sdr-ad-hoc"  
           Mode:Ad-Hoc  Frequency:5.22 GHz  Cell: 92:CA:14:27:1E:B0   

@@ -43,7 +43,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see 3 figures showing run-time **IQ sample**, **AGC gain and lock status** and **RSSI (uncalibrated)**. Meanwhile the python script prints the **timestamp**.
   ![](./iq-screen-shot.jpg)
   
-  While running, all informations are also stored into a file **iq.txt**. A matlab script **test_iq_file_display.m** is offered to help you do analysis on the IQ Information offline. For zed, adrv9364z7020, zc702 board, do not forget to change the **iq_len** in the matlab script to 4095.
+  While running, all information is also stored into a file **iq.txt**. A matlab script **test_iq_file_display.m** is offered to help you do analysis on the IQ Information offline. For zed, adrv9364z7020, zc702 board, do not forget to change the **iq_len** in the matlab script to 4095.
 
 ## Understand the IQ capture feature
   The IQ information is extracted via the openwifi **side channel** infrastructure. This figure explains the related modules (also related source code file name) and how the information goes from the SDR board to the computer.
@@ -131,7 +131,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   The interval will become N*1ms
 
 ## Config the iq_len
-  The **iq_len** (number of IQ sample per capture) is configurable in case you want less IQ samples per capture so that it can be triggered more times during a specific analysis period. The valid value is 1~**8187**. For **small FPGA** (zed_fmcs2, adrv9364z7020, zc702), the valid range is 0 ~ **4095**. It is independant from pre_trigger_len, and it can be less than pre_trigger_len if you want. You should align the **iq_len** value at the side_ch.ko, iq_capture.py and test_iq_file_display.m. 
+  The **iq_len** (number of IQ sample per capture) is configurable in case you want less IQ samples per capture so that it can be triggered more times during a specific analysis period. The valid value is 1~**8187**. For **small FPGA** (zed_fmcs2, adrv9364z7020, zc702), the valid range is 0 ~ **4095**. It is independent from pre_trigger_len, and it can be less than pre_trigger_len if you want. You should align the **iq_len** value at the side_ch.ko, iq_capture.py and test_iq_file_display.m. 
   - When insert the kernel module, use:
   ```
   insmod side_ch.ko iq_len_init=3000

@@ -37,7 +37,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see 3 figures showing run-time **frequency offset**, **channel state/response** and **constellation form equalizer**. Meanwhile the python script prints the **timestamp**.
   ![](./csi-screen-shot.jpg)
   
-  While running, all informations are also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.
+  While running, all information is also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.
 
 ## Understand the CSI feature
   The CSI information is extracted via the openwifi **side channel** infrastructure. This figure explains the related modules (also related source code file name) and how the information goes from the SDR board to the computer.
@@ -54,7 +54,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   The python and Matlab scripts are recommended for you to understand the CSI packet format precisely.
 
 ## Config the capture condition and interval
-  The quick start guide will monitor all CSI informations of all packets decoded by the WiFi ofdm receiver. To monitor only specific packets that match the specific conditions: FC (Frame Control), addr1 (target MAC address), addr2 (source MAC address), configuration command should be issued before executing "**side_ch_ctl g**". The configuration command is realized by feeding a different parameter to "**side_ch_ctl**". 
+  The quick start guide will monitor all CSI information of all packets decoded by the WiFi ofdm receiver. To monitor only specific packets that match the specific conditions: FC (Frame Control), addr1 (target MAC address), addr2 (source MAC address), configuration command should be issued before executing "**side_ch_ctl g**". The configuration command is realized by feeding a different parameter to "**side_ch_ctl**". 
   
   A quick example: Capture only CSI of those packets from the device with MAC address 56:5b:01:ec:e2:8f
   ```
@@ -101,7 +101,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   The interval will become N*1ms
 
 ## Config the num_eq
-  The num_eq (number of equalizer output) is configurable in case you don't need so many equalizer informations. The valid value is 0~8. You should align the num_eq value at the side_ch.ko, side_info_display.py and test_side_info_file_display.m. 
+  The num_eq (number of equalizer output) is configurable in case you don't need so many equalizer information. The valid value is 0~8. You should align the num_eq value at the side_ch.ko, side_info_display.py and test_side_info_file_display.m. 
   - When insert the kernel module, use:
   ```
   insmod side_ch.ko num_eq_init=3

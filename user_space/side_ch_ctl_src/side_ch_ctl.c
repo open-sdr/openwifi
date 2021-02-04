@@ -151,7 +151,7 @@ int parse_para_string(char *para, int *action_flag, int *reg_type, int *reg_idx,
     if ( para[0] == 'g'){// || para[0] == 'G' ) {
         (*action_flag) = ACTION_SIDE_INFO_GET;
         
-        if (para_string_len == 1) { // no explict input
+        if (para_string_len == 1) { // no explicit input
             (*interval_ms) = 100;
             printf("The default 100ms side info getting period is taken!\n");
             return(0);

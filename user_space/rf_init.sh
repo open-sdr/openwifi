@@ -85,7 +85,7 @@ echo "rssi"
 cat in_voltage0_rssi
 cat in_voltage1_rssi
 
-# #  --------not neede maybe-------- # #
+# #  --------not needed maybe-------- # #
 echo "rx0 gain to 70" # this set gain is gpio gain - 5dB (test with agc and read back gpio in driver)
 cat in_voltage0_hardwaregain
 echo 70 > in_voltage0_hardwaregain
@@ -109,7 +109,7 @@ cat out_voltage1_hardwaregain
 echo 0 > out_voltage1_hardwaregain
 cat out_voltage1_hardwaregain
 sync
-# #  --------not neede maybe-------- # #
+# #  --------not needed maybe-------- # #
 
 cd $home_dir
 
