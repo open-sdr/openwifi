@@ -255,6 +255,7 @@ This section explains the porting work by showing the differences between openwi
 
 - [openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://www.orca-project.eu/wp-content/uploads/sites/4/2020/03/openwifi-vtc-antwerp-PID1249076.pdf)
 - [csi murder](https://ans.unibs.it/projects/csi-murder/)
+- [IEEE 802.11 CSI randomization to preserve location privacy: An empirical evaluation in different scenarios](https://www.sciencedirect.com/science/article/abs/pii/S138912862100102X)
 
 Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2020 programme under agreement number 732174).
 
