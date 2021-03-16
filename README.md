@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. 
 
-[[Project document](doc)], [[Quick start](#Quick-start)], [[Application notes](doc/app_notes)]
+[[Project document](doc)], [[Quick start](#Quick-start)], [[Application notes](doc/app_notes/README.md)]
 
 [[Videos](#Videos)] [[Papers](#Papers)] [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)] [[Cite openwifi project](#Cite-openwifi-project)]
 
@@ -66,7 +66,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
 [[Porting guide](#Porting-guide)]
 
 [[Project document](doc)]
-[[Application notes](doc/app_notes)]
+[[Application notes](doc/app_notes/README.md)]
 
 ## Quick start
 - Burn openwifi board specific img file (from the table) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
