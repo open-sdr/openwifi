@@ -269,12 +269,24 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 
 static int openwifi_init_rx_ring(struct openwifi_priv *priv)
 {
+	int i;
+	u8 *pdata_tmp;
+
 	priv->rx_cyclic_buf = dma_alloc_coherent(priv->rx_chan->device->dev,RX_BD_BUF_SIZE*NUM_RX_BD,&priv->rx_cyclic_buf_dma_mapping_addr,GFP_KERNEL);
 	if (!priv->rx_cyclic_buf) {
 		printk("%s openwifi_init_rx_ring: WARNING dma_alloc_coherent failed!\n", sdr_compatible_str);
 		dma_free_coherent(priv->rx_chan->device->dev,RX_BD_BUF_SIZE*NUM_RX_BD,priv->rx_cyclic_buf,priv->rx_cyclic_buf_dma_mapping_addr);
 		return(-1);
 	}
+
+	// Set tsft_low and tsft_high to 0. If they are not zero, it means there is a packet in the buffer by DMA
+	for (i=0; i<NUM_RX_BD; i++) {
+		pdata_tmp = priv->rx_cyclic_buf + i*RX_BD_BUF_SIZE; // our header insertion is at the beginning
+		(*((u32*)(pdata_tmp+0 ))) = 0;
+		(*((u32*)(pdata_tmp+4 ))) = 0;
+	}
+	printk("%s openwifi_init_rx_ring: tsft_low and tsft_high are cleared!\n", sdr_compatible_str);
+
 	return 0;
 }
 
@@ -320,22 +332,21 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct ieee80211_hdr *hdr;
 	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi;//, fc_di;
 	// u32 dma_driver_buf_idx_mod;
-	u8 *pdata_tmp, fcs_ok, target_buf_idx;//, phy_rx_sn_hw;
+	u8 *pdata_tmp, fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
 	u16 rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0;
 	bool content_ok = false, len_overflow = false;
-	struct dma_tx_state state;
-	static u8 target_buf_idx_old = 0xFF;
+	static u8 target_buf_idx_old = 0;
 
 	spin_lock(&priv->lock);
-	priv->rx_chan->device->device_tx_status(priv->rx_chan,priv->rx_cookie,&state);
-	target_buf_idx = ((state.residue-1)&(NUM_RX_BD-1));
 
-	while( target_buf_idx_old!=target_buf_idx ) { // loop all rx buffers that have new rx packets
-		target_buf_idx_old=((target_buf_idx_old+1)&(NUM_RX_BD-1)); 
+	while(1) { // loop all rx buffers that have new rx packets
 		pdata_tmp = priv->rx_cyclic_buf + target_buf_idx_old*RX_BD_BUF_SIZE; // our header insertion is at the beginning
 		tsft_low =     (*((u32*)(pdata_tmp+0 )));
 		tsft_high =    (*((u32*)(pdata_tmp+4 )));
+		if ( tsft_low==0 && tsft_high==0 ) // no packet in the buffer
+			break;
+
 		rssi_val =     (*((u16*)(pdata_tmp+8 )));
 		len =          (*((u16*)(pdata_tmp+12)));
 
@@ -427,7 +438,10 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			} else
 				printk("%s openwifi_rx_interrupt: WARNING dev_alloc_skb failed!\n", sdr_compatible_str);
 		}
+		(*((u32*)(pdata_tmp+0 ))) = 0;
+		(*((u32*)(pdata_tmp+4 ))) = 0; // clear the tsft_low and tsft_high to indicate the packet has been processed
 		loop_count++;
+		target_buf_idx_old=((target_buf_idx_old+1)&(NUM_RX_BD-1)); 
 	}
 
 	if ( loop_count!=1 && (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) )
@@ -516,7 +530,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 			
 			if ( (tx_result_report&0x10) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
 				printk("%s openwifi_tx_interrupt: WARNING tx_result %02x prio%d wr%d rd%d\n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx);
-			if ( ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
+			if ( (!(info->flags & IEEE80211_TX_CTL_NO_ACK)) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
 				printk("%s openwifi_tx_interrupt: tx_result %02x prio%d wr%d rd%d num_rand_slot %d cw %d \n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx, num_slot_random,cw);
 
 			ieee80211_tx_status_irqsafe(dev, skb);
@@ -829,7 +843,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	
 	skb_push( skb, LEN_PHY_HEADER );
 	rate_signal_value = calc_phy_header(rate_hw_value, use_ht_rate, use_short_gi, len_mac_pdu+LEN_PHY_CRC, skb->data); //fill the phy header
-
 
 	//make sure dma length is integer times of DDC_NUM_BYTE_PER_DMA_SYMBOL
 	if (skb_tailroom(skb)<num_byte_pad) {
@@ -1404,9 +1417,11 @@ u32 log2val(u32 val){
 static int openwifi_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif, u16 queue,
 	      const struct ieee80211_tx_queue_params *params)
 {
+	u32 reg19_val, reg8_val, cw_min_exp, cw_max_exp; 
+	
 	printk("%s openwifi_conf_tx: WARNING [queue %d], aifs: %d, cw_min: %d, cw_max: %d, txop: %d, aifs and txop ignored\n",
 		  sdr_compatible_str,queue,params->aifs,params->cw_min,params->cw_max,params->txop);
-	u32 reg19_val, reg8_val, cw_min_exp, cw_max_exp; 
+
 	reg19_val=xpu_api->XPU_REG_CSMA_CFG_read();
 	reg8_val=xpu_api->XPU_REG_LBT_TH_read();
 	cw_min_exp = (log2val(params->cw_min + 1) & 0x0F);
