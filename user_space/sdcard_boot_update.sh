@@ -35,19 +35,44 @@ echo $image_filename
 
 set -x
 
-rm BOOT.BIN
+mv BOOT.BIN BOOT.BIN.bak
 sync
 wget ftp://192.168.10.1/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN
+if [ -f "./BOOT.BIN" ]; then
+    echo "BOOT.BIN downloaded!"
+else
+    echo "BOOT.BIN not downloaded! Please check!"
+    mv BOOT.BIN.bak BOOT.BIN
+    exit 1
+fi
 sync
-rm $image_filename
+
+mv $image_filename $image_filename.bak
 sync
 wget ftp://192.168.10.1/$LINUX_KERNEL_SRC_DIR_NAME/$image_filepath/$image_filename
+if [ -f "./$image_filename" ]; then
+    echo "$image_filename downloaded!"
+else
+    echo "$image_filename not downloaded! Please check!"
+    mv $image_filename.bak $image_filename
+    exit 1
+fi
 sync
-rm $dtb_filename
+
+mv $dtb_filename $dtb_filename.bak
 sync
 wget ftp://192.168.10.1/kernel_boot/boards/$BOARD_NAME/$dtb_filename
+if [ -f "./$dtb_filename" ]; then
+    echo "$dtb_filename downloaded!"
+else
+    echo "$dtb_filename not downloaded! Please check!"
+    mv $dtb_filename.bak $dtb_filename
+    exit 1
+fi
 sync
+
 #slepp 0.5
+
 mount /dev/mmcblk0p1  /mnt
 sync
 #sleep 0.5
