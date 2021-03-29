@@ -24,7 +24,7 @@ cd openwifi/inject_80211
 make
 ```
 
-### Options
+### Options of program inject_80211
   ```
 -m/--hw_mode <hardware operation mode> (a,g,n)
 -r/--rate_index <rate/MCS index> (0,1,2,3,4,5,6,7)
