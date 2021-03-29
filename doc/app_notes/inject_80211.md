@@ -17,8 +17,9 @@ To this end, we have adapted a [packetspammer](https://github.com/gnychis/packet
 ### Build inject_80211 on board
 Userspace program to inject 802.11 packets through mac80211 supported (softmac) wireless devices.
 
-Login/ssh to the board, then
+Login/ssh to the board and setup internet connection according to the Quick Start. Then
 ```
+apt install libpcap-dev
 cd openwifi/inject_80211
 make
 ```
