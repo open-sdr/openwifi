@@ -10,7 +10,7 @@ The Linux wireless networking stack (i.e. driver, mac80211, cfg80211, net_dev, u
 
 Ping and Iperf are well established performance measurement tools. However, using such tools to measure 802.11 PHY performance can be misleading, simply because they touch multiple layers in the network stack. 
 
-Luckily, the mac80211 Linux subsystem provides packet injection functionality and it allows us to have finer control over physical layer testing.
+Luckily, the mac80211 Linux subsystem provides packet injection functionality when the NIC is in the monitor mode and it allows us to have finer control over physical layer testing.
 
 To this end, we have adapted a [packetspammer](https://github.com/gnychis/packetspammer) application originally written by Andy Green <andy@warmcat.com> and maintained by George Nychis <gnychis@gmail.com>.
 
@@ -41,12 +41,16 @@ Login/ssh to the board, Then
 cd openwifi
 ./wgd.sh
 ./monitor_ch.sh sdr0 11
-./inject_80211/inject_80211 -m n -r 0  -n 64 -s 100 sdr0
+(Above will turn sdr0 into the monitor mode and monitor on channel 11)
+./inject_80211/inject_80211 -m n -r 0  -n 64 -s 10 sdr0
+(Above will inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size via NIC sdr0)
 ```
+When above injection command is running, you could see the injected packets with wireshark (or other packet sniffer) on another WiFi device monitoring channel 11.
+
 Or add extra virtual monitor interface on top of sdr0, and inject packets:
 ```
 iw dev sdr0 interface add mon0 type monitor && ifconfig mon0 up
-./inject_80211/inject_80211 -m n -r 0  -n 64 -s 100 mon0     # Inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size
+./inject_80211/inject_80211 -m n -r 0  -n 64 -s 10 mon0     # Inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size
 ```
 
 ### Link performance test
