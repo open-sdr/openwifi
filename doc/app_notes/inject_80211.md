@@ -14,8 +14,14 @@ Luckily, the mac80211 Linux subsystem provides packet injection functionality an
 
 To this end, we have adapted a [packetspammer](https://github.com/gnychis/packetspammer) application originally written by Andy Green <andy@warmcat.com> and maintained by George Nychis <gnychis@gmail.com>.
 
-### inject_80211
+### Build inject_80211 on board
 Userspace program to inject 802.11 packets through mac80211 supported (softmac) wireless devices.
+
+Login/ssh to the board, then
+```
+cd openwifi/inject_80211
+make
+```
 
 ### Options
   ```
