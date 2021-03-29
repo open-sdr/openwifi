@@ -36,9 +36,17 @@ make
   ```
 
 ### Example:
+Login/ssh to the board, Then
 ```
-iw dev wlan0 interface add mon0 type monitor && ifconfig mon0 up
-inject_80211 -m n -r 0  -n 64 -s 100 mon0     # Inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size
+cd openwifi
+./wgd.sh
+./monitor_ch.sh sdr0 11
+./inject_80211/inject_80211 -m n -r 0  -n 64 -s 100 sdr0
+```
+Or add extra virtual monitor interface on top of sdr0, and inject packets:
+```
+iw dev sdr0 interface add mon0 type monitor && ifconfig mon0 up
+./inject_80211/inject_80211 -m n -r 0  -n 64 -s 100 mon0     # Inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size
 ```
 
 ### Link performance test
