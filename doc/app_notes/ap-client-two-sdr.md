@@ -44,7 +44,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   (Wait for it completed)
   ifconfig sdr0
   (Now you should see the IP address like 192.168.13.x allocated by AP)
-  ./set_csma_normal.sh
   ping 192.168.13.1
   (Ping the AP)
   ```
