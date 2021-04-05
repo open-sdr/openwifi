@@ -1,31 +1,60 @@
 <!--
-Author: Michael Mehari
+Author: Michael Mehari, Xianjun Jiao
 SPDX-FileCopyrightText: 2019 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-## 802.11 packet injection
+## 802.11 packet injection and fuzzing
 
-The Linux wireless networking stack (i.e. driver, mac80211, cfg80211, net_dev, user app) is a robust implementation supporting a plethora of wireless devices. As robust as it is, it also has a drawback when it comes to single-layer testing. 
+The Linux wireless networking stack (i.e. driver, mac80211, cfg80211, net_dev, user app) is a robust implementation supporting a plethora of wireless devices. As robust as it is, it also has a drawback when it comes to single-layer testing and manual/total control mode (fuzzing). 
 
 Ping and Iperf are well established performance measurement tools. However, using such tools to measure 802.11 PHY performance can be misleading, simply because they touch multiple layers in the network stack. 
 
-Luckily, the mac80211 Linux subsystem provides packet injection functionality when the NIC is in the monitor mode and it allows us to have finer control over physical layer testing.
+Luckily, the mac80211 Linux subsystem provides packet injection functionality when the NIC is in the monitor mode and it allows us to have finer control for physical layer testing and/or fuzzing.
 
-To this end, we have adapted a [packetspammer](https://github.com/gnychis/packetspammer) application originally written by Andy Green <andy@warmcat.com> and maintained by George Nychis <gnychis@gmail.com>.
+Besides the traditional fuzzing tool (like scapy), we have adapted a [packetspammer](https://github.com/gnychis/packetspammer) application, which is originally written by Andy Green <andy@warmcat.com> and maintained by George Nychis <gnychis@gmail.com>, to show how to inject packets and control the FPGA behavior.
 
 ### Build inject_80211 on board
 Userspace program to inject 802.11 packets through mac80211 supported (softmac) wireless devices.
 
 Login/ssh to the board and setup internet connection according to the Quick Start. Then
 ```
-apt install libpcap-dev
 cd openwifi/inject_80211
 make
 ```
+### Customize the packet content
+To customize the packet, following piece of the inject_80211.c needs to be changed:
+```
+/* IEEE80211 header */
+static const u8 ieee_hdr[] =
+{
+	0x08, 0x01, 0x00, 0x00,             // Frame Control, Duration/ID
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // Address 1
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x11, // Address 2
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x11, // Address 3
+	0x10, 0x86,                         // Sequence Control
+};
+```
+Note: The byte/bit order might not be intuitive when comparing with the standard.
+
+### FPGA behavior control
+- ACK and retransmission after FPGA sends packet
+
+In openwifi_tx of sdr.c, many FPGA behaviors can be controled. Generally they are controled by the information from upper layer (Linux mac80211), but you can override them in driver (sdr.c)
+
+If 802.11 ACK is expected from the peer after the packet is sent by FPGA, variable **pkt_need_ack** should be overridden to 1. In this case, the FPGA will try to receive ACK, and report the sending status (ACK is received or not) to upper layer (Linux mac80211)
+
+The maximum times of transmission for the packet can be controled by variable **retry_limit_raw**. If no ACK is received after the packet is sent, FPGA will try retransmissions automatically if retry_limit_raw>1.
+
+- ACK after FPGA receives packet in monitor mode
+
+Even in monitor mode, openwifi FPGA still sends ACK after the packet is received, if the conditions are met: MAC address is matched, it is a data frame, etc. To disable this automatic ACK generation, the register 11 of xpu should be set to 16:
+```
+sdrctl dev sdr0 set reg xpu 11 16 
+```
 
 ### Options of program inject_80211
-  ```
+```
 -m/--hw_mode <hardware operation mode> (a,g,n)
 -r/--rate_index <rate/MCS index> (0,1,2,3,4,5,6,7)
 -i/--sgi_flag (0,1)
@@ -33,7 +62,7 @@ make
 -s/--payload_size <payload size in bytes>
 -d/--delay <delay between packets in usec>
 -h   this menu
-  ```
+```
 
 ### Example:
 Login/ssh to the board, Then
@@ -81,7 +110,7 @@ done
 On the receiver side, we can use tcpdump to collect the pcap traces.
 
 ```
-iw dev wlan0 interface add mon0 type monitor && ifconfig mon0 up
+iw dev sdr0 interface add mon0 type monitor && ifconfig mon0 up
 tcpdump -i mon0 -w trace.pcap 'wlan addr1 ff:ff:ff:ff:ff:ff and wlan addr2 66:55:44:33:22:11'
 ```
 
