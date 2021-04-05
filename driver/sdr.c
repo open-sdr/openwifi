@@ -256,7 +256,7 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 //			dev_kfree_skb(ring->bds[i].skb_linked); // only use dev_kfree_skb when there is exception
 		if ( (ring->bds[i].dma_mapping_addr != 0 && ring->bds[i].skb_linked == 0) ||
 		     (ring->bds[i].dma_mapping_addr == 0 && ring->bds[i].skb_linked != 0))
-			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08llx\n", sdr_compatible_str, 
+			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08x\n", sdr_compatible_str, 
 			ring_idx, i, (void*)(ring->bds[i].skb_linked), ring->bds[i].dma_mapping_addr);
 
 		ring->bds[i].skb_linked=0;

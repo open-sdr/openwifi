@@ -378,7 +378,7 @@ static int dev_probe(struct platform_device *pdev)
 	if (IS_ERR(base_addr))
 		return PTR_ERR(base_addr);
 
-	printk("%s dev_probe io start 0x%08llx end 0x%08llx name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
+	printk("%s dev_probe io start 0x%08x end 0x%08x name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
 	printk("%s dev_probe base_addr 0x%p\n", tx_intf_compatible_str,(void*)base_addr);
 	printk("%s dev_probe tx_intf_driver_api_inst 0x%p\n", tx_intf_compatible_str, (void*)(&tx_intf_driver_api_inst) );
 	printk("%s dev_probe             tx_intf_api 0x%p\n", tx_intf_compatible_str, (void*)tx_intf_api);
