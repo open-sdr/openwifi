@@ -51,6 +51,7 @@ sudo apt-get -y install nano
 sudo apt-get -y install tcpdump
 sudo apt-get -y install webfs
 sudo apt-get -y install iperf
+sudo apt-get -y install libpcap-dev
 
 # change the password to openwifi
 echo -e "openwifi\nopenwifi" | passwd
