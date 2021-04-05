@@ -265,8 +265,11 @@ static inline void XPU_REG_BB_RF_DELAY_write(u32 value){
 	reg_write(XPU_REG_BB_RF_DELAY_ADDR, value);
 }
 
-static inline void XPU_REG_MAX_NUM_RETRANS_write(u32 value){
-	reg_write(XPU_REG_MAX_NUM_RETRANS_ADDR, value);
+static inline void XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write(u32 value){
+	reg_write(XPU_REG_ACK_CTL_MAX_NUM_RETRANS_ADDR, value);
+}
+static inline u32 XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read(void){
+	return reg_read(XPU_REG_ACK_CTL_MAX_NUM_RETRANS_ADDR);
 }
 
 static inline void XPU_REG_MAC_ADDR_write(u8 *mac_addr) {//, u32 en_flag){
@@ -522,7 +525,9 @@ static int dev_probe(struct platform_device *pdev)
 	xpu_api->XPU_REG_SLICE_COUNT_END_read=XPU_REG_SLICE_COUNT_END_read;
 
 	xpu_api->XPU_REG_BB_RF_DELAY_write=XPU_REG_BB_RF_DELAY_write;
-	xpu_api->XPU_REG_MAX_NUM_RETRANS_write=XPU_REG_MAX_NUM_RETRANS_write;
+
+	xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write=XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write;
+	xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read=XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read;
 
 	xpu_api->XPU_REG_MAC_ADDR_write=XPU_REG_MAC_ADDR_write;
 
