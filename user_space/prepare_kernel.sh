@@ -60,7 +60,6 @@ cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
 git checkout 2019_R1
 git pull origin 2019_R1
 # git reset --hard 4fea7c5
-cp $OPENWIFI_DIR/driver/xilinx_dma/xilinx_dma.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/dma/xilinx/xilinx_dma.c
 cp $LINUX_KERNEL_CONFIG_FILE ./.config
 source $XILINX_DIR/SDK/2018.3/settings64.sh
 export ARCH=$ARCH_NAME

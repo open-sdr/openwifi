@@ -46,26 +46,6 @@ modprobe mac80211
 PROG=sdr
 rmmod $PROG
 
-SUBMODULE=xilinx_dma
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-#sleep 1
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-
 # before drive ad9361, let's bring up duc and make sure dac is connected to ad9361 dma
 SUBMODULE=tx_intf
 if [ $last_input == "remote" ]
