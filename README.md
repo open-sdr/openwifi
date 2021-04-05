@@ -9,11 +9,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 **openwifi:** Linux mac80211 compatible full-stack IEEE802.11/Wi-Fi design based on SDR (Software Defined Radio).
 
-This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. 
+This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
 
-[[Project document](doc/README.md)], [[Quick start](#Quick-start)], [[Application notes](doc/app_notes/README.md)]
-
-[[Videos](#Videos)] [[Papers](#Papers)] [openwifi [maillist](https://lists.ugent.be/wws/subscribe/openwifi)] [[Cite openwifi project](#Cite-openwifi-project)]
+[[Quick start](#Quick-start)]
+[[Project document](doc/README.md)]
+[[Application notes](doc/app_notes/README.md)]
+[[Videos](#Videos)]
+[[Papers](#Papers)]
+[[maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
+[[Cite openwifi project](#Cite-openwifi-project)]
 
 Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opensource license, please contact Filip.Louagie@UGent.be. Openwifi project also leverages some 3rd party modules. It is user's duty to check and follow licenses of those modules according to the purpose/usage. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions. [[How to contribute]](https://github.com/open-sdr/openwifi/blob/master/CONTRIBUTING.md). 
 
@@ -23,7 +27,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 - 20MHz bandwidth; 70 MHz to 6 GHz frequency range
 - Mode tested: Ad-hoc; Station; AP, Monitor
 - DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)
-- [802.11 packet injection](doc/app_notes/inject_80211.md)
+- [802.11 packet injection and fuzzing](doc/app_notes/inject_80211.md)
 - CSI (Channel State Information, freq offset, equalizer to computer) [[CSI notes](doc/app_notes/csi.md)]
 - IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)][[IQ notes for dual antenna](doc/app_notes/iq_2ant.md)]
 - Configurable channel access priority parameters:
@@ -33,7 +37,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 - Easy to change bandwidth and frequency: 
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
-- On roadmap: **802.11ax**
+- **802.11ax** under development
 
 **Performance (AP: openwifi at channel 44, client: TL-WDN4200 N900 USB Dongle):**
 - AP --> client: 30.6Mbps(TCP), 38.8Mbps(UDP)
@@ -41,15 +45,15 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 
 **Supported SDR platforms:** (Check [Porting guide](#Porting-guide) for your new board if it isn't in the list)
 
-board_name|board combination|status|SD card img
--------|-------|----|----
-zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)
-zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)
-adrv9364z7020|ADRV9364-Z7020 + ADRV1CRR-BOB|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)
-adrv9361z7035|ADRV9361-Z7035 + ADRV1CRR-BOB/FMC|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)
-zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)
-zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-64bit.img.xz)
-zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
+board_name|board combination|status|SD card img|Vivado license
+-------|-------|----|----|-----
+zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|Need
+zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|**NO** need
+adrv9364z7020|ADRV9364-Z7020 + ADRV1CRR-BOB|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|**NO** need
+adrv9361z7035|ADRV9361-Z7035 + ADRV1CRR-BOB/FMC|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|Need
+zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|**NO** need
+zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-64bit.img.xz)|Need
+zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future|Need
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
 - Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
@@ -64,7 +68,6 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
 [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)]
 [[Special note for 11b](#Special-note-for-11b)]
 [[Porting guide](#Porting-guide)]
-
 [[Project document](doc/README.md)]
 [[Application notes](doc/app_notes/README.md)]
 
@@ -79,7 +82,7 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
   ```
 - On board, run openwifi AP and the on board webserver
   ```
-  ~/openwifi/fosdem.sh
+  ~/openwifi/fosdem-11ag.sh
   ```
 - After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your device, you should see the webpage hosted by the webserver on board.
   - Note 1: If your device doesn't support 5GHz (ch44), please change the **hostapd-openwifi.conf** on board and re-run fosdem.sh.
@@ -87,10 +90,10 @@ zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future
 - To give the Wi-Fii client internet access, configure routing/NAT **on the PC**:
   ```
   sudo sysctl -w net.ipv4.ip_forward=1
-  sudo iptables -t nat -A POSTROUTING -o ethY -j MASQUERADE
+  sudo iptables -t nat -A POSTROUTING -o NICY -j MASQUERADE
   sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
   ```
-  **ethX** is the PC NIC name connecting the board. **ethY** is the PC NIC name connecting internet.
+  **ethX** is the PC NIC name connecting the board ethernet. **NICY** is the PC NIC name connecting internet (WiFi or another ethernet).
   
   If you want, uncommenting "net.ipv4.ip_forward=1" in /etc/sysctl.conf to make IP forwarding persistent on PC.
 - To monitor **real-time CSI (Chip State Information)**, such as timestamp, frequency offset, channel state, equalizer, please refer to [[CSI notes](doc/app_notes/csi.md)].
@@ -208,10 +211,10 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 - Setup routing/NAT **on the PC** for your board -- this internet connection is **important** for post installation/config.
   ```
   sudo sysctl -w net.ipv4.ip_forward=1
-  sudo iptables -t nat -A POSTROUTING -o ethY -j MASQUERADE
+  sudo iptables -t nat -A POSTROUTING -o NICY -j MASQUERADE
   sudo ip route add 192.168.13.0/24 via 192.168.10.122 dev ethX
   ```
-  **ethX** is the PC NIC name connecting the board. **ethY** is the PC NIC name connecting internet.
+  **ethX** is the PC NIC name connecting the board ethernet. **NICY** is the PC NIC name connecting internet (WiFi or another ethernet).
   
   If you want, uncommenting "net.ipv4.ip_forward=1" in /etc/sysctl.conf to make IP forwarding persistent on PC.
 - Run **one time** script on board to complete post installation/config (After this, password becomes **openwifi**)
