@@ -851,7 +851,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 	skb_put( skb, num_byte_pad );
 
-	retry_limit_hw_value = (retry_limit_raw - 1)&0xF;
+	retry_limit_hw_value = ( retry_limit_raw==0?0:((retry_limit_raw - 1)&0xF) );
 	dma_buf = skb->data;
 
 	cts_rate_signal_value = wifi_mcs_table_11b_force_up[cts_rate_hw_value];
