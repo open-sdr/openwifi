@@ -189,6 +189,7 @@ const char *openofdm_rx_compatible_str = "sdr,openofdm_rx";
 #define OPENOFDM_RX_REG_ENABLE_ADDR        (1*4)
 #define OPENOFDM_RX_REG_POWER_THRES_ADDR   (2*4)
 #define OPENOFDM_RX_REG_MIN_PLATEAU_ADDR   (3*4)
+#define OPENOFDM_RX_REG_SOFT_DECODING_ADDR (4*4)
 #define OPENOFDM_RX_REG_STATE_HISTORY_ADDR (20*4)
 
 enum openofdm_rx_mode {
@@ -211,6 +212,7 @@ struct openofdm_rx_driver_api {
 	void (*OPENOFDM_RX_REG_ENABLE_write)(u32 value);
 	void (*OPENOFDM_RX_REG_POWER_THRES_write)(u32 value);
 	void (*OPENOFDM_RX_REG_MIN_PLATEAU_write)(u32 value);
+	void (*OPENOFDM_RX_REG_SOFT_DECODING_write)(u32 value);
 };
 
 // ---------------------------------------openofdm tx-------------------------------
