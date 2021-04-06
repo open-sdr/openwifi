@@ -47,12 +47,12 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 
 board_name|board combination|status|SD card img|Vivado license
 -------|-------|----|----|-----
-zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|Need
-zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|**NO** need
-adrv9364z7020|ADRV9364-Z7020 + ADRV1CRR-BOB|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|**NO** need
-adrv9361z7035|ADRV9361-Z7035 + ADRV1CRR-BOB/FMC|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|Need
-zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-32bit.img.xz)|**NO** need
-zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-64bit.img.xz)|Need
+zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)|Need
+zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)|**NO** need
+adrv9364z7020|ADRV9364-Z7020 + ADRV1CRR-BOB|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)|**NO** need
+adrv9361z7035|ADRV9361-Z7035 + ADRV1CRR-BOB/FMC|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)|Need
+zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-32bit.img.xz)|**NO** need
+zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-1-64bit.img.xz)|Need
 zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future|Need
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
