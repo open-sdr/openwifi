@@ -87,7 +87,7 @@ reg_idx|meaning|comment
 
 (In the **comment** column, you may get a list of **decimalvalue(0xhexvalue):explanation** for a register, only use the **decimalvalue** in the sdrctl command)
 
-module_name: **drv_tx**
+module_name: **drv_tx** (for full list, search drv_tx_reg_val in sdr.c)
 
 reg_idx|meaning|comment
 -------|-------|----
