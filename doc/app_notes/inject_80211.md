@@ -71,7 +71,7 @@ cd openwifi
 ./wgd.sh
 ./monitor_ch.sh sdr0 11
 (Above will turn sdr0 into the monitor mode and monitor on channel 11)
-./inject_80211/inject_80211 -m n -r 0  -n 64 -s 10 sdr0
+./inject_80211/inject_80211 -m n -r 0 -n 10 -s 64 sdr0
 (Above will inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size via NIC sdr0)
 ```
 When above injection command is running, you could see the injected packets with wireshark (or other packet sniffer) on another WiFi device monitoring channel 11.
@@ -79,7 +79,7 @@ When above injection command is running, you could see the injected packets with
 Or add extra virtual monitor interface on top of sdr0, and inject packets:
 ```
 iw dev sdr0 interface add mon0 type monitor && ifconfig mon0 up
-./inject_80211/inject_80211 -m n -r 0  -n 64 -s 10 mon0     # Inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size
+./inject_80211/inject_80211 -m n -r 0 -n 10 -s 64 mon0     # Inject 10 802.11n packets at 6.5Mbps bitrate and 64bytes size
 ```
 
 ### Link performance test
