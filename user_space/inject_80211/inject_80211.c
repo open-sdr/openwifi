@@ -119,7 +119,7 @@ void usage(void)
 int main(int argc, char *argv[])
 {
 	u8 buffer[1536];
-	char szErrbuf[PCAP_ERRBUF_SIZE], rand_char[1536], hw_mode = 'n';
+	char szErrbuf[PCAP_ERRBUF_SIZE], rand_char[1484], hw_mode = 'n';
 	int i, nLinkEncap = 0, r, rate_index = 0, sgi_flag = 0, num_packets = 10, payload_size = 64, packet_size, nDelay = 100000;
 	pcap_t *ppcap = NULL;
 
