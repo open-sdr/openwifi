@@ -1076,19 +1076,19 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	}
 
 	priv->rx_chan = dma_request_slave_channel(&(priv->pdev->dev), "rx_dma_s2mm");
-	if (IS_ERR(priv->rx_chan)) {
+	if (IS_ERR(priv->rx_chan) || priv->rx_chan==NULL) {
 		ret = PTR_ERR(priv->rx_chan);
-		pr_err("%s openwifi_start: No Rx channel %d\n",sdr_compatible_str,ret);
+		pr_err("%s openwifi_start: No Rx channel ret %d priv->rx_chan 0x%p\n",sdr_compatible_str, ret, priv->rx_chan);
 		goto err_dma;
 	}
 
 	priv->tx_chan = dma_request_slave_channel(&(priv->pdev->dev), "tx_dma_mm2s");
-	if (IS_ERR(priv->tx_chan)) {
+	if (IS_ERR(priv->tx_chan) || priv->tx_chan==NULL) {
 		ret = PTR_ERR(priv->tx_chan);
-		pr_err("%s openwifi_start: No Tx channel %d\n",sdr_compatible_str,ret);
+		pr_err("%s openwifi_start: No Tx channel ret %d priv->tx_chan 0x%p\n",sdr_compatible_str, ret, priv->tx_chan);
 		goto err_dma;
 	}
-	printk("%s openwifi_start: DMA channel setup successfully.\n",sdr_compatible_str);
+	printk("%s openwifi_start: DMA channel setup successfully. priv->rx_chan 0x%p priv->tx_chan 0x%p\n",sdr_compatible_str, priv->rx_chan, priv->tx_chan);
 
 	ret = openwifi_init_rx_ring(priv);
 	if (ret) {
