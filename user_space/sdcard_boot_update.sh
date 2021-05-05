@@ -41,9 +41,9 @@ wget ftp://192.168.10.1/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN
 if [ -f "./BOOT.BIN" ]; then
     echo "BOOT.BIN downloaded!"
 else
-    echo "BOOT.BIN not downloaded! Please check!"
+    echo "WARNING! BOOT.BIN not downloaded! Old file used!"
     mv BOOT.BIN.bak BOOT.BIN
-    exit 1
+#    exit 1
 fi
 sync
 
@@ -53,9 +53,9 @@ wget ftp://192.168.10.1/$LINUX_KERNEL_SRC_DIR_NAME/$image_filepath/$image_filena
 if [ -f "./$image_filename" ]; then
     echo "$image_filename downloaded!"
 else
-    echo "$image_filename not downloaded! Please check!"
+    echo "WARNING! $image_filename not downloaded! Old file used!"
     mv $image_filename.bak $image_filename
-    exit 1
+#    exit 1
 fi
 sync
 
@@ -65,9 +65,9 @@ wget ftp://192.168.10.1/kernel_boot/boards/$BOARD_NAME/$dtb_filename
 if [ -f "./$dtb_filename" ]; then
     echo "$dtb_filename downloaded!"
 else
-    echo "$dtb_filename not downloaded! Please check!"
+    echo "WARNING! $dtb_filename not downloaded! Old file used!"
     mv $dtb_filename.bak $dtb_filename
-    exit 1
+#    exit 1
 fi
 sync
 
