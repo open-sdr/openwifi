@@ -1121,7 +1121,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 
 	priv->irq_tx = irq_of_parse_and_map(priv->pdev->dev.of_node, 3);
 	ret = request_irq(priv->irq_tx, openwifi_tx_interrupt,
-			IRQF_SHARED, "sdr,tx_itrpt1", dev);
+			IRQF_SHARED, "sdr,tx_itrpt", dev);
 	if (ret) {
 		wiphy_err(dev->wiphy, "openwifi_start: failed to register IRQ handler openwifi_tx_interrupt\n");
 		goto err_free_rings;
