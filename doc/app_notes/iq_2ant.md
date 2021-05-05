@@ -7,10 +7,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 Instead of [**normal IQ sample capture**](iq.md), this app note introduces how to enable the I/Q capture for dual antennas. Besides the I/Q from the main antenna (that is selected by baseband), the I/Q samples from the other antenna (monitoring antenna) is captured as well (coherently synchronized) in this dual antenna mode. You are suggested to read the [**normal IQ sample capture**](iq.md) to understand how we use the side channel to capture I/Q samples by different trigger conditions.
 
-In this app note, we show how to use the dual antenna I/Q capture to capture the collision.
+This feature also support capturing TX I/Q (loopback) to test the baseband transmitter.
+
+- [[Quick start for collision capture](#Quick-start-for-collision-capture)]
+- [[Quick start for TX IQ capture in trigger mode](#Quick-start-for-TX-IQ-capture-in-trigger-mode)]
+- [[Quick start for TX IQ capture in free running mode](#Quick-start-for-TX-IQ-capture-in-free-running-mode)]
+
+## Quick start for collision capture
 ![](./iq_2ant-setup.png)
 
-## Quick start
   The main antenna rx0 (by default selected by baseband if you do not select explicitly by set_ant.sh) is always used for communication and I/Q capture. Meanwhile, the other antenna (rx1 -- monitoring antenna) will be also available for capturing rx I/Q if you are using AD9361 based RF board, such as fmcomms2/3 and adrv9361z7035, by turning on the **dual antenna capture** mode. In this case, you can place the other antenna (rx1) close to the communication peer (for example, the other WiFi node) to capture the potential collision by monitoring rx1 I/Q. The nature of collision is that both sides of a communication link are trying to do transmission at the same time.
   
   The collision capture steps:
@@ -62,3 +67,50 @@ In this app note, we show how to use the dual antenna I/Q capture to capture the
   - Now the trigger condition can capture the case where both sides happen to transmit in an overlapped duration. If the  printed "**side info count**" is increasing, it means the collision happens from time to time.
   - You can also see it via iq_capture_2ant.py or do offline analysis by test_iq_2ant_file_display.m 
   - Check the **iq1** signal in FPGA ILA/probe (triggered by signal "iq_trigger") for further debug if you want to know what exactly happened when collision is captured.
+
+## Quick start for TX IQ capture in trigger mode
+
+To capture the TX I/Q (baseband loopback), a scenario where openwifi will do TX needs to be set up. Such as beacon TX when openwifi act as AP, or [packet injection](inject_80211.md).
+
+The example command sequence on board and explanations are as follows.
+```
+cd openwifi
+./fosdem.sh
+insmod side_ch.ko iq_len_init=511
+(511 I/Q samples cover the short, long preamble and some OFDM symbols. Change it according to your case)
+./side_ch_ctl wh11d1
+(1 sample before the trigger met will be captured. So most of the I/Q will be captured after trigger met)
+./side_ch_ctl wh8d16
+(trigger condition 16: phy_tx_started signal from openofdm tx core)
+./side_ch_ctl wh5h2
+(I/Q source selection: 2--openofdm_tx core; 4--tx_intf)
+./side_ch_ctl wh3h11
+./side_ch_ctl g1
+```
+On computer:
+```
+openwifi/user_space/side_ch_ctl_src/python3 iq_capture_2ant.py 511
+
+```
+
+## Quick start for TX IQ capture in free running mode
+
+```
+cd openwifi
+./fosdem.sh
+insmod side_ch.ko iq_len_init=511
+(511 I/Q samples cover the short, long preamble and some OFDM symbols. Change it according to your case)
+./side_ch_ctl wh11d1
+(1 sample before the trigger met will be captured. So most of the I/Q will be captured after trigger met)
+./side_ch_ctl wh8d0
+(trigger condition 0 is needed for free running mode)
+./side_ch_ctl wh5h3
+(I/Q source selection: 3--openofdm_tx core; 5--tx_intf)
+./side_ch_ctl wh3h11
+./side_ch_ctl g1
+```
+On computer:
+```
+openwifi/user_space/side_ch_ctl_src/python3 iq_capture_2ant.py 511
+
+```

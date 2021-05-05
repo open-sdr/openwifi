@@ -112,6 +112,12 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   30|start tx, meanwhile I/Q amplitude from the other antenna is above rssi_or_iq_th
   31|start tx and need for ACK, meanwhile I/Q amplitude from the other antenna is above rssi_or_iq_th
   
+  If free running is wanted (alway trigger), please use the following two commands together.
+  ```
+  ./side_ch_ctl wh8d0
+  ./side_ch_ctl wh5d1
+  ```
+  
   To set the RSSI threshold
   ```
   ./side_ch_ctl wh9dY
