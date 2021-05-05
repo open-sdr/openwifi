@@ -66,24 +66,24 @@ then
 fi
 sleep 0.5
 
-SUBMODULE=ad9361_drv
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/ad9361/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
+# SUBMODULE=ad9361_drv
+# if [ $last_input == "remote" ]
+#   then
+#     rm $SUBMODULE.ko
+#     sync
+#     wget ftp://192.168.10.1/driver/ad9361/$SUBMODULE.ko
+#     sync
+# fi
+# rmmod $SUBMODULE
+# insmod $SUBMODULE.ko
 
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-sleep 1
+# echo check $SUBMODULE module is loaded or not
+# checkModule $SUBMODULE
+# if [ $? -eq 1 ]
+# then
+#   return
+# fi
+# sleep 1
 
 echo "set RF frontend"
 # if [ $last_input == "remote" ]

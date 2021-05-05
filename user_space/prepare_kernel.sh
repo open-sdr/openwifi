@@ -61,6 +61,8 @@ git checkout 2019_R1
 git pull origin 2019_R1
 # git reset --hard 4fea7c5
 cp $LINUX_KERNEL_CONFIG_FILE ./.config
+cp $OPENWIFI_DIR/driver/ad9361/ad9361.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361.c -rf
+
 source $XILINX_DIR/SDK/2018.3/settings64.sh
 export ARCH=$ARCH_NAME
 export CROSS_COMPILE=$CROSS_COMPILE_NAME

@@ -45,11 +45,16 @@
 #include <linux/leds.h>
 
 #define IIO_AD9361_USE_PRIVATE_H_
-#include "ad9361/ad9361_regs.h"
-#include "ad9361/ad9361.h"
-#include "ad9361/ad9361_private.h"
+#include <../../drivers/iio/adc/ad9361_regs.h>
+#include <../../drivers/iio/adc/ad9361.h>
+#include <../../drivers/iio/adc/ad9361_private.h>
 
 #include <../../drivers/iio/frequency/cf_axi_dds.h>
+extern int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num);
+extern int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb,
+			       bool tx1, bool tx2, bool immed);
+extern int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
+				  struct ctrl_outs_control *ctrl);
 
 #include "../user_space/sdrctl_src/nl80211_testmode_def.h"
 #include "hw_def.h"
@@ -134,8 +139,8 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
 
-		ad9361_clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo )>>1) );
-		ad9361_clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo )>>1) );
+		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo )>>1) );
+		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo )>>1) );
 
 		if (actual_rx_lo<2412) {
 			priv->rssi_correction = 153;

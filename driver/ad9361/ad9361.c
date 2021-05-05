@@ -1,9 +1,10 @@
 /*
  * AD9361 Agile RF Transceiver
- * SPDX-FileCopyrightText: Copyright 2013-2015 Analog Devices Inc.
- * Modified by Xianjun jiao
- * SPDX-License-Identifier: GPL-2.0-or-later
-*/
+ *
+ * Copyright 2013-2015 Analog Devices Inc.
+ *
+ * Licensed under the GPL-2.
+ */
 //#define DEBUG
 //#define _DEBUG
 #include <linux/module.h>
@@ -1628,7 +1629,6 @@ static int ad9361_get_rx_gain(struct ad9361_rf_phy *phy,
 out:
 	return rc;
 }
-EXPORT_SYMBOL(ad9361_get_rx_gain);
 
 static u8 ad9361_ensm_get_state(struct ad9361_rf_phy *phy)
 {
@@ -2006,7 +2006,6 @@ out:
 	return rc;
 
 }
-EXPORT_SYMBOL(ad9361_set_rx_gain);
 
 static int ad9361_gc_update(struct ad9361_rf_phy *phy)
 {
@@ -2174,9 +2173,8 @@ static int ad9361_set_gain_ctrl_mode(struct ad9361_rf_phy *phy,
 out:
 	return rc;
 }
-EXPORT_SYMBOL(ad9361_set_gain_ctrl_mode);
 
-int ad9361_read_rssi(struct ad9361_rf_phy *phy, struct rf_rssi *rssi)
+static int ad9361_read_rssi(struct ad9361_rf_phy *phy, struct rf_rssi *rssi)
 {
 	struct spi_device *spi = phy->spi;
 	u8 reg_val_buf[6];
@@ -2205,7 +2203,6 @@ int ad9361_read_rssi(struct ad9361_rf_phy *phy, struct rf_rssi *rssi)
 
 	return rc;
 }
-EXPORT_SYMBOL(ad9361_read_rssi);
 
 static int ad9361_rx_adc_setup(struct ad9361_rf_phy *phy, unsigned long bbpll_freq,
 			 unsigned long adc_sampl_freq_Hz)
@@ -3734,7 +3731,6 @@ int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
 	return ad9361_spi_write(spi, REG_CTRL_OUTPUT_ENABLE, ctrl->en_mask); // Ctrl Out [7:0] output enable
 }
 EXPORT_SYMBOL(ad9361_ctrl_outs_setup);
-
   //************************************************************
   // Setup GPO
   //************************************************************
@@ -3780,7 +3776,7 @@ static int ad9361_gpo_setup(struct ad9361_rf_phy *phy, struct gpo_control *ctrl)
 	return 0;
 }
 
-int ad9361_rssi_setup(struct ad9361_rf_phy *phy,
+static int ad9361_rssi_setup(struct ad9361_rf_phy *phy,
 			     struct rssi_control *ctrl,
 			     bool is_update)
 {
@@ -3871,7 +3867,6 @@ int ad9361_rssi_setup(struct ad9361_rf_phy *phy,
 
 	return 0;
 }
-EXPORT_SYMBOL(ad9361_rssi_setup);
 
 static int ad9361_bb_clk_change_handler(struct ad9361_rf_phy *phy)
 {
@@ -4074,12 +4069,6 @@ static int ad9361_validate_trx_clock_chain(struct ad9361_rf_phy *phy,
 
 	return -EINVAL;
 }
-
-int ad9361_clk_set_rate(struct clk *clk, unsigned long rate) {
-	clk_set_rate(clk, rate);
-	return 0;
-}
-EXPORT_SYMBOL(ad9361_clk_set_rate);
 
 static int ad9361_set_trx_clock_chain(struct ad9361_rf_phy *phy,
 				      unsigned long *rx_path_clks,
@@ -5223,7 +5212,7 @@ static int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
 	return ret;
 }
 
-int ad9361_update_rf_bandwidth(struct ad9361_rf_phy *phy,
+static int ad9361_update_rf_bandwidth(struct ad9361_rf_phy *phy,
 				     u32 rf_rx_bw, u32 rf_tx_bw)
 {
 	struct ad9361_rf_phy_state *st = phy->state;
@@ -5257,7 +5246,6 @@ int ad9361_update_rf_bandwidth(struct ad9361_rf_phy *phy,
 
 	return 0;
 }
-EXPORT_SYMBOL(ad9361_update_rf_bandwidth);
 
 static int ad9361_verify_fir_filter_coef(struct ad9361_rf_phy *phy,
 				       enum fir_dest dest,
