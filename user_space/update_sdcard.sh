@@ -110,16 +110,21 @@ sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage  $SDCARD
 sudo mkdir $SDCARD_DIR/BOOT/openwifi/zynqmp-common
 sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/openwifi/zynqmp-common/
 
-# Copy uImage BOOT.BIN and devicetree to SD card BOOT partition
+sudo mkdir $SDCARD_DIR/rootfs/root/openwifi
+
+# Copy uImage BOOT.BIN and devicetree to SD card BOOT partition and backup at rootfs/root/openwifi
 sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/$dtb_filename $SDCARD_DIR/BOOT/
+sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/$dtb_filename $SDCARD_DIR/rootfs/root/openwifi/ -rf
 sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/
+sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN $SDCARD_DIR/rootfs/root/openwifi/ -rf
 if [ "$BOARD_NAME" == "zcu102_fmcs2" ] || [ "$BOARD_NAME" == "zcu102_9371" ]; then
     sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/BOOT/
+    sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64/arch/arm64/boot/Image $SDCARD_DIR/rootfs/root/openwifi/ -rf
 else
     sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage $SDCARD_DIR/BOOT/
+    sudo cp $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32/arch/arm/boot/uImage $SDCARD_DIR/rootfs/root/openwifi/ -rf
 fi
 
-sudo mkdir $SDCARD_DIR/rootfs/root/openwifi
 sudo cp $OPENWIFI_DIR/user_space/* $SDCARD_DIR/rootfs/root/openwifi/ -rf
 sudo wget -P $SDCARD_DIR/rootfs/root/openwifi/webserver/ https://users.ugent.be/~xjiao/openwifi-low-aac.mp4
 
