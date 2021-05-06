@@ -113,6 +113,7 @@ reg_idx|meaning|comment
 -------|-------|----
 1|trigger for ILA debug|bit4 and bit0. Please check slv_reg1 in rx_intf.v
 2|enable/disable rx interrupt|256(0x100):disable, 0:enable
+3|get loopback I/Q from tx_intf|256(0x100):from tx_intf, 0:from ad9361 ADC
 11|rx digital I/Q gain|number of bit shift to left. default 4 in rx_intf.c: rx_intf_api->RX_INTF_REG_BB_GAIN_write(4)
 13|delay from RX DMA complete to RX packet interrupt|unit 0.1us
 16|rx antenna selection|0:ant0, 1:ant1. default 0 in rx_intf.c: rx_intf_api->RX_INTF_REG_ANT_SEL_write(ant_sel)
