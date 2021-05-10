@@ -406,7 +406,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			if (len>=28)
 				sc = hdr->seq_ctrl;
 
-			if ( addr1_low32!=0xffffffff || addr1_high16!=0xffff )
+			if ( (addr1_low32!=0xffffffff || addr1_high16!=0xffff) || (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&4) )
 				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
@@ -534,7 +534,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 			
 			if ( (tx_result_report&0x10) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
 				printk("%s openwifi_tx_interrupt: WARNING tx_result %02x prio%d wr%d rd%d\n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx);
-			if ( (!(info->flags & IEEE80211_TX_CTL_NO_ACK)) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
+			if ( ( (!(info->flags & IEEE80211_TX_CTL_NO_ACK))||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
 				printk("%s openwifi_tx_interrupt: tx_result %02x prio%d wr%d rd%d num_rand_slot %d cw %d \n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx, num_slot_random,cw);
 
 			ieee80211_tx_status_irqsafe(dev, skb);
@@ -799,7 +799,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		sc = hdr->seq_ctrl;
 	}
 
-	if ( (!addr_flag) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
+	if ( ( (!addr_flag)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
 		printk("%s openwifi_tx: %4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
 			len_mac_pdu, (use_ht_rate == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),

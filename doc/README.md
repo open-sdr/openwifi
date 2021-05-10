@@ -270,18 +270,21 @@ Following figure shows the detailed configuration point in AD9361, driver (.c fi
 
 To debug/see the basic driver behaviour, you could turn on **dmesg** message printing by 
 ```
-See all printing:
+./sdrctl dev sdr0 set reg drv_tx 7 X
+./sdrctl dev sdr0 set reg drv_rx 7 X
+
+The bit in value X controls what type of information will be printed to the dmesg (0--no print; 1--print).
+bit0: error   message
+bit1: regular message for unicast packet (openwifi_tx/openwifi_tx_interrupt/openwifi_rx_interrupt)
+bit2: regular message for broadcast packet
+
+For example, regular message for unicast packet and error message
 ./sdrctl dev sdr0 set reg drv_tx 7 3
 ./sdrctl dev sdr0 set reg drv_rx 7 3
-See only error printing:
+
+For example, error message only:
 ./sdrctl dev sdr0 set reg drv_tx 7 1
 ./sdrctl dev sdr0 set reg drv_rx 7 1
-See only regular printing:
-./sdrctl dev sdr0 set reg drv_tx 7 2
-./sdrctl dev sdr0 set reg drv_rx 7 2
-Turn off printing:
-./sdrctl dev sdr0 set reg drv_tx 7 0
-./sdrctl dev sdr0 set reg drv_rx 7 0
 ```
 and use **dmesg** command in Linux to see those messages. Regular printing includes tx/rx packet information when a packet is sent or received. Error printing has WARNING information if something abnormal happens. You can search "printk" in sdr.c to see all the printing points.
 
