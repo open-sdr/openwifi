@@ -155,7 +155,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   $OPENWIFI_DIR/user_space/prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
   (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
   ```
-  **Note**: In Ubuntu, gcc-10 might have issue, so use gcc-9 if you encounter error.
+  **Note**: In Ubuntu, gcc-10 might have issue ('yylloc' error), so use gcc-9 if you encounter error.
 - Compile the latest openwifi driver
   ```
   $OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
