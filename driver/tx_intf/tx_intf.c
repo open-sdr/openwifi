@@ -56,8 +56,8 @@ static inline u32 TX_INTF_REG_CTS_TOSELF_CONFIG_read(void){
 	return reg_read(TX_INTF_REG_CTS_TOSELF_CONFIG_ADDR);
 }
 
-static inline u32 TX_INTF_REG_START_TRANS_TO_PS_MODE_read(void){
-	return reg_read(TX_INTF_REG_START_TRANS_TO_PS_MODE_ADDR);
+static inline u32 TX_INTF_REG_CSI_FUZZER_read(void){
+	return reg_read(TX_INTF_REG_CSI_FUZZER_ADDR);
 }
 
 static inline u32 TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read(void){
@@ -134,8 +134,8 @@ static inline void TX_INTF_REG_CTS_TOSELF_CONFIG_write(u32 value){
 	reg_write(TX_INTF_REG_CTS_TOSELF_CONFIG_ADDR, value);
 }
 
-static inline void TX_INTF_REG_START_TRANS_TO_PS_MODE_write(u32 value){
-	reg_write(TX_INTF_REG_START_TRANS_TO_PS_MODE_ADDR, value);
+static inline void TX_INTF_REG_CSI_FUZZER_write(u32 value){
+	reg_write(TX_INTF_REG_CSI_FUZZER_ADDR, value);
 }
 
 static inline void TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(u32 value){
@@ -283,7 +283,7 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		tx_intf_api->TX_INTF_REG_MIXER_CFG_write(mixer_cfg);
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 		tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write(duc_input_ch_sel);
-		tx_intf_api->TX_INTF_REG_START_TRANS_TO_PS_MODE_write(2);
+		tx_intf_api->TX_INTF_REG_CSI_FUZZER_write(0);
 		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write(num_dma_symbol_to_pl);
@@ -338,7 +338,7 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_read=TX_INTF_REG_WIFI_TX_MODE_read;
 	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_read=TX_INTF_REG_IQ_SRC_SEL_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_read=TX_INTF_REG_CTS_TOSELF_CONFIG_read;
-	tx_intf_api->TX_INTF_REG_START_TRANS_TO_PS_MODE_read=TX_INTF_REG_START_TRANS_TO_PS_MODE_read;
+	tx_intf_api->TX_INTF_REG_CSI_FUZZER_read=TX_INTF_REG_CSI_FUZZER_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read;
 	tx_intf_api->TX_INTF_REG_MISC_SEL_read=TX_INTF_REG_MISC_SEL_read;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read;
@@ -358,7 +358,7 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write=TX_INTF_REG_WIFI_TX_MODE_write;
 	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write=TX_INTF_REG_IQ_SRC_SEL_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_write=TX_INTF_REG_CTS_TOSELF_CONFIG_write;
-	tx_intf_api->TX_INTF_REG_START_TRANS_TO_PS_MODE_write=TX_INTF_REG_START_TRANS_TO_PS_MODE_write;
+	tx_intf_api->TX_INTF_REG_CSI_FUZZER_write=TX_INTF_REG_CSI_FUZZER_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write;
 	tx_intf_api->TX_INTF_REG_MISC_SEL_write=TX_INTF_REG_MISC_SEL_write;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write;

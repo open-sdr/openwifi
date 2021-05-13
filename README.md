@@ -28,8 +28,9 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 - Mode tested: Ad-hoc; Station; AP, Monitor
 - DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)
 - [802.11 packet injection and fuzzing](doc/app_notes/inject_80211.md)
-- CSI (Channel State Information, freq offset, equalizer to computer) [[CSI notes](doc/app_notes/csi.md)]
-- IQ capture (real-time AGC, RSSI, IQ sample to computer) [[IQ notes](doc/app_notes/iq.md)][[IQ notes for dual antenna](doc/app_notes/iq_2ant.md)]
+- [CSI](doc/app_notes/csi.md): Channel State Information, freq offset, equalizer to computer
+- [CSI fuzzer](doc/app_notes/csi_fuzzer.md): Create fake CSI in WiFi transmitter
+- [[IQ capture](doc/app_notes/iq.md)]: real-time AGC, RSSI, IQ sample to computer. [[Dual antenna version](doc/app_notes/iq_2ant.md)]
 - Configurable channel access priority parameters:
   - duration of RTS/CTS, CTS-to-self
   - SIFS/DIFS/xIFS/slot-time/CW/etc

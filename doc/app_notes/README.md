@@ -14,3 +14,4 @@ Application notes collect many small topics about using openwifi in different sc
 - [Capture dual antenna TX/RX IQ for multi-purpose (capture collision)](iq_2ant.md)
 - [IEEE 802.11n (Wi-Fi 4)](ieee80211n.md)
 - [802.11 packet injection and fuzzing](inject_80211.md)
+- [CSI fuzzer](csi_fuzzer.md)

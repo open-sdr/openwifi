@@ -27,7 +27,7 @@ const char *tx_intf_compatible_str = "sdr,tx_intf";
 #define TX_INTF_REG_WIFI_TX_MODE_ADDR              (2*4)
 #define TX_INTF_REG_IQ_SRC_SEL_ADDR                (3*4)
 #define TX_INTF_REG_CTS_TOSELF_CONFIG_ADDR         (4*4)
-#define TX_INTF_REG_START_TRANS_TO_PS_MODE_ADDR    (5*4)
+#define TX_INTF_REG_CSI_FUZZER_ADDR                (5*4)
 #define TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_ADDR  (6*4)
 #define TX_INTF_REG_MISC_SEL_ADDR                  (7*4)
 #define TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_ADDR      (8*4)
@@ -71,7 +71,7 @@ struct tx_intf_driver_api {
 	u32 (*TX_INTF_REG_WIFI_TX_MODE_read)(void);
 	u32 (*TX_INTF_REG_IQ_SRC_SEL_read)(void);
 	u32 (*TX_INTF_REG_CTS_TOSELF_CONFIG_read)(void);
-	u32 (*TX_INTF_REG_START_TRANS_TO_PS_MODE_read)(void);
+	u32 (*TX_INTF_REG_CSI_FUZZER_read)(void);
 	u32 (*TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read)(void);
 	u32 (*TX_INTF_REG_MISC_SEL_read)(void);
 	u32 (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read)(void);
@@ -91,7 +91,7 @@ struct tx_intf_driver_api {
 	void (*TX_INTF_REG_WIFI_TX_MODE_write)(u32 value);
 	void (*TX_INTF_REG_IQ_SRC_SEL_write)(u32 value);
 	void (*TX_INTF_REG_CTS_TOSELF_CONFIG_write)(u32 value);
-	void (*TX_INTF_REG_START_TRANS_TO_PS_MODE_write)(u32 value);
+	void (*TX_INTF_REG_CSI_FUZZER_write)(u32 value);
 	void (*TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write)(u32 value);
 	void (*TX_INTF_REG_MISC_SEL_write)(u32 value);
 	void (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write)(u32 value);
