@@ -155,6 +155,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   $OPENWIFI_DIR/user_space/prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
   (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
   ```
+  **Note**: In Ubuntu, gcc-10 might have issue, so use gcc-9 if you encounter error.
 - Compile the latest openwifi driver
   ```
   $OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
@@ -165,6 +166,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   scp `find $OPENWIFI_DIR/driver/ -name \*.ko` root@192.168.10.122:openwifi/
   ```
   Now you can use **wgd.sh** on board to load the new openwifi driver.
+  **Note**: If you have symbol or version error while loadng the driver, it could be because the kernel in the SD card image is too old. In this case, you need to follow [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to generate your new SD card image.
 
 ## Update sdrctl
 - Copy the sdrctl source files to the board via ssh channel
