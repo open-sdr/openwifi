@@ -262,7 +262,7 @@ This section explains the porting work by showing the differences between openwi
 Any use of openwifi project which results in a publication should include a citation via (bibtex example):
 ```
 @electronic{openwifigithub,
-            author = {Xianjun, Jiao and Wei, Liu and Michael, Mehari},
+            author = {Jiao, Xianjun and Liu, Wei and Mehari, Michael},
             title = {open-source IEEE802.11/Wi-Fi baseband chip/FPGA design},
             url = {https://github.com/open-sdr/openwifi},
             year = {2019},
