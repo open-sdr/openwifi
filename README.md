@@ -15,7 +15,7 @@ This repository includes Linux driver and software. [openwifi-hw](https://github
 [[Project document](doc/README.md)]
 [[Application notes](doc/app_notes/README.md)]
 [[Videos](#Videos)]
-[[Papers](#Papers)]
+[[Publications](doc/publications.md)]
 [[maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
 [[Cite openwifi project](#Cite-openwifi-project)]
 
@@ -29,7 +29,7 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 - DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)
 - [802.11 packet injection and fuzzing](doc/app_notes/inject_80211.md)
 - [CSI](doc/app_notes/csi.md): Channel State Information, freq offset, equalizer to computer
-- [CSI fuzzer](doc/app_notes/csi_fuzzer.md): Create fake CSI in WiFi transmitter
+- [CSI fuzzer](doc/app_notes/csi_fuzzer.md): Create artificial channel response in WiFi transmitter
 - [[IQ capture](doc/app_notes/iq.md)]: real-time AGC, RSSI, IQ sample to computer. [[Dual antenna version](doc/app_notes/iq_2ant.md)]
 - Configurable channel access priority parameters:
   - duration of RTS/CTS, CTS-to-self
@@ -256,14 +256,6 @@ This section explains the porting work by showing the differences between openwi
 - Low latency for gaming and introduction [[youtube](https://youtu.be/Notn9X482LI)], [[link for CHN user](https://www.zhihu.com/zvideo/1273823153371385856)]
 - CSI (Channel State Information) [[twitter](https://twitter.com/i/status/1314207380561780738)], [[link for CHN user](https://www.zhihu.com/zvideo/1297662571618148352)]
 - FOSDEM2021 [[Flash back](https://twitter.com/jxjputaoshu/status/1358462741703491584?s=20)], [[link for CHN user](https://www.zhihu.com/zvideo/1340748826311974912)]; [[Presentation](https://mirror.as35701.net/video.fosdem.org/2021/D.radio/fsr_openwifi_opensource_wifi_chip.webm)], [[link for CHN user](https://www.zhihu.com/zvideo/1345036055104360448)]
-
-## Papers
-
-- [openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://www.orca-project.eu/wp-content/uploads/sites/4/2020/03/openwifi-vtc-antwerp-PID1249076.pdf)
-- [csi murder](https://ans.unibs.it/projects/csi-murder/)
-- [IEEE 802.11 CSI randomization to preserve location privacy: An empirical evaluation in different scenarios](https://www.sciencedirect.com/science/article/abs/pii/S138912862100102X)
-
-Openwifi was born in [ORCA project](https://www.orca-project.eu/) (EU's Horizon2020 programme under agreement number 732174).
 
 ## Cite openwifi project
 
