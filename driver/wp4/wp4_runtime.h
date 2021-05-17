@@ -29,6 +29,7 @@ void dump_rx_packet(u8 *ptr);
 int table_init(void);
 void table_exit(void);
 struct packet_out CPU_Port(int buffer_id);
+void wp4_table_lookup(struct swtch_test_tbl_key *swtch_tbl, u8 *key);
 
 struct flows_counter
 {

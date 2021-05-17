@@ -239,6 +239,14 @@ void table_exit(void)
     return;
 }
 
+
+wp4_table_lookup(&swtch_test_tbl, &key)
+{
+
+    return;
+}
+
+
 /*
  *  Packet poll request
  *
