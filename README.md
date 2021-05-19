@@ -15,9 +15,8 @@ This repository includes Linux driver and software. [openwifi-hw](https://github
 [[Project document](doc/README.md)]
 [[Application notes](doc/app_notes/README.md)]
 [[Videos](#Videos)]
-[[Publications](doc/publications.md)]
+[[Publications and cite](doc/publications.md)]
 [[maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
-[[Cite openwifi project](#Cite-openwifi-project)]
 
 Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opensource and advanced feature license, please contact Filip.Louagie@UGent.be. Openwifi project also leverages some 3rd party modules. It is user's duty to check and follow licenses of those modules according to the purpose/usage. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions. [[How to contribute]](https://github.com/open-sdr/openwifi/blob/master/CONTRIBUTING.md). 
 
@@ -256,18 +255,6 @@ This section explains the porting work by showing the differences between openwi
 - Low latency for gaming and introduction [[youtube](https://youtu.be/Notn9X482LI)], [[link for CHN user](https://www.zhihu.com/zvideo/1273823153371385856)]
 - CSI (Channel State Information) [[twitter](https://twitter.com/i/status/1314207380561780738)], [[link for CHN user](https://www.zhihu.com/zvideo/1297662571618148352)]
 - FOSDEM2021 [[Flash back](https://twitter.com/jxjputaoshu/status/1358462741703491584?s=20)], [[link for CHN user](https://www.zhihu.com/zvideo/1340748826311974912)]; [[Presentation](https://mirror.as35701.net/video.fosdem.org/2021/D.radio/fsr_openwifi_opensource_wifi_chip.webm)], [[link for CHN user](https://www.zhihu.com/zvideo/1345036055104360448)]
-
-## Cite openwifi project
-
-Any use of openwifi project which results in a publication should include a citation via (bibtex example):
-```
-@electronic{openwifigithub,
-            author = {Jiao, Xianjun and Liu, Wei and Mehari, Michael},
-            title = {open-source IEEE802.11/Wi-Fi baseband chip/FPGA design},
-            url = {https://github.com/open-sdr/openwifi},
-            year = {2019},
-}
-```
 
 ## License
 
