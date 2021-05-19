@@ -14,7 +14,7 @@ This repository includes Linux driver and software. [openwifi-hw](https://github
 [[Quick start](#Quick-start)]
 [[Project document](doc/README.md)]
 [[Application notes](doc/app_notes/README.md)]
-[[Videos](#Videos)]
+[[Videos](doc/videos.md)]
 [[Publications and How to Cite](doc/publications.md)]
 [[maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
 
@@ -247,14 +247,6 @@ This section explains the porting work by showing the differences between openwi
 - The address/interrupts of FPGA blocks hooked to the ARM bus should be put/aligned to the devicetree file openwifi/kernel_boot/boards/zc706_fmcs2/devicetree.dts. Linux will parse the devicetree.dtb when booting to know information of attached device (FPGA blocks in our case).
 - We use dtc command to get devicetree.dts converted from devicetree.dtb in [Analog Devices Linux image](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images), then do modification according to what we have added/modified to the reference design.
 - Please learn the script in [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to understand how we generate devicetree.dtb, BOOT.BIN and Linux kernel uImage and put them together to build the full SD card image.
-
-## Videos
-
-- Demo [[youtube](https://youtu.be/NpjEaszd5u4)], [[link for CHN user](https://www.zhihu.com/zvideo/1280659393378041856)]
-- FOSDEM2020 [[youtube](https://youtu.be/Mq48cGthk7M)], [[link for CHN user](https://www.zhihu.com/zvideo/1280673506397425664)]
-- Low latency for gaming and introduction [[youtube](https://youtu.be/Notn9X482LI)], [[link for CHN user](https://www.zhihu.com/zvideo/1273823153371385856)]
-- CSI (Channel State Information) [[twitter](https://twitter.com/i/status/1314207380561780738)], [[link for CHN user](https://www.zhihu.com/zvideo/1297662571618148352)]
-- FOSDEM2021 [[Flash back](https://twitter.com/jxjputaoshu/status/1358462741703491584?s=20)], [[link for CHN user](https://www.zhihu.com/zvideo/1340748826311974912)]; [[Presentation](https://mirror.as35701.net/video.fosdem.org/2021/D.radio/fsr_openwifi_opensource_wifi_chip.webm)], [[link for CHN user](https://www.zhihu.com/zvideo/1345036055104360448)]
 
 ## License
 
