@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-[Openwifi CSI fuzzer for authorized sensing and covert channels](https://arxiv.org/pdf/2105.07428.pdf) (submitted to ACM WiSec 2021)
+[Openwifi CSI fuzzer for authorized sensing and covert channels](https://arxiv.org/pdf/2105.07428.pdf) (accepted by ACM WiSec 2021)
 
 CSI (Channel Station Information) of WiFi systems is available in some WiFi chips and can be used for environment (people, object, activity) sensing passively and secretly.
  
