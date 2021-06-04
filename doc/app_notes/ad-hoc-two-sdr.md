@@ -38,7 +38,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   cd openwifi
   ./wgd.sh
   ifconfig sdr0 up
-  ./sdr-ad-hoc-up.sh sdr0 44 192.168.13.1
+  ./sdr-ad-hoc-up.sh sdr0 44 192.168.13.2
   iwconfig sdr0
   ```
 - You should see output like:
