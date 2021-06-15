@@ -32,6 +32,6 @@ If your work is related to some further specific openwifi topic, you can find an
 - [Openwifi CSI fuzzer for authorized sensing and covert channels](https://arxiv.org/pdf/2105.07428.pdf) (accepted by ACM WiSec 2021)
 - [Wireless Time-Sensitive Networks: When Every Microsecond Counts](https://www.mwrf.com/technologies/systems/article/21164984/wireless-timesensitive-networks-when-every-microsecond-counts)
 - [High precision time synchronization on Wi-Fi based multi-hop network](https://biblio.ugent.be/publication/8709058/file/8709060.pdf)
-- [The initial 802.11n 2*2 MIMO and diversity (CSD/Combining) work by Cedric Den Haese](https://users.ugent.be/~xjiao/Cedric_Den_Haese_masterproef.pdf)
+- [The initial 802.11n 2*2 MIMO and diversity (CSD/Combining) work by Cedric Den Haese](https://users.ugent.be/~xjiao/Cedric_Den_Haese_masterproef.pdf) (UGent master thesis 2021)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
