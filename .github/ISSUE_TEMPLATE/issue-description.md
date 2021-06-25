@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+0. Could you send email to xianjun.jiao@ugent.be to introduce your self?
+
 1. Our image is used directly or you build your own image?
 
 2. What is your own modification?
