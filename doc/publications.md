@@ -26,12 +26,12 @@ You can also cite the openwifi code/github link:
 ```
 If your work is related to some further specific openwifi topic, you can find and cite it from the list of the related publications/works:
 - [VTC2020 spring Antwerp. openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://www.orca-project.eu/wp-content/uploads/sites/4/2020/03/openwifi-vtc-antwerp-PID1249076.pdf)
-- [CSI MURDER](https://ans.unibs.it/projects/csi-murder/)
-- [IEEE 802.11 CSI randomization to preserve location privacy: An empirical evaluation in different scenarios](https://www.sciencedirect.com/science/article/abs/pii/S138912862100102X)
-- [Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
-- [Openwifi CSI fuzzer for authorized sensing and covert channels](https://arxiv.org/pdf/2105.07428.pdf) (accepted by ACM WiSec 2021)
-- [Wireless Time-Sensitive Networks: When Every Microsecond Counts](https://www.mwrf.com/technologies/systems/article/21164984/wireless-timesensitive-networks-when-every-microsecond-counts)
-- [High precision time synchronization on Wi-Fi based multi-hop network](https://biblio.ugent.be/publication/8709058/file/8709060.pdf)
-- [The initial 802.11n 2*2 MIMO and diversity (CSD/Combining) work by Cedric Den Haese](https://users.ugent.be/~xjiao/Cedric_Den_Haese_masterproef.pdf) (UGent master thesis 2021)
+- [ORCA project opencall: CSI MURDER](https://ans.unibs.it/projects/csi-murder/)
+- [ELSEVIER Computer Networks, 2021. IEEE 802.11 CSI randomization to preserve location privacy: An empirical evaluation in different scenarios](https://www.sciencedirect.com/science/article/abs/pii/S138912862100102X)
+- [ICIT2021. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
+- [ACM WiSec 2021. Openwifi CSI fuzzer for authorized sensing and covert channels](https://dl.acm.org/doi/pdf/10.1145/3448300.3468255)
+- [Microwaves&RF, 2021. Wireless Time-Sensitive Networks: When Every Microsecond Counts](https://www.mwrf.com/technologies/systems/article/21164984/wireless-timesensitive-networks-when-every-microsecond-counts)
+- [CNERT2021. High precision time synchronization on Wi-Fi based multi-hop network](https://biblio.ugent.be/publication/8709058/file/8709060.pdf)
+- [UGent master thesis 2021. The initial 802.11n 2*2 MIMO and diversity (CSD/Combining) work by Cedric Den Haese](https://users.ugent.be/~xjiao/Cedric_Den_Haese_masterproef.pdf)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
