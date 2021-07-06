@@ -15,16 +15,9 @@ If your work uses openwifi, please cite the first VTC2020 openwifi paper:
   organization={IEEE}
 }
 ```
-You can also cite the openwifi code/github link:
-```
-@electronic{openwifigithub,
-            author = {Jiao, Xianjun and Liu, Wei and Mehari, Michael},
-            title = {open-source IEEE802.11/Wi-Fi baseband chip/FPGA design},
-            url = {https://github.com/open-sdr/openwifi},
-            year = {2019},
-}
-```
-If your work is related to some further specific openwifi topic, you can find and cite it from the list of the related publications/works:
+You can also [cite openwifi github code](cite-openwifi-github-code.md).
+
+If your work is related to further specific openwifi topics, you can cite them from this list:
 - [VTC2020 spring Antwerp. openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://www.orca-project.eu/wp-content/uploads/sites/4/2020/03/openwifi-vtc-antwerp-PID1249076.pdf)
 - [ORCA project opencall: CSI MURDER](https://ans.unibs.it/projects/csi-murder/)
 - [ELSEVIER Computer Networks, 2021. IEEE 802.11 CSI randomization to preserve location privacy: An empirical evaluation in different scenarios](https://www.sciencedirect.com/science/article/abs/pii/S138912862100102X)
