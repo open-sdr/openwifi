@@ -1,9 +1,15 @@
 % Xianjun Jiao. xianjun.jiao@imec.be; putaoshu@msn.com
 
-clear all;
-close all;
+% clear all;
+% close all;
 
-iq_len = 8187;
+function test_iq_file_display(varargin)
+
+if nargin == 0
+    iq_len = 8187;
+else
+    iq_len = varargin{1};
+end
 
 a = load('iq.txt');
 len_a = floor(length(a)/4)*4;
@@ -22,10 +28,12 @@ for i=1:num_iq_capture
     sp = (i-1)*num_data_in_each_iq_capture + 1;
     ep = i*num_data_in_each_iq_capture;
     timestamp(i) = b(sp,1) + (2^16)*b(sp,2) + (2^32)*b(sp,3) + (2^48)*b(sp,4);
-    iq_capture(:,i) = b((sp+1):ep,1) + 1i.*b((sp+1):ep,2);
+    iq_capture(:,i) = 1i.*b((sp+1):ep,1) + b((sp+1):ep,2);
     agc_gain(:,i) = b((sp+1):ep,3);
     rssi_half_db(:,i) = b((sp+1):ep,4);
 end
+save(['iq_' num2str(iq_len) '.mat'], 'iq_capture');
+
 iq_capture = iq_capture(:);
 agc_gain = agc_gain(:);
 rssi_half_db = rssi_half_db(:);
