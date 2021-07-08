@@ -4,18 +4,9 @@ SPDX-FileCopyrightText: 2021 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-If your work uses openwifi, please cite the first VTC2020 openwifi paper:
-```
-@inproceedings{jiao2020openwifi,
-  title={openwifi: a free and open-source IEEE802. 11 SDR implementation on SoC},
-  author={Jiao, Xianjun and Liu, Wei and Mehari, Michael and Aslam, Muhammad and Moerman, Ingrid},
-  booktitle={2020 IEEE 91st Vehicular Technology Conference (VTC2020-Spring)},
-  pages={1--2},
-  year={2020},
-  organization={IEEE}
-}
-```
-You can also [cite openwifi github code](cite-openwifi-github-code.md).
+If your work uses openwifi, please cite the first VTC2020 openwifi paper: [LaTex example](cite-openwifi-vtc-paper.md)
+
+You can also cite openwifi github code: [LaTex example](cite-openwifi-github-code.md).
 
 If your work is related to further specific openwifi topics, you can cite them from this list:
 - [VTC2020 spring Antwerp. openwifi: a free and open-source IEEE802.11 SDR implementation on SoC](https://www.orca-project.eu/wp-content/uploads/sites/4/2020/03/openwifi-vtc-antwerp-PID1249076.pdf)
