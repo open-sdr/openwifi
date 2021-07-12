@@ -24,3 +24,5 @@ assignees: ''
 7. Describe your debug efforts by Linux native tools, such as tcpdump and "cat /proc/interrupts"
 
 8. Describe your debug efforts by: https://github.com/open-sdr/openwifi/blob/master/doc/README.md#Debug-methods
+
+9. Any other thing we need to know for helping you better? 
