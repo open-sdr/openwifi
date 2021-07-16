@@ -13,13 +13,13 @@ assignees: ''
 
 2. What is your own modification?
 
-3. Versions: OS, Vivado, openwifi/openwifi-hw commit revision
+3. Versions: OS, Vivado, openwifi/openwifi-hw repo branch and commit revision
 
 4. Board/hardware type
 
 5. WiFi channel number
 
-6. Steps to reproduce the issue
+6. Steps to reproduce the issue, and the related error message, screenshot, etc
 
 7. Describe your debug efforts by Linux native tools, such as tcpdump and "cat /proc/interrupts"
 
