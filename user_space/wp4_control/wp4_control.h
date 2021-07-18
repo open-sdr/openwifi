@@ -4,20 +4,6 @@
  *
  */
 
-/*
-#define BUFLEN 65536
-
-#define MAX_FLOWS    512
-#define MAX_TABLES      16
-#define SHARED_BUFFER_LEN 16384
-#define PACKET_BUFFER 32
-#define PACKET_BUFFER_SIZE 256
-#define PB_EMPTY 0
-#define PB_PACKETIN 1
-#define PB_PACKETOUT 2
-#define PB_PENDING 3
-*/
-
 #define TABLE_SIZE 256
 #define PACKET_BUFFER 64
 #define PB_EMPTY 0
@@ -68,20 +54,30 @@ struct Headers_t {
 
 struct swtch_lookup_tbl_key {
     uint64_t headers_mac80211_Addr2_class; /* headers.mac80211.Addr2_class */
-    uint32_t headers_rfFeatures_phaseOffset_max; /* headers.rfFeatures.phaseOffset_max */
-    uint32_t headers_rfFeatures_phaseOffset_min; /* headers.rfFeatures.phaseOffset_min */
-    uint16_t headers_rfFeatures_rssi_max; /* headers.rfFeatures.rssi_max */
-    uint16_t headers_rfFeatures_rssi_min; /* headers.rfFeatures.rssi_min */
+    int32_t headers_rfFeatures_magSq_max; /* headers.rfFeatures.magSq_max */
+    int32_t headers_rfFeatures_magSq_min; /* headers.rfFeatures.magSq_min */
+    int32_t headers_rfFeatures_pilotOffset_max; /* headers.rfFeatures.pilotOffset_max */
+    int32_t headers_rfFeatures_pilotOffset_min; /* headers.rfFeatures.pilotOffset_min */
+    int32_t headers_rfFeatures_phaseOffset_max; /* headers.rfFeatures.phaseOffset_max */
+    int32_t headers_rfFeatures_phaseOffset_min; /* headers.rfFeatures.phaseOffset_min */
+    int16_t headers_rfFeatures_rssi_max; /* headers.rfFeatures.rssi_max */
+    int16_t headers_rfFeatures_rssi_min; /* headers.rfFeatures.rssi_min */
+    int16_t headers_rfFeatures_rate_idx_exact; /* headers.rfFeatures.rate_idx_exact */
     uint8_t headers_frameCtrl_subType_exact; /* headers.frameCtrl.subType_exact */
     uint8_t headers_frameCtrl_frameType_exact; /* headers.frameCtrl.frameType_exact */
 };
 
 struct rule_scope {
     uint8_t headers_mac80211_Addr2_class;
+    uint8_t headers_rfFeatures_magSq_max;
+    uint8_t headers_rfFeatures_magSq_min;
+    uint8_t headers_rfFeatures_pilotOffset_max;
+    uint8_t headers_rfFeatures_pilotOffset_min;
     uint8_t headers_rfFeatures_phaseOffset_max;
     uint8_t headers_rfFeatures_phaseOffset_min;
     uint8_t headers_rfFeatures_rssi_max;
     uint8_t headers_rfFeatures_rssi_min;
+    uint8_t headers_rfFeatures_rate_idx_exact;
     uint8_t headers_frameCtrl_subType_exact;
     uint8_t headers_frameCtrl_frameType_exact;
 };
@@ -120,12 +116,4 @@ struct pbuffer
     struct packet_buffer buffer[PACKET_BUFFER];
 };
 
-/*
-struct packet_out
-{
-    uint32_t inport;
-    uint32_t outport;
-    //uint32_t sk_buff *skb; 
-};
-*/
 

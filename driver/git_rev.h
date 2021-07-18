@@ -1,1 +1,1 @@
-#define GIT_REV 0xb3ce44a
+#define GIT_REV 0x259a0a5
