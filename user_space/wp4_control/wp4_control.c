@@ -16,6 +16,7 @@
 #include <math.h>
 #include <errno.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #include <netinet/if_ether.h>
 #include <arpa/inet.h>
@@ -41,12 +42,15 @@ extern int errno;
 int current_time;
 int sock;
 struct ofmsgbuf *inbuf, *outbuf;    // input,output buffers
-struct flow_table *flow_table;
+struct wp4_map_def  *flow_table;
 struct pbuffer *pk_buffer;
-int enabled;
+int tCount;
+bool fCapture;
+struct Headers_t headers;
 
 // Internal Functions
 void clear_flowtable(void);
+void fill_headers(void);
 
 static inline uint64_t (_htonll)(uint64_t n)
 {
@@ -55,12 +59,9 @@ static inline uint64_t (_htonll)(uint64_t n)
 
 void clear_flowtable(void)
 {
-
+    printf("Rule table and buffer cleared!\n\n");
     memset(flow_table, 0, FTPAGES * PAGE_SIZE);
     memset(pk_buffer, 0, PBPAGES * PAGE_SIZE);
-    
-    // Set flags
-    flow_table->enabled = enabled;
 
 }
 
@@ -75,11 +76,11 @@ int main(int argc, const char * argv[]) {
     int opt = 0;        // command line options
     
     // Load UCI config file
-    FILE *file = fopen( "/etc/config/nnofagent", "r" );
+    FILE *file = fopen( "wp4_control.cfg", "r" );
     
     if ( file == 0 )
     {
-        // No file found
+        printf("No config file found!\n\n");
     }
     else
     {
@@ -87,25 +88,26 @@ int main(int argc, const char * argv[]) {
         {
             if(line[0] == '#' || line[0] == '\n') continue;     // Ignore comments
 
-            if (strstr(line, "enabled") != NULL){
+            if (strstr(line, "training_count") != NULL){
                 token = strtok(line, " '\t\n");
                 while( token != NULL )
                 {
-                    if (token_cnt == 2)
+                    //printf("%d %s\n", token_cnt, token);
+                    if (token_cnt == 1)
                     {
-                        enabled = atoi(token);
+                        tCount = atoi(token);
                     }
                     token = strtok(NULL, " '\t\n");
                     token_cnt++;
                 }
                 token_cnt = 0;
             }
+
+
         }
         fclose( file );
     }
 
-
-    //configfd = open("/sys/kernel/debug/wp4/data", O_RDWR);
     configfd = open("/proc/wp4_data", O_RDWR);
     if(configfd < 0)
     {
@@ -134,39 +136,55 @@ int main(int argc, const char * argv[]) {
     // Check for arguments
     if(argc > 1)
     {
-        while((opt=getopt(argc,argv,"fgmc"))!=-1)
+        while((opt=getopt(argc,argv,"cC"))!=-1)
         {
             switch(opt)
             {
-                case 'f':
-                    // call function
-                    if(munmap(flow_table, FTPAGES*PAGE_SIZE) !=0)
-                    {
-                        printf("munmap operation failed for flow_table!\n");
-                    }
-                    if(munmap(pk_buffer, PBPAGES*PAGE_SIZE) !=0)
-                    {
-                        printf("munmap operation failed for pk_buffer!\n");
-                    }                       
-                    return 0;
+                case 'C':
+                    // Capture frames to a CSV file
+                    fCapture = true;
+                    break;                  
                 case 'c':
                     // clear flowtable
                     clear_flowtable();
-                    return 0;
+                    break;
             }
         }
     }
-
-    clear_flowtable();
     
-    flow_table->iLastFlow = 9;
+    flow_table->last_entry = 4;
 
+    // print startup values
+    
+    printf("*****************************************************\n");
+    if (fCapture == true) printf("Capturing frames to file\n"); 
+    printf("Max rule count = %d\n", TABLE_SIZE);
+    printf("Training frame count = %d\n", tCount);
+    printf("*****************************************************\n");
     // Main processing loop
     while(1)
     {
         usleep(100000);    // Allow CPU to sleep (1s)
-        printf("iLastFlow %d\n", flow_table->iLastFlow);
+        fill_headers();
         
     }
     return 0;
+}
+
+void fill_headers(void)
+{
+    int i;
+
+    for(i=0;i<(PACKET_BUFFER);i++)
+    {
+        if(pk_buffer->buffer[i].type == PB_PENDING)
+        {
+            memcpy(&headers, &pk_buffer->buffer[i].buffer, sizeof(struct Headers_t));
+            headers.rfFeatures.rssi = (headers.rfFeatures.rssi>>1);     // Shift RSSI Value
+            printf("buffer %d loaded - Time: %lld, MAC: %llX, RSSI: %d, Phase Offset: %d\n", i, headers.rfFeatures.timestamp, headers.mac80211.Addr2, headers.rfFeatures.rssi, headers.rfFeatures.phaseOffset);
+            pk_buffer->buffer[i].type = PB_EMPTY;
+        }
+    }
+
+    return;
 }
