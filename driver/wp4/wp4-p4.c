@@ -57,7 +57,7 @@ int wp4_packet_in(u8 *p_uc_data, u16 wp4_ul_size, u8 port){
     u16 wp4_packetOffsetInBits = 0;
     u8 *wp4_packetStart = p_uc_data;
 
-    dump_rx_packet(wp4_packetStart);
+    //dump_rx_packet(wp4_packetStart);
     printk("** WP4: Packet Received, size = %d **\n", wp4_ul_size);
 
     goto start;
@@ -114,66 +114,66 @@ int wp4_packet_in(u8 *p_uc_data, u16 wp4_ul_size, u8 port){
         memcpy(&headers.frameCtrl.protoVer, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 0 - 2 - u **
         headers.frameCtrl.protoVer &= WP4_MASK(u8, 2);
         wp4_packetOffsetInBits += 2;
-        printk("** WP4: protoVer = %d **\n", headers.frameCtrl.protoVer);
+        //printk("** WP4: protoVer = %d **\n", headers.frameCtrl.protoVer);
 
         memcpy(&headers.frameCtrl.frameType, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 2 - 2 - u **
         headers.frameCtrl.frameType >>= 2;
         headers.frameCtrl.frameType &= WP4_MASK(u8, 2);
         wp4_packetOffsetInBits += 2;
-        printk("** WP4: frameType = %d **\n", headers.frameCtrl.frameType);
+        //printk("** WP4: frameType = %d **\n", headers.frameCtrl.frameType);
 
         memcpy(&headers.frameCtrl.subType, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 4 - 4 - u **
         headers.frameCtrl.subType >>= 4;
         headers.frameCtrl.subType &= WP4_MASK(u8, 4);
         wp4_packetOffsetInBits += 4;
-        printk("** WP4: subType = %d **\n", headers.frameCtrl.subType);
+        //printk("** WP4: subType = %d **\n", headers.frameCtrl.subType);
 
         memcpy(&headers.frameCtrl.toDS, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 0 - 1 - u **
         headers.frameCtrl.toDS &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: toDS = %d **\n", headers.frameCtrl.toDS);
+        //printk("** WP4: toDS = %d **\n", headers.frameCtrl.toDS);
 
         memcpy(&headers.frameCtrl.fromDS, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 1 - 1 - u **
         headers.frameCtrl.fromDS >>= 1;
         headers.frameCtrl.fromDS &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: fromDS = %d **\n", headers.frameCtrl.fromDS);
+        //printk("** WP4: fromDS = %d **\n", headers.frameCtrl.fromDS);
 
         memcpy(&headers.frameCtrl.moreFrag, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 2 - 1 - u **
         headers.frameCtrl.moreFrag >>= 2;
         headers.frameCtrl.moreFrag &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: moreFrag = %d **\n", headers.frameCtrl.moreFrag);
+        //printk("** WP4: moreFrag = %d **\n", headers.frameCtrl.moreFrag);
 
         memcpy(&headers.frameCtrl.retry, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 3 - 1 - u **
         headers.frameCtrl.retry >>= 3;
         headers.frameCtrl.retry &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: retry = %d **\n", headers.frameCtrl.retry);
+        //printk("** WP4: retry = %d **\n", headers.frameCtrl.retry);
 
         memcpy(&headers.frameCtrl.pwrMgmt, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 4 - 1 - u **
         headers.frameCtrl.pwrMgmt >>= 4;
         headers.frameCtrl.pwrMgmt &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: pwrMgmt = %d **\n", headers.frameCtrl.pwrMgmt);
+        //printk("** WP4: pwrMgmt = %d **\n", headers.frameCtrl.pwrMgmt);
 
         memcpy(&headers.frameCtrl.moreData, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 5 - 1 - u **
         headers.frameCtrl.moreData >>= 5;
         headers.frameCtrl.moreData &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: moreData = %d **\n", headers.frameCtrl.moreData);
+        //printk("** WP4: moreData = %d **\n", headers.frameCtrl.moreData);
 
         memcpy(&headers.frameCtrl.protFrame, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 6 - 1 - u **
         headers.frameCtrl.protFrame >>= 6;
         headers.frameCtrl.protFrame &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: protFrame = %d **\n", headers.frameCtrl.protFrame);
+        //printk("** WP4: protFrame = %d **\n", headers.frameCtrl.protFrame);
 
         memcpy(&headers.frameCtrl.order, wp4_packetStart + BYTES(wp4_packetOffsetInBits), BYTES(8));     // ** 8 - 7 - 1 - u **
         headers.frameCtrl.order >>= 7;
         headers.frameCtrl.order &= WP4_MASK(u8, 1);
         wp4_packetOffsetInBits += 1;
-        printk("** WP4: order = %d **\n", headers.frameCtrl.order);
+        //printk("** WP4: order = %d **\n", headers.frameCtrl.order);
 
         headers.frameCtrl.wp4_valid = 1;
         switch (headers.frameCtrl.protoVer) {

@@ -83,21 +83,23 @@ struct rule_scope {
 };
 
 struct rule_metadata {
-	uint8_t valid;
-    uint64_t numerosity;
-    uint64_t match_count;
-    uint64_t correct_count;
-    uint64_t accuracy;
-    uint64_t fitness;
-    uint64_t age;
+    int time_added;     // Time of rule creation
+    int last_match;
+    int experience;     // Number of times a rule has been evaluated
+    int true_pos;       // Number of times a rule has correctly matched
+    int true_neg;       // Number of times a rule has correctly NOT matched
+    int false_pos;      // Number of times a rule has incorrectly matched
+    int false_neg;      // Number of times a rule has incorrectly NOT matched
+    float sensitivity;  // TP /(TP+FN)
+    float specificity;  // TN /(TN+FP)
+    float accuracy;     // (TP+TN) / EXP  
 };
 
-struct wp4_map_def {
+struct classifier {
     uint16_t key_size;
     uint16_t value_size;
     uint16_t max_entries;
     uint16_t last_entry;
-    time_t last_lookup;
     struct swtch_lookup_tbl_key key[TABLE_SIZE];
     struct rule_scope scope[TABLE_SIZE];
     struct rule_metadata rule_data[TABLE_SIZE];
@@ -116,4 +118,10 @@ struct pbuffer
     struct packet_buffer buffer[PACKET_BUFFER];
 };
 
-
+struct match_set
+{
+    uint16_t last_correct;
+    uint16_t last_match; 
+    uint16_t correct[TABLE_SIZE];
+    uint16_t incorrect[TABLE_SIZE];
+};
