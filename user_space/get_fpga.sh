@@ -26,7 +26,7 @@ cd $OPENWIFI_DIR/
 git submodule init openwifi-hw
 git submodule update openwifi-hw
 cd openwifi-hw
-git checkout master
+git checkout antsdr
 git pull
 
 cd $home_dir
