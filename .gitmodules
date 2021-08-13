@@ -6,5 +6,5 @@
 	url = https://github.com/analogdevicesinc/linux.git
 [submodule "openwifi-hw"]
 	path = openwifi-hw
-	url = https://github.com/open-sdr/openwifi-hw.git
+	url = https://github.com/MicroPhase/openwifi-hw.git
 	branch = antsdr
