@@ -47,13 +47,14 @@ Openwifi code has dual licenses. AGPLv3 is the opensource license. For non-opens
 
 board_name|board combination|status|SD card img|Vivado license
 -------|-------|----|----|-----
-zc706_fmcs2|Xilinx ZC706 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|Need
-zed_fmcs2|Xilinx zed board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|**NO** need
-adrv9364z7020|ADRV9364-Z7020 + ADRV1CRR-BOB|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|**NO** need
-adrv9361z7035|ADRV9361-Z7035 + ADRV1CRR-BOB/FMC|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|Need
-zc702_fmcs2|Xilinx ZC702 dev board + FMCOMMS2/3/4|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|**NO** need
-zcu102_fmcs2|Xilinx ZCU102 dev board + FMCOMMS2/3/4|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-64bit.img.xz)|Need
-zcu102_9371|Xilinx ZCU102 dev board + ADRV9371|Future|Future|Need
+zc706_fmcs2|[Xilinx ZC706 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|Need
+zed_fmcs2|[Xilinx zed board](https://www.xilinx.com/products/boards-and-kits/1-8dyf-11.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|**NO** need
+adrv9364z7020|[ADRV9364-Z7020 + ADRV1CRR-BOB](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/adrv9364-z7020.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|**NO** need
+adrv9361z7035|[ADRV9361-Z7035 + ADRV1CRR-BOB/FMC](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/ADRV9361-Z7035.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|Need
+zc702_fmcs2|[Xilinx ZC702 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc702-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|**NO** need
+antsdr|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO [Notes](kernel_boot/boards/antsdr/notes.md)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-32bit.img.xz)|**NO** need
+zcu102_fmcs2|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.2.0-leuven-2-64bit.img.xz)|Need
+zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [ADRV9371](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-adrv9371.html)|Future|Future|Need
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
 - Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
