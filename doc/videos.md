@@ -7,4 +7,4 @@
 - Openwifi industrial real-time high reliable low latency applications (EU Horizon 2020 SHOP4CF project) [[Youtube](https://youtu.be/p7zkkdMvPNc)], [[link for CHN user](https://www.zhihu.com/zvideo/1378413483944538113)]
 - CSI fuzzer [[Youtube](https://youtu.be/aOPYwT77Qdw)], [[link for CHN user](https://www.zhihu.com/zvideo/1378409348163506177)]
 - NGI zero, nlnet online session on future of European open hardware [[Session](https://nlnet.nl/news/2021/20210507-NGI-Zero-workshop-open-hardware.html)], [[Original record](https://archive.org/details/ngiforum-open-hardware-workshop-ngizero)], [[Youtube](https://youtu.be/m9Tw5VuHAfk)], [[link for CHN user](https://www.zhihu.com/zvideo/1379302398096285696)]
-- High Precision Time Synchronization on Wi-Fi based Multi-Hop Network [[Youtube](https://youtu.be/m5ryRArbdC8)]
+- High Precision Time Synchronization on Wi-Fi based Multi-Hop Network [[Youtube](https://youtu.be/m5ryRArbdC8)], [[link for CHN user](https://www.zhihu.com/zvideo/1418222775224492032)]
