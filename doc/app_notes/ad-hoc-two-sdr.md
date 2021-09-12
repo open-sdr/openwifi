@@ -6,6 +6,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 **NOTE** the terminal session mentioned in the following text can also be setup via USB-UART instead of Ethernet.
 
+**NOTE** adrv9361z7035 has ultra low TX power in 5GHz. Move **CLOSER** when you use that board in 5GHz!!!
+
 - Power on two SDR boards. Call one board "adhoc1" and the other "adhoc2". On each board, the TX and RX antenna should vertical/orthogonal to each other as much as possible to gain a good TX/RX isolation.
 - Connect a computer to the adhoc1 via Ethernet cable. The computer should have static IP 192.168.10.1. Open a terminal on the computer, and then in the terminal:
   ```
