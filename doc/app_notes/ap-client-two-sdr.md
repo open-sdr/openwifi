@@ -33,6 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   iwlist sdr0 scan
   (The "openwifi" AP should be listed in the scanning results)
   wpa_supplicant -i sdr0 -c wpa-openwifi.conf
+  ("iwconfig sdr0 essid openwifi" could also work. Less info compared to wpa_supplicant)
   ```
   If wpa-openwifi.conf is not on board, please create it with [this content](https://github.com/open-sdr/openwifi/blob/master/user_space/wpa-openwifi.conf).
 - Now the client is trying to associate with the AP. You should see like:
