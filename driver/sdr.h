@@ -79,6 +79,7 @@ union u16_byte2 {
 #define DRV_RX_REG_IDX_EXTRA_FO    2
 #define DRV_RX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
+#define DRV_XPU_REG_IDX_LBT_TH     0
 #define DRV_XPU_REG_IDX_GIT_REV    (MAX_NUM_DRV_REG-1)
 
 // ------end of software reg definition ------------
@@ -365,6 +366,7 @@ struct openwifi_priv {
 	u32 drv_rx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_tx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_xpu_reg_val[MAX_NUM_DRV_REG];
+	int last_auto_fpga_lbt_th;
 	// u8 num_led;
 	// struct led_classdev *led[MAX_NUM_LED];//zc706 has 4 user leds. please find openwifi_dev_probe to see how we get them.
 	// char led_name[MAX_NUM_LED][OPENWIFI_LED_MAX_NAME_LEN];
