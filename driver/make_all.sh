@@ -39,10 +39,12 @@ if [ "$ARCH_OPTION" == "64" ]; then
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux-64/
     ARCH="arm64"
     CROSS_COMPILE="aarch64-linux-gnu-"
+    echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
 else
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux/
     ARCH="arm"
     CROSS_COMPILE="arm-linux-gnueabihf-"
+    echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
 fi
 
 # check if user entered the right path to analog device linux

@@ -338,19 +338,29 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	// u32 dma_driver_buf_idx_mod;
 	u8 *pdata_tmp, fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
-	u16 rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0;
+	u16 agc_status_and_pkt_exist_flag, rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0;
 	bool content_ok = false, len_overflow = false;
-	static u8 target_buf_idx_old = 0;
 
+#ifdef USE_NEW_RX_INTERRUPT
+	int i;
 	spin_lock(&priv->lock);
-
+	for (i=0; i<NUM_RX_BD; i++) {
+		pdata_tmp = priv->rx_cyclic_buf + i*RX_BD_BUF_SIZE;
+		agc_status_and_pkt_exist_flag = (*((u16*)(pdata_tmp+10))); //check rx_intf_pl_to_m_axis.v. FPGA TODO: add pkt exist 1bit flag next to gpio_status_lock_by_sig_valid
+		if ( agc_status_and_pkt_exist_flag==0 ) // no packet in the buffer
+			continue;
+#else
+	static u8 target_buf_idx_old = 0;
+	spin_lock(&priv->lock);
 	while(1) { // loop all rx buffers that have new rx packets
 		pdata_tmp = priv->rx_cyclic_buf + target_buf_idx_old*RX_BD_BUF_SIZE; // our header insertion is at the beginning
+		agc_status_and_pkt_exist_flag = (*((u16*)(pdata_tmp+10)));
+		if ( agc_status_and_pkt_exist_flag==0 ) // no packet in the buffer
+			break;
+#endif
+
 		tsft_low =     (*((u32*)(pdata_tmp+0 )));
 		tsft_high =    (*((u32*)(pdata_tmp+4 )));
-		if ( tsft_low==0 && tsft_high==0 ) // no packet in the buffer
-			break;
-
 		rssi_val =     (*((u16*)(pdata_tmp+8 )));
 		len =          (*((u16*)(pdata_tmp+12)));
 
@@ -410,7 +420,11 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
+#ifdef USE_NEW_RX_INTERRUPT
+					sc, fcs_ok, i, signal);
+#else
 					sc, fcs_ok, target_buf_idx_old, signal);
+#endif
 		}
 		
 		// priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
@@ -442,10 +456,11 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			} else
 				printk("%s openwifi_rx_interrupt: WARNING dev_alloc_skb failed!\n", sdr_compatible_str);
 		}
-		(*((u32*)(pdata_tmp+0 ))) = 0;
-		(*((u32*)(pdata_tmp+4 ))) = 0; // clear the tsft_low and tsft_high to indicate the packet has been processed
+		(*((u16*)(pdata_tmp+10))) = 0; // clear the field (set by rx_intf_pl_to_m_axis.v) to indicate the packet has been processed
 		loop_count++;
+#ifndef USE_NEW_RX_INTERRUPT
 		target_buf_idx_old=((target_buf_idx_old+1)&(NUM_RX_BD-1)); 
+#endif
 	}
 
 	if ( loop_count!=1 && (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) )

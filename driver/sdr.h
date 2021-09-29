@@ -5,6 +5,8 @@
 #ifndef OPENWIFI_SDR
 #define OPENWIFI_SDR
 
+#include "pre_def.h"
+
 // -------------------for leds--------------------------------
 struct gpio_led_data { //please always align with the leds-gpio.c in linux kernel
 	struct led_classdev cdev;
@@ -90,7 +92,13 @@ union u16_byte2 {
 
 #define RING_ROOM_THRESHOLD 4
 #define NUM_TX_BD 64 // !!! should align to the fifo size in tx_bit_intf.v
+
+#ifdef USE_NEW_RX_INTERRUPT
+#define NUM_RX_BD 8
+#else
 #define NUM_RX_BD 16
+#endif
+
 #define TX_BD_BUF_SIZE (8192)
 #define RX_BD_BUF_SIZE (8192)
 
