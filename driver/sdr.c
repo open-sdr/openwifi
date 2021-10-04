@@ -133,6 +133,7 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz + priv->drv_rx_reg_val[DRV_RX_REG_IDX_EXTRA_FO];
 	u32 actual_tx_lo;
 	bool change_flag = (actual_rx_lo != priv->actual_rx_lo);
+	int static_lbt_th, auto_lbt_th, fpga_lbt_th;
 
 	if (change_flag) {
 		priv->actual_rx_lo = actual_rx_lo;
@@ -157,8 +158,14 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		}
 
 		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
-		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
+		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
+		auto_lbt_th = ((priv->rssi_correction-62-16)<<1);
+		static_lbt_th = priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH];
+		fpga_lbt_th = (static_lbt_th==0?auto_lbt_th:static_lbt_th);
+		xpu_api->XPU_REG_LBT_TH_write(fpga_lbt_th);
 
+		priv->last_auto_fpga_lbt_th = auto_lbt_th;
+		
 		if (actual_rx_lo < 2500) {
 			//priv->slot_time = 20; //20 is default slot time in ERP(OFDM)/11g 2.4G; short one is 9.
 			//xpu_api->XPU_REG_BAND_CHANNEL_write(BAND_2_4GHZ<<16);
@@ -190,8 +197,8 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		//printk("%s ad9361_rf_set_channel tune to %d read back %llu\n", sdr_compatible_str,conf->chandef.chan->center_freq,2*priv->ad9361_phy->state->current_rx_lo_freq);
 		//ad9361_set_trx_clock_chain_default(priv->ad9361_phy);
 		//printk("%s ad9361_rf_set_channel tune to %d read back %llu\n", sdr_compatible_str,conf->chandef.chan->center_freq,2*priv->ad9361_phy->state->current_rx_lo_freq);
+		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d (auto %d static %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,auto_lbt_th,static_lbt_th);
 	}
-	printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag);
 }
 
 const struct openwifi_rf_ops ad9361_rf_ops = {
@@ -261,7 +268,7 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 		if ( (ring->bds[i].dma_mapping_addr != 0 && ring->bds[i].skb_linked == 0) ||
 		     (ring->bds[i].dma_mapping_addr == 0 && ring->bds[i].skb_linked != 0))
 			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08x\n", sdr_compatible_str, 
-			ring_idx, i, (void*)(ring->bds[i].skb_linked), ring->bds[i].dma_mapping_addr);
+			ring_idx, i, (void*)(ring->bds[i].skb_linked), (unsigned int)(ring->bds[i].dma_mapping_addr));
 
 		ring->bds[i].skb_linked=0;
 		ring->bds[i].dma_mapping_addr = 0;
@@ -1436,7 +1443,7 @@ static int openwifi_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif, 
 	}
 	xpu_api->XPU_REG_CSMA_CFG_write(reg_val);
 	return(0);
-}																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																							
+}
 
 static u64 openwifi_prepare_multicast(struct ieee80211_hw *dev,
 				     struct netdev_hw_addr_list *mc_list)
@@ -1671,9 +1678,11 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		if (!tb[OPENWIFI_ATTR_RSSI_TH])
 			return -EINVAL;
 		tmp = nla_get_u32(tb[OPENWIFI_ATTR_RSSI_TH]);
-		printk("%s set RSSI_TH to %d\n", sdr_compatible_str, tmp);
-		xpu_api->XPU_REG_LBT_TH_write(tmp);
-		return 0;
+		// printk("%s set RSSI_TH to %d\n", sdr_compatible_str, tmp);
+		// xpu_api->XPU_REG_LBT_TH_write(tmp);
+		// return 0;
+		printk("%s WARNING Please use command: sdrctl dev sdr0 set reg drv_xpu 0 reg_value! (1~2047, 0 means AUTO)!\n", sdr_compatible_str);
+		return -EOPNOTSUPP;
 	case OPENWIFI_CMD_GET_RSSI_TH:
 		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
@@ -1704,7 +1713,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		reg_addr_idx = (reg_addr>>2);
 		printk("%s recv set cmd reg cat %d addr %08x val %08x idx %d\n", sdr_compatible_str, reg_cat, reg_addr, reg_val, reg_addr_idx);
 		if (reg_cat==1)
-			printk("%s reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
+			printk("%s WARNING reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
 		else if (reg_cat==2)
 			rx_intf_api->reg_write(reg_addr,reg_val);
 		else if (reg_cat==3)
@@ -1728,7 +1737,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 					//priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
 				}
 			} else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==8) {
 			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
@@ -1746,16 +1755,25 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 					priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
 				}
 			} else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==9) {
-			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG)
+			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
 				priv->drv_xpu_reg_val[reg_addr_idx]=reg_val;
-			else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				if (reg_addr_idx==DRV_XPU_REG_IDX_LBT_TH) {
+					if (reg_val) {
+						xpu_api->XPU_REG_LBT_TH_write(reg_val);
+						printk("%s override FPGA LBT threshold to %d. The last_auto_fpga_lbt_th %d\n", sdr_compatible_str, reg_val, priv->last_auto_fpga_lbt_th);
+					} else {
+						xpu_api->XPU_REG_LBT_TH_write(priv->last_auto_fpga_lbt_th);
+						printk("%s Restore last_auto_fpga_lbt_th %d to FPGA. ad9361_rf_set_channel will take control\n", sdr_compatible_str, priv->last_auto_fpga_lbt_th);
+					}
+				}
+			} else
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else
-			printk("%s reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
+			printk("%s WARNING reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
 		
 		return 0;
 	case REG_CMD_GET:
@@ -1768,7 +1786,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		reg_addr_idx = (reg_addr>>2);
 		printk("%s recv get cmd reg cat %d addr %08x idx %d\n", sdr_compatible_str, reg_cat, reg_addr, reg_addr_idx);
 		if (reg_cat==1) {
-			printk("%s reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
+			printk("%s WARNING reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
 			tmp = 0xFFFFFFFF;
 		}
 		else if (reg_cat==2)
@@ -1794,7 +1812,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 				}
 				tmp = priv->drv_rx_reg_val[reg_addr_idx];
 			} else 
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==8) {
 			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
@@ -1808,16 +1826,16 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 				}
 				tmp = priv->drv_tx_reg_val[reg_addr_idx];
 			} else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==9) {
 			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG)
 				tmp = priv->drv_xpu_reg_val[reg_addr_idx];
 			else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else
-			printk("%s reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
+			printk("%s WARNING reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
 
 		if (nla_put_u32(skb, REG_ATTR_VAL, tmp))
 			goto nla_put_failure;
@@ -2013,6 +2031,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	// else
 	// 	printk("%s openwifi_dev_probe: WARNING rfkill radio off failed. tx att read %d %d require %d\n",sdr_compatible_str, reg, reg1, AD9361_RADIO_OFF_TX_ATT);
 	
+	priv->last_auto_fpga_lbt_th = 134;//just to avoid uninitialized
 	priv->rssi_correction = 43;//this will be set in real-time by _rf_set_channel()
 
 	//priv->rf_bw = 20000000; // Signal quality issue! NOT use for now. 20MHz or 40MHz. 40MHz need ddc/duc. 20MHz works in bypass mode
@@ -2069,10 +2088,9 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	if (reg == AD9361_RADIO_ON_TX_ATT) {
 		priv->rfkill_off = 1;// 0 off, 1 on
 		printk("%s openwifi_dev_probe: rfkill radio on\n",sdr_compatible_str);
-	}
-	else
+	} else
 		printk("%s openwifi_dev_probe: WARNING rfkill radio on failed. tx att read %d require %d\n",sdr_compatible_str, reg, AD9361_RADIO_ON_TX_ATT);
-	
+
 	memset(priv->drv_rx_reg_val,0,sizeof(priv->drv_rx_reg_val));
 	memset(priv->drv_tx_reg_val,0,sizeof(priv->drv_tx_reg_val));
 	memset(priv->drv_xpu_reg_val,0,sizeof(priv->drv_xpu_reg_val));
