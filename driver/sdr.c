@@ -1762,9 +1762,8 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 				priv->drv_xpu_reg_val[reg_addr_idx]=reg_val;
 				if (reg_addr_idx==DRV_XPU_REG_IDX_LBT_TH) {
 					if (reg_val) {
-						priv->last_auto_fpga_lbt_th = xpu_api->XPU_REG_LBT_TH_read();
 						xpu_api->XPU_REG_LBT_TH_write(reg_val);
-						printk("%s override FPGA LBT threshold to %d. Save the last_auto_fpga_lbt_th %d\n", sdr_compatible_str, reg_val, priv->last_auto_fpga_lbt_th);
+						printk("%s override FPGA LBT threshold to %d. The last_auto_fpga_lbt_th %d\n", sdr_compatible_str, reg_val, priv->last_auto_fpga_lbt_th);
 					} else {
 						xpu_api->XPU_REG_LBT_TH_write(priv->last_auto_fpga_lbt_th);
 						printk("%s Restore last_auto_fpga_lbt_th %d to FPGA. ad9361_rf_set_channel will take control\n", sdr_compatible_str, priv->last_auto_fpga_lbt_th);
