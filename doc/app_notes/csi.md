@@ -29,7 +29,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   ```
   If the second number (61, 99, ...) is not zero and keeps increasing, that means the CSI (Chip State Information) is going to the computer smoothly.
   
-- Open another terminal on the computer, and run:
+- On your computer (NOT in ssh!), run:
   ```
   cd openwifi/user_space/side_ch_ctl_src
   python3 side_info_display.py
