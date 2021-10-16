@@ -21,5 +21,6 @@ Other openwifi related publications:
 - [Arxiv. A Just-In-Time Networking Framework for Minimizing Request-Response Latency of Wireless Time-Sensitive Applications](https://arxiv.org/abs/2109.03032)
 - [Wireless Personal Communications (2021). Bringing Time-Sensitive Networking to Wireless Professional Private Networks](https://link.springer.com/article/10.1007/s11277-021-09056-0)
 - [MethodsX. A novel method for utilizing RF information from IEEE 802.11 frames in Software Defined Networks](https://www.sciencedirect.com/science/article/pii/S2215016121003368)
+- [IEEE Transactions on Industrial Informatics. Hardware Efficient Clock Synchronization across Wi-Fi and Ethernet Based Network Using PTP](https://ieeexplore.ieee.org/document/9573364)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
