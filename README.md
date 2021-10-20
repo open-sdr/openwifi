@@ -126,20 +126,19 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 - Setup environment variables (use absolute path):
   ```
   export XILINX_DIR=your_Xilinx_directory
-  export OPENWIFI_DIR=your_openwifi_directory
+  export OPENWIFI_HW_DIR=your_openwifi-hw_directory
   export BOARD_NAME=your_board_name
   ```
-- Get the latest FPGA bitstream from openwifi-hw, generate BOOT.BIN and transfer it on board via ssh channel:
+- Pick the FPGA bitstream from openwifi-hw, and generate BOOT.BIN and transfer it on board via ssh channel:
   ```
-  $OPENWIFI_DIR/user_space/get_fpga.sh $OPENWIFI_DIR
-  
   For Zynq 7000:
-  $OPENWIFI_DIR/user_space/boot_bin_gen.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME
+  
+  cd openwifi/user_space; ./boot_bin_gen.sh $OPENWIFI_HW_DIR $XILINX_DIR $BOARD_NAME
   
   For Zynq MPSoC (like zcu102 board):
-  $OPENWIFI_DIR/user_space/boot_bin_gen_zynqmp.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME
+  cd openwifi/user_space; ./boot_bin_gen_zynqmp.sh $OPENWIFI_HW_DIR $XILINX_DIR $BOARD_NAME
   
-  scp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN root@192.168.10.122:
+  cd openwifi/kernel_boot/boards/$BOARD_NAME/output_boot_bin; scp ./BOOT.BIN root@192.168.10.122:
   ```
 - On board: Put the BOOT.BIN into the BOOT partition.
   ```
@@ -154,18 +153,18 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to update the driver on board.
 - Prepare Analog Devices Linux kernel source code (only need to run once):
   ```
-  $OPENWIFI_DIR/user_space/prepare_kernel.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
+  cd openwifi/user_space; ./prepare_kernel.sh $XILINX_DIR ARCH_BIT build
   (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
   ```
   **Note**: In Ubuntu, gcc-10 might have issue ('yylloc' error), so use gcc-9 if you encounter error.
 - Compile the latest openwifi driver
   ```
-  $OPENWIFI_DIR/driver/make_all.sh $OPENWIFI_DIR $XILINX_DIR ARCH_BIT
+  cd openwifi/driver; ./make_all.sh $XILINX_DIR ARCH_BIT
   (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
   ```
 - Copy the driver files to the board via ssh channel
   ```
-  scp `find $OPENWIFI_DIR/driver/ -name \*.ko` root@192.168.10.122:openwifi/
+  cd openwifi/driver; scp `find ./ -name \*.ko` root@192.168.10.122:openwifi/
   ```
   Now you can use **wgd.sh** on board to load the new openwifi driver.
   **Note**: If you have symbol or version error while loadng the driver, it could be because the kernel in the SD card image is too old. In this case, you need to follow [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to generate your new SD card image.
@@ -173,7 +172,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 ## Update sdrctl
 - Copy the sdrctl source files to the board via ssh channel
   ```
-  scp `find $OPENWIFI_DIR/user_space/sdrctl_src/ -name \*` root@192.168.10.122:openwifi/sdrctl_src/
+  cd openwifi/user_space/sdrctl_src; scp `find ./ -name \*` root@192.168.10.122:openwifi/sdrctl_src/
   ```
 - Compile the sdrctl **on board**:
   ```
@@ -182,7 +181,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 ## Easy Access and etc
 
 - FPGA and driver on board update scripts
-  - Setup [ftp server](https://help.ubuntu.com/lts/serverguide/ftp-server.html) on PC, allow anonymous and change ftp root directory to $OPENWIFI_DIR.
+  - Setup [ftp server](https://help.ubuntu.com/lts/serverguide/ftp-server.html) on PC, allow anonymous and change ftp root directory to the openwifi directory.
   - On board:
   ```
   ./sdcard_boot_update.sh $BOARD_NAME
@@ -200,12 +199,12 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   export SDCARD_DIR=sdcard_mount_point
   export XILINX_DIR=your_Xilinx_directory
-  export OPENWIFI_DIR=your_openwifi_directory
+  export OPENWIFI_HW_DIR=your_openwifi-hw_directory
   export BOARD_NAME=your_board_name
   ```
 - Run script to update SD card:
   ```
-  $OPENWIFI_DIR/user_space/update_sdcard.sh $OPENWIFI_DIR $XILINX_DIR $BOARD_NAME $SDCARD_DIR
+  cd openwifi/user_space; ./update_sdcard.sh $OPENWIFI_HW_DIR $XILINX_DIR $BOARD_NAME $SDCARD_DIR
   ```
 - Config your board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on.
 - Login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with one time password **analog**.
@@ -238,7 +237,7 @@ For hostapd program, 802.11b rates can be suppressed using configuration command
 On the other hand, the wpa_supplicant program on the client side (commercial Wi-Fi dongle/board) cannot suppress 802.11b rates out of the box in 2.4GHz band, so there will be an issue when connecting openwifi (OFDM only). A patched wpa_supplicant should be used at the client side.
 ```
 sudo apt-get install libssl1.0-dev
-$OPENWIFI_DIR/user_space/build_wpa_supplicant_wo11b.sh $OPENWIFI_DIR
+cd openwifi/user_space; ./build_wpa_supplicant_wo11b.sh
 ```
 ## Porting guide
 

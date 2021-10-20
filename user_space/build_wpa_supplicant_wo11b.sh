@@ -4,12 +4,12 @@
 # SPDX-FileCopyrightText: 2019 UGent
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-if [ "$#" -ne 1 ]; then
-    echo "You must enter exactly 1 arguments: \$OPENWIFI_DIR"
-    exit 1
-fi
+# if [ "$#" -ne 1 ]; then
+#     echo "You must enter exactly 1 arguments: \$OPENWIFI_DIR"
+#     exit 1
+# fi
 
-OPENWIFI_DIR=$1
+OPENWIFI_DIR=$(pwd)/../
 
 set -x
 
