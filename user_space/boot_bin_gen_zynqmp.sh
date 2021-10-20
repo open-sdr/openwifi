@@ -5,13 +5,18 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 if [ "$#" -ne 3 ]; then
-    echo "You must enter exactly 3 arguments: \$OPENWIFI_DIR \$XILINX_DIR \$BOARD_NAME"
+    echo "You must enter exactly 3 arguments: \$OPENWIFI_HW_DIR \$XILINX_DIR \$BOARD_NAME"
     exit 1
 fi
 
-OPENWIFI_DIR=$1
+OPENWIFI_HW_DIR=$1
 XILINX_DIR=$2
 BOARD_NAME=$3
+
+OPENWIFI_DIR=$(pwd)/../
+
+echo OPENWIFI_DIR $OPENWIFI_DIR
+echo OPENWIFI_HW_DIR $OPENWIFI_HW_DIR
 
 if [ -f "$OPENWIFI_DIR/LICENSE" ]; then
     echo "\$OPENWIFI_DIR is found!"
@@ -34,6 +39,13 @@ else
     echo "\$BOARD_NAME is found!"
 fi
 
+if [ -d "$OPENWIFI_HW_DIR/boards/$BOARD_NAME" ]; then
+    echo "\$OPENWIFI_HW_DIR is found!"
+else
+    echo "\$OPENWIFI_HW_DIR is not correct. Please check!"
+    exit 1
+fi
+
 home_dir=$(pwd)
 
 set -ex
@@ -43,8 +55,8 @@ source $XILINX_DIR/SDK/2018.3/settings64.sh
 
 cd $OPENWIFI_DIR/kernel_boot
 
-./build_zynqmp_boot_bin.sh ../openwifi-hw/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf boards/$BOARD_NAME/u-boot-zcu.elf boards/$BOARD_NAME/bl31.elf
-# ./build_zynqmp_boot_bin.sh ../openwifi-hw/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf boards/$BOARD_NAME/u-boot-zcu.elf download
+./build_zynqmp_boot_bin.sh $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf boards/$BOARD_NAME/u-boot-zcu.elf boards/$BOARD_NAME/bl31.elf
+
 rm -rf build_boot_bin
 rm -rf boards/$BOARD_NAME/output_boot_bin
 mv output_boot_bin boards/$BOARD_NAME/

@@ -5,12 +5,14 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz/software/linux/zynq_2014r2
 
-if [ "$#" -ne 1 ]; then
-    echo "You must enter the \$BOARD_NAME as argument"
-    echo "Like: antsdr adrv9364z7020 adrv9361z7035 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 zcu102_fmcs2 zcu102_9371"
+if [ "$#" -ne 2 ]; then
+    echo "You must enter the \$OPENWIFI_HW_DIR \$BOARD_NAME as argument"
+    echo "BOARD_NAME Like: antsdr adrv9364z7020 adrv9361z7035 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 zcu102_fmcs2 zcu102_9371"
     exit 1
 fi
-BOARD_NAME=$1
+
+OPENWIFI_HW_DIR=$1
+BOARD_NAME=$2
 
 if [ "$BOARD_NAME" != "antsdr" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
     echo "\$BOARD_NAME is not correct. Please check!"
@@ -19,10 +21,9 @@ else
     echo "\$BOARD_NAME is found!"
 fi
 
-
 set -ex
 
-HDF_FILE=../openwifi-hw/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf
+HDF_FILE=$OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf
 UBOOT_FILE=./boards/$BOARD_NAME/u-boot.elf
 BUILD_DIR=./boards/$BOARD_NAME/build_boot_bin
 OUTPUT_DIR=./boards/$BOARD_NAME/output_boot_bin
