@@ -15,4 +15,4 @@ Application notes collect many small topics about using openwifi in different sc
 - [IEEE 802.11n (Wi-Fi 4)](ieee80211n.md)
 - [802.11 packet injection and fuzzing](inject_80211.md)
 - [CSI fuzzer](csi_fuzzer.md)
-- [owfuzz: a WiFi protocol fuzzing tool using openwifi.](https://github.com/alipay/WiFi-Protocol-Fuzzing-Tool)
+- [owfuzz: a WiFi protocol fuzzing tool using openwifi.](https://github.com/alipay/WiFi-Protocol-Fuzzing-Tool) [[**Vulnerabilities**]](https://github.com/E7mer/Owfuzz)
