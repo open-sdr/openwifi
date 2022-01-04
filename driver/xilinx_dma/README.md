@@ -1,3 +1,9 @@
+<!--
+Author: Xianjun Jiao
+SPDX-FileCopyrightText: 2021 UGent
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+We don't maintain our own (modified) xilinx dma driver anymore! The original xilinx dma driver in the Linux kernel tree can be used.
 
 ===============Following are obsolete content=================
 

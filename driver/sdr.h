@@ -1,10 +1,14 @@
-// Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+// Author: Xianjun Jiao, Michael Mehari, Wei Liu
+// SPDX-FileCopyrightText: 2019 UGent
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 #ifndef OPENWIFI_SDR
 #define OPENWIFI_SDR
 
+#include "pre_def.h"
+
 // -------------------for leds--------------------------------
-struct gpio_led_data { //pleas always align with the leds-gpio.c in linux kernel
+struct gpio_led_data { //please always align with the leds-gpio.c in linux kernel
 	struct led_classdev cdev;
 	struct gpio_desc *gpiod;
 	u8 can_sleep;
@@ -12,7 +16,7 @@ struct gpio_led_data { //pleas always align with the leds-gpio.c in linux kernel
 	gpio_blink_set_t platform_gpio_blink_set;
 };
 
-struct gpio_leds_priv { //pleas always align with the leds-gpio.c in linux kernel
+struct gpio_leds_priv { //please always align with the leds-gpio.c in linux kernel
 	int num_leds;
 	struct gpio_led_data leds[];
 };
@@ -77,6 +81,7 @@ union u16_byte2 {
 #define DRV_RX_REG_IDX_EXTRA_FO    2
 #define DRV_RX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
+#define DRV_XPU_REG_IDX_LBT_TH     0
 #define DRV_XPU_REG_IDX_GIT_REV    (MAX_NUM_DRV_REG-1)
 
 // ------end of software reg definition ------------
@@ -88,7 +93,13 @@ union u16_byte2 {
 
 #define RING_ROOM_THRESHOLD 4
 #define NUM_TX_BD 64 // !!! should align to the fifo size in tx_bit_intf.v
+
+#ifdef USE_NEW_RX_INTERRUPT
+#define NUM_RX_BD 8
+#else
 #define NUM_RX_BD 16
+#endif
+
 #define TX_BD_BUF_SIZE (8192)
 #define RX_BD_BUF_SIZE (8192)
 
@@ -304,6 +315,7 @@ struct openwifi_priv {
 	struct ieee80211_vif *vif[MAX_NUM_VIF];
 
 	const struct openwifi_rf_ops *rf;
+	enum openwifi_fpga_type fpga_type;
 
 	struct cf_axi_dds_state *dds_st;  //axi_ad9361 hdl ref design module, dac channel
 	struct axiadc_state *adc_st;      //axi_ad9361 hdl ref design module, adc channel
@@ -362,6 +374,7 @@ struct openwifi_priv {
 	u32 drv_rx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_tx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_xpu_reg_val[MAX_NUM_DRV_REG];
+	int last_auto_fpga_lbt_th;
 	// u8 num_led;
 	// struct led_classdev *led[MAX_NUM_LED];//zc706 has 4 user leds. please find openwifi_dev_probe to see how we get them.
 	// char led_name[MAX_NUM_LED][OPENWIFI_LED_MAX_NAME_LEN];

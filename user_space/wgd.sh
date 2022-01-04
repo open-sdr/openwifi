@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 checkModule () {
   MODULE="$1"
   if lsmod | grep "$MODULE" &> /dev/null ; then
@@ -42,26 +46,6 @@ modprobe mac80211
 PROG=sdr
 rmmod $PROG
 
-SUBMODULE=xilinx_dma
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-#sleep 1
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-
 # before drive ad9361, let's bring up duc and make sure dac is connected to ad9361 dma
 SUBMODULE=tx_intf
 if [ $last_input == "remote" ]
@@ -82,24 +66,24 @@ then
 fi
 sleep 0.5
 
-SUBMODULE=ad9361_drv
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/ad9361/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
+# SUBMODULE=ad9361_drv
+# if [ $last_input == "remote" ]
+#   then
+#     rm $SUBMODULE.ko
+#     sync
+#     wget ftp://192.168.10.1/driver/ad9361/$SUBMODULE.ko
+#     sync
+# fi
+# rmmod $SUBMODULE
+# insmod $SUBMODULE.ko
 
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-sleep 1
+# echo check $SUBMODULE module is loaded or not
+# checkModule $SUBMODULE
+# if [ $? -eq 1 ]
+# then
+#   return
+# fi
+# sleep 1
 
 echo "set RF frontend"
 # if [ $last_input == "remote" ]

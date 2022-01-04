@@ -1,5 +1,7 @@
 
-// (c)2020 Michael Tetemke Mehari <michael.mehari@ugent.be>
+// Author: Michael Mehari
+// SPDX-FileCopyrightText: 2020 UGent
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 /*
  *   This program is free software; you can redistribute it and/or modify

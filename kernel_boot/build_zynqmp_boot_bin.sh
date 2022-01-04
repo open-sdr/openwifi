@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz/software/linux/zynqmp
 
 set -ex
@@ -97,7 +101,8 @@ tool_version=${tool_version%\ (64-bit)*}
 # (https://www.xilinx.com/support/answers/71961.html)
 if [ $tool_version == "v2018.3" ];then
 (
-	wget https://www.xilinx.com/Attachment/72113-files.zip -P $BUILD_DIR
+#	wget https://www.xilinx.com/Attachment/72113-files.zip -P $BUILD_DIR
+	cp -P 72113-files.zip $BUILD_DIR
 	unzip $BUILD_DIR/72113-files.zip -d  $BUILD_DIR
 )
 fi

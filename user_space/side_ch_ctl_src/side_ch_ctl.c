@@ -1,6 +1,8 @@
 /*
  * openwifi side channel user space program
- * Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+ * Author: Xianjun Jiao
+ * SPDX-FileCopyrightText: 2019 UGent
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 #include <sys/socket.h>
@@ -149,7 +151,7 @@ int parse_para_string(char *para, int *action_flag, int *reg_type, int *reg_idx,
     if ( para[0] == 'g'){// || para[0] == 'G' ) {
         (*action_flag) = ACTION_SIDE_INFO_GET;
         
-        if (para_string_len == 1) { // no explict input
+        if (para_string_len == 1) { // no explicit input
             (*interval_ms) = 100;
             printf("The default 100ms side info getting period is taken!\n");
             return(0);

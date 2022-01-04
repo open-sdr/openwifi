@@ -1,7 +1,9 @@
 /*
  * axi lite register access driver
- * Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
- */
+ * Author: Xianjun Jiao, Michael Mehari, Wei Liu
+ * SPDX-FileCopyrightText: 2019 UGent
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+*/
 
 #include <linux/bitops.h>
 #include <linux/dmapool.h>
@@ -140,6 +142,14 @@ static inline u32 XPU_REG_DIFS_ADVANCE_read(void){
 	return reg_read(XPU_REG_DIFS_ADVANCE_ADDR);
 }
 
+static inline void XPU_REG_FORCE_IDLE_MISC_write(u32 Data) {
+	reg_write(XPU_REG_FORCE_IDLE_MISC_ADDR, Data);
+}
+
+static inline u32 XPU_REG_FORCE_IDLE_MISC_read(void){
+	return reg_read(XPU_REG_FORCE_IDLE_MISC_ADDR);
+}
+
 static inline u32 XPU_REG_TRX_STATUS_read(void){
 	return reg_read(XPU_REG_TRX_STATUS_ADDR);
 }
@@ -251,13 +261,15 @@ static inline u32 XPU_REG_SLICE_COUNT_END_read(void){
 	return reg_read(XPU_REG_SLICE_COUNT_END_ADDR);
 }
 
-
 static inline void XPU_REG_BB_RF_DELAY_write(u32 value){
 	reg_write(XPU_REG_BB_RF_DELAY_ADDR, value);
 }
 
-static inline void XPU_REG_MAX_NUM_RETRANS_write(u32 value){
-	reg_write(XPU_REG_MAX_NUM_RETRANS_ADDR, value);
+static inline void XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write(u32 value){
+	reg_write(XPU_REG_ACK_CTL_MAX_NUM_RETRANS_ADDR, value);
+}
+static inline u32 XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read(void){
+	return reg_read(XPU_REG_ACK_CTL_MAX_NUM_RETRANS_ADDR);
 }
 
 static inline void XPU_REG_MAC_ADDR_write(u8 *mac_addr) {//, u32 en_flag){
@@ -337,7 +349,7 @@ static inline u32 hw_init(enum xpu_mode mode){
 	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2)*10)<<16) | 10 ); // high 16 bits to cover sig valid of ACK packet, low 16 bits is adjustment of fcs valid waiting time.  let's add 2us for those device that is really "slow"!
 	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 6*10 ); // +6 = 16us for 5GHz
 
-	//xpu_api->XPU_REG_MAX_NUM_RETRANS_write(3); // if this > 0, it will override mac80211 set value, and set static retransmission limit
+	//xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write(3); // if this > 0, it will override mac80211 set value, and set static retransmission limit
 	
 	// xpu_api->XPU_REG_BB_RF_DELAY_write((1<<8)|47);
 	xpu_api->XPU_REG_BB_RF_DELAY_write((10<<8)|40); // extended rf is ongoing for perfect muting. (10<<8)|40 is verified good for zcu102/zed
@@ -397,11 +409,13 @@ static inline u32 hw_init(enum xpu_mode mode){
 	rssi_half_db_th = 87<<1; // -62dBm
 	xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
 
+	xpu_api->XPU_REG_FORCE_IDLE_MISC_write(75); //control the duration to force ch_idle after decoding a packet due to imperfection of agc and signals
+
 	//xpu_api->XPU_REG_CSMA_DEBUG_write((1<<31)|(20<<24)|(4<<19)|(3<<14)|(10<<7)|(5));
 	xpu_api->XPU_REG_CSMA_DEBUG_write(0);
 	
-	xpu_api->XPU_REG_CSMA_CFG_write(3); //normal CSMA
-	// xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); //high priority
+	// xpu_api->XPU_REG_CSMA_CFG_write(268435459);  // Linux will do config for each queue via openwifi_conf_tx
+	// xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); // Linux will do config for each queue via openwifi_conf_tx
 
 	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
 
@@ -472,6 +486,9 @@ static int dev_probe(struct platform_device *pdev)
 	xpu_api->XPU_REG_DIFS_ADVANCE_write=XPU_REG_DIFS_ADVANCE_write;
 	xpu_api->XPU_REG_DIFS_ADVANCE_read=XPU_REG_DIFS_ADVANCE_read;
 
+	xpu_api->XPU_REG_FORCE_IDLE_MISC_write=XPU_REG_FORCE_IDLE_MISC_write;
+	xpu_api->XPU_REG_FORCE_IDLE_MISC_read=XPU_REG_FORCE_IDLE_MISC_read;
+
 	xpu_api->XPU_REG_TRX_STATUS_read=XPU_REG_TRX_STATUS_read;
 	xpu_api->XPU_REG_TX_RESULT_read=XPU_REG_TX_RESULT_read;
 
@@ -508,7 +525,9 @@ static int dev_probe(struct platform_device *pdev)
 	xpu_api->XPU_REG_SLICE_COUNT_END_read=XPU_REG_SLICE_COUNT_END_read;
 
 	xpu_api->XPU_REG_BB_RF_DELAY_write=XPU_REG_BB_RF_DELAY_write;
-	xpu_api->XPU_REG_MAX_NUM_RETRANS_write=XPU_REG_MAX_NUM_RETRANS_write;
+
+	xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write=XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write;
+	xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read=XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read;
 
 	xpu_api->XPU_REG_MAC_ADDR_write=XPU_REG_MAC_ADDR_write;
 

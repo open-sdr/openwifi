@@ -1,5 +1,7 @@
-// (c)2007 Andy Green <andy@warmcat.com>
-// (r)2020 Michael Tetemke Mehari <michael.mehari@ugent.be>
+// Modified by: Michael Mehari
+// SPDX-FileCopyrightText: 2020 UGent
+// SPDX-FileCopyrightText: 2007 Andy Green <andy@warmcat.com>
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 /*
  *   This program is free software; you can redistribute it and/or modify
@@ -58,11 +60,11 @@ static const u8 u8aRadiotapHeader[] =
 /* IEEE80211 header */
 static const u8 ieee_hdr[] =
 {
-	0x08, 0x01, 0x00, 0x00,
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-	0x66, 0x55, 0x44, 0x33, 0x22, 0x11,
-	0x66, 0x55, 0x44, 0x33, 0x22, 0x11,
-	0x10, 0x86,
+	0x08, 0x01, 0x00, 0x00,             // FC 0x0801. 0--subtype; 8--type&version; 01--toDS1 fromDS0 (data packet to DS)
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x11, // BSSID/MAC of AP
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x22, // Source address (STA)
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x33, // Destination address (another STA under the same AP)
+	0x10, 0x86,                         // 0--fragment number; 0x861=2145--sequence number
 };
 
 // Generate random string
@@ -117,7 +119,7 @@ void usage(void)
 int main(int argc, char *argv[])
 {
 	u8 buffer[1536];
-	char szErrbuf[PCAP_ERRBUF_SIZE], rand_char[1536], hw_mode = 'n';
+	char szErrbuf[PCAP_ERRBUF_SIZE], rand_char[1484], hw_mode = 'n';
 	int i, nLinkEncap = 0, r, rate_index = 0, sgi_flag = 0, num_packets = 10, payload_size = 64, packet_size, nDelay = 100000;
 	pcap_t *ppcap = NULL;
 

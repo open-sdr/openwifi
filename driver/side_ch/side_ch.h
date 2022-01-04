@@ -1,4 +1,6 @@
-// Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+// Author: Xianjun Jiao
+// SPDX-FileCopyrightText: 2019 UGent
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 // ---------------------------------------side channel-------------------------------
 const char *side_ch_compatible_str = "sdr,side_ch";

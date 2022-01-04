@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 set -ex
 
 MACHINE_TYPE=`uname -m`
@@ -47,6 +51,16 @@ sudo apt-get -y install nano
 sudo apt-get -y install tcpdump
 sudo apt-get -y install webfs
 sudo apt-get -y install iperf
+sudo apt-get -y install libpcap-dev
 
-# change the password to openwifi
+# change the root password to openwifi
+cat /etc/passwd
+sed -i 's/root:x:0:0:root:\/root:\/bin\/bash/root::0:0:root:\/root:\/bin\/bash/' /etc/passwd
+sync
+sleep 1
+cat /etc/passwd
 echo -e "openwifi\nopenwifi" | passwd
+sync
+sleep 1
+cat /etc/passwd
+

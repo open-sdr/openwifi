@@ -1,12 +1,17 @@
 #!/bin/bash
-if [ "$#" -ne 3 ]; then
-    echo "You must enter exactly 3 arguments: \$OPENWIFI_DIR \$XILINX_DIR ARCH_BIT(32 or 64)"
+
+# Author: Xianjun jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+if [ "$#" -ne 2 ]; then
+    echo "You must enter exactly 2 arguments: \$XILINX_DIR ARCH_BIT(32 or 64)"
     exit 1
 fi
 
-OPENWIFI_DIR=$1
-XILINX_DIR=$2
-ARCH_OPTION=$3
+OPENWIFI_DIR=$(pwd)/../
+XILINX_DIR=$1
+ARCH_OPTION=$2
 
 if [ -f "$OPENWIFI_DIR/LICENSE" ]; then
     echo "\$OPENWIFI_DIR is found!"
@@ -34,10 +39,12 @@ if [ "$ARCH_OPTION" == "64" ]; then
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux-64/
     ARCH="arm64"
     CROSS_COMPILE="aarch64-linux-gnu-"
+    echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
 else
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux/
     ARCH="arm"
     CROSS_COMPILE="arm-linux-gnueabihf-"
+    echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
 fi
 
 # check if user entered the right path to analog device linux
@@ -65,9 +72,7 @@ cd $OPENWIFI_DIR/driver/rx_intf
 make KDIR=$LINUX_KERNEL_SRC_DIR ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
 cd $OPENWIFI_DIR/driver/xpu
 make KDIR=$LINUX_KERNEL_SRC_DIR ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
-cd $OPENWIFI_DIR/driver/ad9361
-make KDIR=$LINUX_KERNEL_SRC_DIR ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
-cd $OPENWIFI_DIR/driver/xilinx_dma
-./make_xilinx_dma.sh $OPENWIFI_DIR $XILINX_DIR $ARCH_OPTION
+# cd $OPENWIFI_DIR/driver/ad9361
+# make KDIR=$LINUX_KERNEL_SRC_DIR ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
 
 cd $home_dir

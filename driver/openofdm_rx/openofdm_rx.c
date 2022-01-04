@@ -1,7 +1,8 @@
 /*
- * axi lite register access driver
- * Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
- */
+ * Author: Xianjun jiao, Michael Mehari, Wei Liu
+ * SPDX-FileCopyrightText: 2019 UGent
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+*/
 
 #include <linux/bitops.h>
 #include <linux/dmapool.h>
@@ -51,7 +52,9 @@ static inline void OPENOFDM_RX_REG_POWER_THRES_write(u32 Data) {
 static inline void OPENOFDM_RX_REG_MIN_PLATEAU_write(u32 Data) {
 	reg_write(OPENOFDM_RX_REG_MIN_PLATEAU_ADDR, Data);
 }
-
+static inline void OPENOFDM_RX_REG_SOFT_DECODING_write(u32 Data) {
+	reg_write(OPENOFDM_RX_REG_SOFT_DECODING_ADDR, Data);
+}
 static const struct of_device_id dev_of_ids[] = {
 	{ .compatible = "sdr,openofdm_rx", },
 	{}
@@ -94,6 +97,7 @@ static inline u32 hw_init(enum openofdm_rx_mode mode){
 	// 1) power threshold configuration and reset
 	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write(0);
 	openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write(100);
+	openofdm_rx_api->OPENOFDM_RX_REG_SOFT_DECODING_write(1);
 
 	//rst
 	for (i=0;i<8;i++)
@@ -139,6 +143,7 @@ static int dev_probe(struct platform_device *pdev)
 	openofdm_rx_api->OPENOFDM_RX_REG_ENABLE_write=OPENOFDM_RX_REG_ENABLE_write;
 	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write=OPENOFDM_RX_REG_POWER_THRES_write;
 	openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write=OPENOFDM_RX_REG_MIN_PLATEAU_write;
+	openofdm_rx_api->OPENOFDM_RX_REG_SOFT_DECODING_write=OPENOFDM_RX_REG_SOFT_DECODING_write;
 
 	/* Request and map I/O memory */
 	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);

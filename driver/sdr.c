@@ -1,4 +1,6 @@
-//Author: Xianjun Jiao. putaoshu@msn.com; xianjun.jiao@imec.be
+// Author: Xianjun Jiao, Michael Mehari, Wei Liu
+// SPDX-FileCopyrightText: 2019 UGent
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 #include <linux/bitops.h>
 #include <linux/dmapool.h>
@@ -43,11 +45,16 @@
 #include <linux/leds.h>
 
 #define IIO_AD9361_USE_PRIVATE_H_
-#include "ad9361/ad9361_regs.h"
-#include "ad9361/ad9361.h"
-#include "ad9361/ad9361_private.h"
+#include <../../drivers/iio/adc/ad9361_regs.h>
+#include <../../drivers/iio/adc/ad9361.h>
+#include <../../drivers/iio/adc/ad9361_private.h>
 
 #include <../../drivers/iio/frequency/cf_axi_dds.h>
+extern int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num);
+extern int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb,
+			       bool tx1, bool tx2, bool immed);
+extern int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
+				  struct ctrl_outs_control *ctrl);
 
 #include "../user_space/sdrctl_src/nl80211_testmode_def.h"
 #include "hw_def.h"
@@ -126,14 +133,15 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz + priv->drv_rx_reg_val[DRV_RX_REG_IDX_EXTRA_FO];
 	u32 actual_tx_lo;
 	bool change_flag = (actual_rx_lo != priv->actual_rx_lo);
+	int static_lbt_th, auto_lbt_th, fpga_lbt_th;
 
 	if (change_flag) {
 		priv->actual_rx_lo = actual_rx_lo;
 
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
 
-		ad9361_clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo )>>1) );
-		ad9361_clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo )>>1) );
+		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo )>>1) );
+		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo )>>1) );
 
 		if (actual_rx_lo<2412) {
 			priv->rssi_correction = 153;
@@ -150,8 +158,14 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		}
 
 		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
-		xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
+		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
+		auto_lbt_th = ((priv->rssi_correction-62-16)<<1);
+		static_lbt_th = priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH];
+		fpga_lbt_th = (static_lbt_th==0?auto_lbt_th:static_lbt_th);
+		xpu_api->XPU_REG_LBT_TH_write(fpga_lbt_th);
 
+		priv->last_auto_fpga_lbt_th = auto_lbt_th;
+		
 		if (actual_rx_lo < 2500) {
 			//priv->slot_time = 20; //20 is default slot time in ERP(OFDM)/11g 2.4G; short one is 9.
 			//xpu_api->XPU_REG_BAND_CHANNEL_write(BAND_2_4GHZ<<16);
@@ -183,8 +197,8 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		//printk("%s ad9361_rf_set_channel tune to %d read back %llu\n", sdr_compatible_str,conf->chandef.chan->center_freq,2*priv->ad9361_phy->state->current_rx_lo_freq);
 		//ad9361_set_trx_clock_chain_default(priv->ad9361_phy);
 		//printk("%s ad9361_rf_set_channel tune to %d read back %llu\n", sdr_compatible_str,conf->chandef.chan->center_freq,2*priv->ad9361_phy->state->current_rx_lo_freq);
+		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d (auto %d static %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,auto_lbt_th,static_lbt_th);
 	}
-	printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag);
 }
 
 const struct openwifi_rf_ops ad9361_rf_ops = {
@@ -229,8 +243,8 @@ static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 
 	for (i = 0; i < NUM_TX_BD; i++) {
 		ring->bds[i].skb_linked=0; // for tx, skb is from upper layer
-		//at frist right after skb allocated, head, data, tail are the same.
-		ring->bds[i].dma_mapping_addr = 0; // for tx, mapping is done after skb is received from uppler layer in tx routine
+		//at first right after skb allocated, head, data, tail are the same.
+		ring->bds[i].dma_mapping_addr = 0; // for tx, mapping is done after skb is received from upper layer in tx routine
 	}
 
 	return 0;
@@ -253,8 +267,8 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 //			dev_kfree_skb(ring->bds[i].skb_linked); // only use dev_kfree_skb when there is exception
 		if ( (ring->bds[i].dma_mapping_addr != 0 && ring->bds[i].skb_linked == 0) ||
 		     (ring->bds[i].dma_mapping_addr == 0 && ring->bds[i].skb_linked != 0))
-			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08llx\n", sdr_compatible_str, 
-			ring_idx, i, (void*)(ring->bds[i].skb_linked), ring->bds[i].dma_mapping_addr);
+			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08x\n", sdr_compatible_str, 
+			ring_idx, i, (void*)(ring->bds[i].skb_linked), (unsigned int)(ring->bds[i].dma_mapping_addr));
 
 		ring->bds[i].skb_linked=0;
 		ring->bds[i].dma_mapping_addr = 0;
@@ -266,12 +280,24 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 
 static int openwifi_init_rx_ring(struct openwifi_priv *priv)
 {
+	int i;
+	u8 *pdata_tmp;
+
 	priv->rx_cyclic_buf = dma_alloc_coherent(priv->rx_chan->device->dev,RX_BD_BUF_SIZE*NUM_RX_BD,&priv->rx_cyclic_buf_dma_mapping_addr,GFP_KERNEL);
 	if (!priv->rx_cyclic_buf) {
 		printk("%s openwifi_init_rx_ring: WARNING dma_alloc_coherent failed!\n", sdr_compatible_str);
 		dma_free_coherent(priv->rx_chan->device->dev,RX_BD_BUF_SIZE*NUM_RX_BD,priv->rx_cyclic_buf,priv->rx_cyclic_buf_dma_mapping_addr);
 		return(-1);
 	}
+
+	// Set tsft_low and tsft_high to 0. If they are not zero, it means there is a packet in the buffer by DMA
+	for (i=0; i<NUM_RX_BD; i++) {
+		pdata_tmp = priv->rx_cyclic_buf + i*RX_BD_BUF_SIZE; // our header insertion is at the beginning
+		(*((u32*)(pdata_tmp+0 ))) = 0;
+		(*((u32*)(pdata_tmp+4 ))) = 0;
+	}
+	printk("%s openwifi_init_rx_ring: tsft_low and tsft_high are cleared!\n", sdr_compatible_str);
+
 	return 0;
 }
 
@@ -317,20 +343,29 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct ieee80211_hdr *hdr;
 	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi;//, fc_di;
 	// u32 dma_driver_buf_idx_mod;
-	u8 *pdata_tmp, fcs_ok, target_buf_idx;//, phy_rx_sn_hw;
+	u8 *pdata_tmp, fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
-	u16 rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0;
+	u16 agc_status_and_pkt_exist_flag, rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0;
 	bool content_ok = false, len_overflow = false;
-	struct dma_tx_state state;
-	static u8 target_buf_idx_old = 0xFF;
 
+#ifdef USE_NEW_RX_INTERRUPT
+	int i;
 	spin_lock(&priv->lock);
-	priv->rx_chan->device->device_tx_status(priv->rx_chan,priv->rx_cookie,&state);
-	target_buf_idx = ((state.residue-1)&(NUM_RX_BD-1));
-
-	while( target_buf_idx_old!=target_buf_idx ) { // loop all rx buffers that have new rx packets
-		target_buf_idx_old=((target_buf_idx_old+1)&(NUM_RX_BD-1)); 
+	for (i=0; i<NUM_RX_BD; i++) {
+		pdata_tmp = priv->rx_cyclic_buf + i*RX_BD_BUF_SIZE;
+		agc_status_and_pkt_exist_flag = (*((u16*)(pdata_tmp+10))); //check rx_intf_pl_to_m_axis.v. FPGA TODO: add pkt exist 1bit flag next to gpio_status_lock_by_sig_valid
+		if ( agc_status_and_pkt_exist_flag==0 ) // no packet in the buffer
+			continue;
+#else
+	static u8 target_buf_idx_old = 0;
+	spin_lock(&priv->lock);
+	while(1) { // loop all rx buffers that have new rx packets
 		pdata_tmp = priv->rx_cyclic_buf + target_buf_idx_old*RX_BD_BUF_SIZE; // our header insertion is at the beginning
+		agc_status_and_pkt_exist_flag = (*((u16*)(pdata_tmp+10)));
+		if ( agc_status_and_pkt_exist_flag==0 ) // no packet in the buffer
+			break;
+#endif
+
 		tsft_low =     (*((u32*)(pdata_tmp+0 )));
 		tsft_high =    (*((u32*)(pdata_tmp+4 )));
 		rssi_val =     (*((u16*)(pdata_tmp+8 )));
@@ -388,11 +423,15 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			if (len>=28)
 				sc = hdr->seq_ctrl;
 
-			if ( addr1_low32!=0xffffffff || addr1_high16!=0xffff )
+			if ( (addr1_low32!=0xffffffff || addr1_high16!=0xffff) || (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&4) )
 				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
+#ifdef USE_NEW_RX_INTERRUPT
+					sc, fcs_ok, i, signal);
+#else
 					sc, fcs_ok, target_buf_idx_old, signal);
+#endif
 		}
 		
 		// priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
@@ -424,7 +463,11 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			} else
 				printk("%s openwifi_rx_interrupt: WARNING dev_alloc_skb failed!\n", sdr_compatible_str);
 		}
+		(*((u16*)(pdata_tmp+10))) = 0; // clear the field (set by rx_intf_pl_to_m_axis.v) to indicate the packet has been processed
 		loop_count++;
+#ifndef USE_NEW_RX_INTERRUPT
+		target_buf_idx_old=((target_buf_idx_old+1)&(NUM_RX_BD-1)); 
+#endif
 	}
 
 	if ( loop_count!=1 && (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) )
@@ -442,7 +485,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 	struct openwifi_ring *ring;
 	struct sk_buff *skb;
 	struct ieee80211_tx_info *info;
-	u32 reg_val, hw_queue_len, prio, queue_idx, dma_fifo_no_room_flag, loop_count=0;//, i;
+	u32 reg_val, hw_queue_len, prio, queue_idx, dma_fifo_no_room_flag, num_slot_random, cw, loop_count=0;//, i;
 	u8 tx_result_report;
 	// u16 prio_rd_idx_store[64]={0};
 
@@ -450,8 +493,15 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 
 	while(1) { // loop all packets that have been sent by FPGA
 		reg_val = tx_intf_api->TX_INTF_REG_PKT_INFO_read();
-		if (reg_val!=0x7FFFF) {
-			prio = (reg_val>>(5+NUM_BIT_MAX_PHY_TX_SN+NUM_BIT_MAX_NUM_HW_QUEUE));
+		if (reg_val!=0xFFFFFFFF) {
+			prio = ((0x7FFFF & reg_val)>>(5+NUM_BIT_MAX_PHY_TX_SN+NUM_BIT_MAX_NUM_HW_QUEUE));
+			cw = ((0xF0000000 & reg_val) >> 28);
+			num_slot_random = ((0xFF80000 &reg_val)>>(2+5+NUM_BIT_MAX_PHY_TX_SN+NUM_BIT_MAX_NUM_HW_QUEUE));
+			if(cw > 10) {
+				cw = 10 ;
+				num_slot_random += 512 ; 
+			}
+			
 			ring = &(priv->tx_ring[prio]);
 			ring->bd_rd_idx = ((reg_val>>5)&MAX_PHY_TX_SN);
 			skb = ring->bds[ring->bd_rd_idx].skb_linked;
@@ -506,6 +556,8 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 			
 			if ( (tx_result_report&0x10) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
 				printk("%s openwifi_tx_interrupt: WARNING tx_result %02x prio%d wr%d rd%d\n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx);
+			if ( ( (!(info->flags & IEEE80211_TX_CTL_NO_ACK))||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
+				printk("%s openwifi_tx_interrupt: tx_result %02x prio%d wr%d rd%d num_rand_slot %d cw %d \n", sdr_compatible_str, tx_result_report, prio, ring->bd_wr_idx, ring->bd_rd_idx, num_slot_random,cw);
 
 			ieee80211_tx_status_irqsafe(dev, skb);
 			
@@ -685,7 +737,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 				}
 			}
 		//}
-		queue_idx = (i>=MAX_NUM_HW_QUEUE?2:i); // if no address is hit, use FPGA queue 2. becuase the queue 2 is the longest.
+		queue_idx = (i>=MAX_NUM_HW_QUEUE?2:i); // if no address is hit, use FPGA queue 2. because the queue 2 is the longest.
 	}
 	// -------------------- end of Map Linux/SW "prio" to hardware "queue_idx" ------------------
 
@@ -769,7 +821,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		sc = hdr->seq_ctrl;
 	}
 
-	if ( (!addr_flag) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
+	if ( ( (!addr_flag)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
 		printk("%s openwifi_tx: %4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
 			len_mac_pdu, (use_ht_rate == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
@@ -818,7 +870,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	skb_push( skb, LEN_PHY_HEADER );
 	rate_signal_value = calc_phy_header(rate_hw_value, use_ht_rate, use_short_gi, len_mac_pdu+LEN_PHY_CRC, skb->data); //fill the phy header
 
-
 	//make sure dma length is integer times of DDC_NUM_BYTE_PER_DMA_SYMBOL
 	if (skb_tailroom(skb)<num_byte_pad) {
 		printk("%s openwifi_tx: WARNING sn %d skb_tailroom(skb)<num_byte_pad!\n", sdr_compatible_str, ring->bd_wr_idx);
@@ -827,7 +878,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 	skb_put( skb, num_byte_pad );
 
-	retry_limit_hw_value = (retry_limit_raw - 1)&0xF;
+	retry_limit_hw_value = ( retry_limit_raw==0?0:((retry_limit_raw - 1)&0xF) );
 	dma_buf = skb->data;
 
 	cts_rate_signal_value = wifi_mcs_table_11b_force_up[cts_rate_hw_value];
@@ -839,8 +890,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	 */
 	//wmb();
 	// entry->flags = cpu_to_le32(tx_flags);
-	/* We must be sure this has been written before followings HW
-	 * register write, because this write will made the HW attempts
+	/* We must be sure this has been written before following HW
+	 * register write, because this write will make the HW attempts
 	 * to DMA the just-written data
 	 */
 	//wmb();
@@ -899,7 +950,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		goto openwifi_tx_after_dma_mapping;
 	}
 
-	// seems everything ok. let's mark this pkt in bd descriptor ring
+	// seems everything is ok. let's mark this pkt in bd descriptor ring
 	ring->bds[ring->bd_wr_idx].skb_linked = skb;
 	ring->bds[ring->bd_wr_idx].dma_mapping_addr = dma_mapping_addr;
 
@@ -975,28 +1026,27 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
 
 	rx_intf_api->hw_init(priv->rx_intf_cfg,8,8);
-	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8);
+	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8,priv->fpga_type);
 	openofdm_tx_api->hw_init(priv->openofdm_tx_cfg);
 	openofdm_rx_api->hw_init(priv->openofdm_rx_cfg);
 	xpu_api->hw_init(priv->xpu_cfg);
 
 	agc_gain_delay = 50; //samples
-	rssi_half_db_offset = 150;
+	rssi_half_db_offset = 150; // to be consistent 
 	xpu_api->XPU_REG_RSSI_DB_CFG_write(0x80000000|((rssi_half_db_offset<<16)|agc_gain_delay) );
 	xpu_api->XPU_REG_RSSI_DB_CFG_write((~0x80000000)&((rssi_half_db_offset<<16)|agc_gain_delay) );
 	
 	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write(0);
-	// rssi_half_db_th = 87<<1; // -62dBm // will settup in runtime in _rf_set_channel
+	// rssi_half_db_th = 87<<1; // -62dBm // will setup in runtime in _rf_set_channel
 	// xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
-
-	// xpu_api->XPU_REG_CSMA_CFG_write(3); // cw_min -- already set in xpu.c
+	xpu_api->XPU_REG_FORCE_IDLE_MISC_write(75); //control the duration to force ch_idle after decoding a packet due to imperfection of agc and signals
 
 	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((40)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
 	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
 	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51+23)<<16)|(0+23) );//we have more time when we use FIR in AD9361
 
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 	
@@ -1048,19 +1098,19 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	}
 
 	priv->rx_chan = dma_request_slave_channel(&(priv->pdev->dev), "rx_dma_s2mm");
-	if (IS_ERR(priv->rx_chan)) {
+	if (IS_ERR(priv->rx_chan) || priv->rx_chan==NULL) {
 		ret = PTR_ERR(priv->rx_chan);
-		pr_err("%s openwifi_start: No Rx channel %d\n",sdr_compatible_str,ret);
+		pr_err("%s openwifi_start: No Rx channel ret %d priv->rx_chan 0x%p\n",sdr_compatible_str, ret, priv->rx_chan);
 		goto err_dma;
 	}
 
 	priv->tx_chan = dma_request_slave_channel(&(priv->pdev->dev), "tx_dma_mm2s");
-	if (IS_ERR(priv->tx_chan)) {
+	if (IS_ERR(priv->tx_chan) || priv->tx_chan==NULL) {
 		ret = PTR_ERR(priv->tx_chan);
-		pr_err("%s openwifi_start: No Tx channel %d\n",sdr_compatible_str,ret);
+		pr_err("%s openwifi_start: No Tx channel ret %d priv->tx_chan 0x%p\n",sdr_compatible_str, ret, priv->tx_chan);
 		goto err_dma;
 	}
-	printk("%s openwifi_start: DMA channel setup successfully.\n",sdr_compatible_str);
+	printk("%s openwifi_start: DMA channel setup successfully. priv->rx_chan 0x%p priv->tx_chan 0x%p\n",sdr_compatible_str, priv->rx_chan, priv->tx_chan);
 
 	ret = openwifi_init_rx_ring(priv);
 	if (ret) {
@@ -1093,7 +1143,7 @@ static int openwifi_start(struct ieee80211_hw *dev)
 
 	priv->irq_tx = irq_of_parse_and_map(priv->pdev->dev.of_node, 3);
 	ret = request_irq(priv->irq_tx, openwifi_tx_interrupt,
-			IRQF_SHARED, "sdr,tx_itrpt1", dev);
+			IRQF_SHARED, "sdr,tx_itrpt", dev);
 	if (ret) {
 		wiphy_err(dev->wiphy, "openwifi_start: failed to register IRQ handler openwifi_tx_interrupt\n");
 		goto err_free_rings;
@@ -1378,12 +1428,35 @@ static void openwifi_bss_info_changed(struct ieee80211_hw *dev,
 		changed&BSS_CHANGED_BEACON_ENABLED,changed&BSS_CHANGED_BEACON);
 	}
 }
+// helper function
+u32 log2val(u32 val){
+	u32 ret_val = 0 ;
+	while(val>1){
+		val = val >> 1 ;
+		ret_val ++ ;
+	}
+	return ret_val ;
+}
 
 static int openwifi_conf_tx(struct ieee80211_hw *hw, struct ieee80211_vif *vif, u16 queue,
 	      const struct ieee80211_tx_queue_params *params)
 {
-	printk("%s openwifi_conf_tx: WARNING [queue %d], aifs: %d, cw_min: %d, cw_max: %d, txop: %d\n",
+	u32 reg_val, cw_min_exp, cw_max_exp; 
+	
+	printk("%s openwifi_conf_tx: [queue %d], aifs: %d, cw_min: %d, cw_max: %d, txop: %d, aifs and txop ignored\n",
 		  sdr_compatible_str,queue,params->aifs,params->cw_min,params->cw_max,params->txop);
+
+	reg_val=xpu_api->XPU_REG_CSMA_CFG_read();
+	cw_min_exp = (log2val(params->cw_min + 1) & 0x0F);
+	cw_max_exp = (log2val(params->cw_max + 1) & 0x0F);
+	switch(queue){
+		case 0: reg_val = ( (reg_val & 0xFFFFFF00) | ((cw_min_exp | (cw_max_exp << 4)) << 0) );  break; 
+		case 1: reg_val = ( (reg_val & 0xFFFF00FF) | ((cw_min_exp | (cw_max_exp << 4)) << 8) );  break; 
+		case 2: reg_val = ( (reg_val & 0xFF00FFFF) | ((cw_min_exp | (cw_max_exp << 4)) << 16) ); break; 
+		case 3: reg_val = ( (reg_val & 0x00FFFFFF) | ((cw_min_exp | (cw_max_exp << 4)) << 24) ); break;
+		default: printk("%s openwifi_conf_tx: WARNING queue %d does not exist",sdr_compatible_str, queue); return(0);
+	}
+	xpu_api->XPU_REG_CSMA_CFG_write(reg_val);
 	return(0);
 }
 
@@ -1620,9 +1693,11 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		if (!tb[OPENWIFI_ATTR_RSSI_TH])
 			return -EINVAL;
 		tmp = nla_get_u32(tb[OPENWIFI_ATTR_RSSI_TH]);
-		printk("%s set RSSI_TH to %d\n", sdr_compatible_str, tmp);
-		xpu_api->XPU_REG_LBT_TH_write(tmp);
-		return 0;
+		// printk("%s set RSSI_TH to %d\n", sdr_compatible_str, tmp);
+		// xpu_api->XPU_REG_LBT_TH_write(tmp);
+		// return 0;
+		printk("%s WARNING Please use command: sdrctl dev sdr0 set reg drv_xpu 0 reg_value! (1~2047, 0 means AUTO)!\n", sdr_compatible_str);
+		return -EOPNOTSUPP;
 	case OPENWIFI_CMD_GET_RSSI_TH:
 		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
@@ -1653,7 +1728,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		reg_addr_idx = (reg_addr>>2);
 		printk("%s recv set cmd reg cat %d addr %08x val %08x idx %d\n", sdr_compatible_str, reg_cat, reg_addr, reg_val, reg_addr_idx);
 		if (reg_cat==1)
-			printk("%s reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
+			printk("%s WARNING reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
 		else if (reg_cat==2)
 			rx_intf_api->reg_write(reg_addr,reg_val);
 		else if (reg_cat==3)
@@ -1677,7 +1752,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 					//priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
 				}
 			} else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==8) {
 			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
@@ -1695,16 +1770,25 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 					priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
 				}
 			} else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==9) {
-			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG)
+			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
 				priv->drv_xpu_reg_val[reg_addr_idx]=reg_val;
-			else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				if (reg_addr_idx==DRV_XPU_REG_IDX_LBT_TH) {
+					if (reg_val) {
+						xpu_api->XPU_REG_LBT_TH_write(reg_val);
+						printk("%s override FPGA LBT threshold to %d. The last_auto_fpga_lbt_th %d\n", sdr_compatible_str, reg_val, priv->last_auto_fpga_lbt_th);
+					} else {
+						xpu_api->XPU_REG_LBT_TH_write(priv->last_auto_fpga_lbt_th);
+						printk("%s Restore last_auto_fpga_lbt_th %d to FPGA. ad9361_rf_set_channel will take control\n", sdr_compatible_str, priv->last_auto_fpga_lbt_th);
+					}
+				}
+			} else
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else
-			printk("%s reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
+			printk("%s WARNING reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
 		
 		return 0;
 	case REG_CMD_GET:
@@ -1717,7 +1801,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		reg_addr_idx = (reg_addr>>2);
 		printk("%s recv get cmd reg cat %d addr %08x idx %d\n", sdr_compatible_str, reg_cat, reg_addr, reg_addr_idx);
 		if (reg_cat==1) {
-			printk("%s reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
+			printk("%s WARNING reg cat 1 (rf) is not supported yet!\n", sdr_compatible_str);
 			tmp = 0xFFFFFFFF;
 		}
 		else if (reg_cat==2)
@@ -1743,7 +1827,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 				}
 				tmp = priv->drv_rx_reg_val[reg_addr_idx];
 			} else 
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==8) {
 			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
@@ -1757,16 +1841,16 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 				}
 				tmp = priv->drv_tx_reg_val[reg_addr_idx];
 			} else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else if (reg_cat==9) {
 			if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG)
 				tmp = priv->drv_xpu_reg_val[reg_addr_idx];
 			else
-				printk("%s reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
+				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
 		}
 		else
-			printk("%s reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
+			printk("%s WARNING reg cat %d is not supported yet!\n", sdr_compatible_str, reg_cat);
 
 		if (nla_put_u32(skb, REG_ATTR_VAL, tmp))
 			goto nla_put_failure;
@@ -1833,7 +1917,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	struct ieee80211_hw *dev;
 	struct openwifi_priv *priv;
 	int err=1, rand_val;
-	const char *chip_name;
+	const char *chip_name, *fpga_model;
 	u32 reg;//, reg1;
 
 	struct device_node *np = pdev->dev.of_node;
@@ -1867,6 +1951,19 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
 	priv = dev->priv;
 	priv->pdev = pdev;
+
+	err = of_property_read_string(of_find_node_by_path("/"), "model", &fpga_model);
+	if(err < 0) {
+		printk("%s openwifi_dev_probe: WARNING unknown openwifi FPGA model %d\n",sdr_compatible_str, err);
+		priv->fpga_type = SMALL_FPGA;
+	} else {
+		// LARGE FPGAs (i.e. ZCU102, Z7035, ZC706)
+		if(strstr(fpga_model, "ZCU102") != NULL || strstr(fpga_model, "Z7035") != NULL || strstr(fpga_model, "ZC706") != NULL)
+			priv->fpga_type = LARGE_FPGA;
+		// SMALL FPGA: (i.e. ZED, ZC702, Z7020)
+		else if(strstr(fpga_model, "ZED") != NULL || strstr(fpga_model, "ZC702") != NULL || strstr(fpga_model, "Z7020") != NULL)
+			priv->fpga_type = SMALL_FPGA;
+	}
 
 	// //-------------find ad9361-phy driver for lo/channel control---------------
 	priv->actual_rx_lo = 0;
@@ -1949,6 +2046,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	// else
 	// 	printk("%s openwifi_dev_probe: WARNING rfkill radio off failed. tx att read %d %d require %d\n",sdr_compatible_str, reg, reg1, AD9361_RADIO_OFF_TX_ATT);
 	
+	priv->last_auto_fpga_lbt_th = 134;//just to avoid uninitialized
 	priv->rssi_correction = 43;//this will be set in real-time by _rf_set_channel()
 
 	//priv->rf_bw = 20000000; // Signal quality issue! NOT use for now. 20MHz or 40MHz. 40MHz need ddc/duc. 20MHz works in bypass mode
@@ -2005,10 +2103,9 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	if (reg == AD9361_RADIO_ON_TX_ATT) {
 		priv->rfkill_off = 1;// 0 off, 1 on
 		printk("%s openwifi_dev_probe: rfkill radio on\n",sdr_compatible_str);
-	}
-	else
+	} else
 		printk("%s openwifi_dev_probe: WARNING rfkill radio on failed. tx att read %d require %d\n",sdr_compatible_str, reg, AD9361_RADIO_ON_TX_ATT);
-	
+
 	memset(priv->drv_rx_reg_val,0,sizeof(priv->drv_rx_reg_val));
 	memset(priv->drv_tx_reg_val,0,sizeof(priv->drv_tx_reg_val));
 	memset(priv->drv_xpu_reg_val,0,sizeof(priv->drv_xpu_reg_val));
@@ -2021,7 +2118,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	printk("%s openwifi_dev_probe: ad9361_update_rf_bandwidth %dHz err %d\n",sdr_compatible_str, priv->rf_bw,err);
 
 	rx_intf_api->hw_init(priv->rx_intf_cfg,8,8);
-	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8);
+	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8,priv->fpga_type);
 	openofdm_tx_api->hw_init(priv->openofdm_tx_cfg);
 	openofdm_rx_api->hw_init(priv->openofdm_rx_cfg);
 	printk("%s openwifi_dev_probe: rx_intf_cfg %d openofdm_rx_cfg %d tx_intf_cfg %d openofdm_tx_cfg %d\n",sdr_compatible_str, priv->rx_intf_cfg, priv->openofdm_rx_cfg, priv->tx_intf_cfg, priv->openofdm_tx_cfg);
@@ -2142,7 +2239,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	}
 
 	// // //--------------------hook leds (not complete yet)--------------------------------
-	// tmp_dev = bus_find_device( &platform_bus_type, NULL, "leds", custom_match_platform_dev ); //leds is the name in devicetree, not "compatiable" field
+	// tmp_dev = bus_find_device( &platform_bus_type, NULL, "leds", custom_match_platform_dev ); //leds is the name in devicetree, not "compatible" field
 	// if (!tmp_dev) {
 	// 	printk(KERN_ERR "%s bus_find_device platform_bus_type leds-gpio failed\n",sdr_compatible_str);
 	// 	err = -ENOMEM;

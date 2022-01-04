@@ -1,3 +1,7 @@
+// Author: Xianjun Jiao
+// SPDX-FileCopyrightText: 2019 UGent
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 //---nl80211 cmd testmode definitions
 //---should be used in driver sdr.c and user space app
 

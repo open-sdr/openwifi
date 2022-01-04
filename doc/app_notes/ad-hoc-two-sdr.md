@@ -1,3 +1,13 @@
+<!--
+Author: Xianjun jiao
+SPDX-FileCopyrightText: 2019 UGent
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
+**NOTE** the terminal session mentioned in the following text can also be setup via USB-UART instead of Ethernet.
+
+**NOTE** adrv9361z7035 has ultra low TX power in 5GHz. Move **CLOSER** when you use that board in 5GHz!!!
+
 - Power on two SDR boards. Call one board "adhoc1" and the other "adhoc2". On each board, the TX and RX antenna should vertical/orthogonal to each other as much as possible to gain a good TX/RX isolation.
 - Connect a computer to the adhoc1 via Ethernet cable. The computer should have static IP 192.168.10.1. Open a terminal on the computer, and then in the terminal:
   ```
@@ -12,7 +22,7 @@
   (Above command setup ad-hoc network at channel 44 with static IP assigned to sdr0 NIC)
   iwconfig sdr0
   ```
-- You shold see output like:
+- You should see output like:
   ```
   sdr0    IEEE 802.11  ESSID:"sdr-ad-hoc"  
           Mode:Ad-Hoc  Frequency:5.22 GHz  Cell: 92:CA:14:27:1E:B0   
@@ -31,10 +41,10 @@
   cd openwifi
   ./wgd.sh
   ifconfig sdr0 up
-  ./sdr-ad-hoc-up.sh sdr0 44 192.168.13.1
+  ./sdr-ad-hoc-up.sh sdr0 44 192.168.13.2
   iwconfig sdr0
   ```
-- You shold see output like:
+- You should see output like:
   ```
   sdr0    IEEE 802.11  ESSID:"sdr-ad-hoc"  
           Mode:Ad-Hoc  Frequency:5.22 GHz  Cell: 92:CA:14:27:1E:B0   

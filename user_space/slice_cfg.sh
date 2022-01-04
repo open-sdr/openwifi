@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 if [ $# -ne 5 ]
   then
     echo "Please input slice_idx mac_addr cycle_period(us) start_time(us) end_time(us) as input parameter!"

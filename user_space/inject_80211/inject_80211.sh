@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Author: Michael Mehari
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 HW_MODE='n'
 COUNT=100
 DELAY=1000

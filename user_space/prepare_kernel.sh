@@ -1,13 +1,18 @@
   
 #!/bin/bash
-if [ "$#" -lt 3 ]; then
-    echo "You must enter at least 3 arguments: \$OPENWIFI_DIR \$XILINX_DIR ARCH_BIT(32 or 64)"
+
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+if [ "$#" -lt 2 ]; then
+    echo "You must enter at least 2 arguments: \$XILINX_DIR ARCH_BIT(32 or 64)"
     exit 1
 fi
 
-OPENWIFI_DIR=$1
-XILINX_DIR=$2
-ARCH_OPTION=$3
+OPENWIFI_DIR=$(pwd)/../
+XILINX_DIR=$1
+ARCH_OPTION=$2
 
 if [ -f "$OPENWIFI_DIR/LICENSE" ]; then
     echo "\$OPENWIFI_DIR is found!"
@@ -54,22 +59,24 @@ git submodule update $LINUX_KERNEL_SRC_DIR_NAME
 cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
 git checkout 2019_R1
 git pull origin 2019_R1
-# git reset --hard 4fea7c5
-cp $OPENWIFI_DIR/driver/xilinx_dma/xilinx_dma.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/dma/xilinx/xilinx_dma.c
+git reset --hard
+# git reset --hard 4e81f0927cfb2fada92fc762dbd65d002848405a
 cp $LINUX_KERNEL_CONFIG_FILE ./.config
+cp $OPENWIFI_DIR/driver/ad9361/ad9361.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361.c -rf
+
 source $XILINX_DIR/SDK/2018.3/settings64.sh
 export ARCH=$ARCH_NAME
 export CROSS_COMPILE=$CROSS_COMPILE_NAME
 
 make oldconfig && make prepare && make modules_prepare
 
-if [ "$#" -gt 3 ]; then
-    if [ -f "$OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/arch/$ARCH_NAME/boot/$IMAGE_TYPE" ]; then
-        echo "Kernel found! Skip the time costly Linux kernel compiling."
-    else
+if [ "$#" -gt 2 ]; then
+    # if [ -f "$OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/arch/$ARCH_NAME/boot/$IMAGE_TYPE" ]; then
+    #     echo "Kernel found! Skip the time costly Linux kernel compiling."
+    # else
         make -j12 $IMAGE_TYPE UIMAGE_LOADADDR=0x8000
         make modules
-    fi
+    # fi
 fi
 
 cd $home_dir

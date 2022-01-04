@@ -1,7 +1,9 @@
 /*
  * axi lite register access driver
- * Xianjun jiao. putaoshu@msn.com; xianjun.jiao@imec.be
- */
+ * Author: Xianjun Jiao, Michael Mehari, Wei Liu
+ * SPDX-FileCopyrightText: 2019 UGent
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+*/
 
 #include <linux/bitops.h>
 #include <linux/dmapool.h>
@@ -54,8 +56,8 @@ static inline u32 TX_INTF_REG_CTS_TOSELF_CONFIG_read(void){
 	return reg_read(TX_INTF_REG_CTS_TOSELF_CONFIG_ADDR);
 }
 
-static inline u32 TX_INTF_REG_START_TRANS_TO_PS_MODE_read(void){
-	return reg_read(TX_INTF_REG_START_TRANS_TO_PS_MODE_ADDR);
+static inline u32 TX_INTF_REG_CSI_FUZZER_read(void){
+	return reg_read(TX_INTF_REG_CSI_FUZZER_ADDR);
 }
 
 static inline u32 TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read(void){
@@ -132,8 +134,8 @@ static inline void TX_INTF_REG_CTS_TOSELF_CONFIG_write(u32 value){
 	reg_write(TX_INTF_REG_CTS_TOSELF_CONFIG_ADDR, value);
 }
 
-static inline void TX_INTF_REG_START_TRANS_TO_PS_MODE_write(u32 value){
-	reg_write(TX_INTF_REG_START_TRANS_TO_PS_MODE_ADDR, value);
+static inline void TX_INTF_REG_CSI_FUZZER_write(u32 value){
+	reg_write(TX_INTF_REG_CSI_FUZZER_ADDR, value);
 }
 
 static inline void TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(u32 value){
@@ -194,7 +196,7 @@ static struct tx_intf_driver_api tx_intf_driver_api_inst;
 static struct tx_intf_driver_api *tx_intf_api = &tx_intf_driver_api_inst;
 EXPORT_SYMBOL(tx_intf_api);
 
-static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps){
+static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps, enum openwifi_fpga_type fpga_type){
 	int err=0, i;
 	u32 mixer_cfg=0, duc_input_ch_sel = 0, ant_sel=0;
 
@@ -208,7 +210,12 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 	for (i=0;i<8;i++)
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 
-	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+
+	if(fpga_type == LARGE_FPGA)	// LARGE FPGA: MAX_NUM_DMA_SYMBOL = 8192
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+	else if(fpga_type == SMALL_FPGA)	// SMALL FPGA: MAX_NUM_DMA_SYMBOL = 4096
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+
 	switch(mode)
 	{
 		case TX_INTF_AXIS_LOOP_BACK:
@@ -276,7 +283,7 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		tx_intf_api->TX_INTF_REG_MIXER_CFG_write(mixer_cfg);
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 		tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write(duc_input_ch_sel);
-		tx_intf_api->TX_INTF_REG_START_TRANS_TO_PS_MODE_write(2);
+		tx_intf_api->TX_INTF_REG_CSI_FUZZER_write(0);
 		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write(num_dma_symbol_to_pl);
@@ -331,7 +338,7 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_read=TX_INTF_REG_WIFI_TX_MODE_read;
 	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_read=TX_INTF_REG_IQ_SRC_SEL_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_read=TX_INTF_REG_CTS_TOSELF_CONFIG_read;
-	tx_intf_api->TX_INTF_REG_START_TRANS_TO_PS_MODE_read=TX_INTF_REG_START_TRANS_TO_PS_MODE_read;
+	tx_intf_api->TX_INTF_REG_CSI_FUZZER_read=TX_INTF_REG_CSI_FUZZER_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read;
 	tx_intf_api->TX_INTF_REG_MISC_SEL_read=TX_INTF_REG_MISC_SEL_read;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read;
@@ -351,7 +358,7 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write=TX_INTF_REG_WIFI_TX_MODE_write;
 	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write=TX_INTF_REG_IQ_SRC_SEL_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_write=TX_INTF_REG_CTS_TOSELF_CONFIG_write;
-	tx_intf_api->TX_INTF_REG_START_TRANS_TO_PS_MODE_write=TX_INTF_REG_START_TRANS_TO_PS_MODE_write;
+	tx_intf_api->TX_INTF_REG_CSI_FUZZER_write=TX_INTF_REG_CSI_FUZZER_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write;
 	tx_intf_api->TX_INTF_REG_MISC_SEL_write=TX_INTF_REG_MISC_SEL_write;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write;
@@ -371,16 +378,16 @@ static int dev_probe(struct platform_device *pdev)
 	if (IS_ERR(base_addr))
 		return PTR_ERR(base_addr);
 
-	printk("%s dev_probe io start 0x%08llx end 0x%08llx name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
+	printk("%s dev_probe io start 0x%08x end 0x%08x name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
 	printk("%s dev_probe base_addr 0x%p\n", tx_intf_compatible_str,(void*)base_addr);
 	printk("%s dev_probe tx_intf_driver_api_inst 0x%p\n", tx_intf_compatible_str, (void*)(&tx_intf_driver_api_inst) );
 	printk("%s dev_probe             tx_intf_api 0x%p\n", tx_intf_compatible_str, (void*)tx_intf_api);
 
 	printk("%s dev_probe succeed!\n", tx_intf_compatible_str);
 
-	//err = hw_init(TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1, 8, 8);
-	//err = hw_init(TX_INTF_BYPASS, 8, 8);
-	err = hw_init(TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1, 8, 8); // make sure dac is connected to original ad9361 dma
+	//err = hw_init(TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1, 8, 8, SMALL_FPGA);
+	//err = hw_init(TX_INTF_BYPASS, 8, 8, SMALL_FPGA);
+	err = hw_init(TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1, 8, 8, SMALL_FPGA); // make sure dac is connected to original ad9361 dma
 
 	return err;
 }

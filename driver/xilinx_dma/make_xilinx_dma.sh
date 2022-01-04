@@ -1,13 +1,18 @@
 #!/bin/bash
-if [ "$#" -ne 3 ]; then
-    echo "You must enter exactly 3 arguments: \$OPENWIFI_DIR \$XILINX_DIR \$ARCH(32 or 64)"
+
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+if [ "$#" -ne 2 ]; then
+    echo "You must enter exactly 2 arguments: \$XILINX_DIR \$ARCH(32 or 64)"
     exit 1
 fi
 
 WORKDIR=$PWD
-OPENWIFI_DIR=$1
-XILINX_DIR=$2
-ARCH_OPTION=$3
+OPENWIFI_DIR=$(pwd)/../../
+XILINX_DIR=$1
+ARCH_OPTION=$2
 
 set -x
 

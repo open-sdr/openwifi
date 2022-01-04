@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Author: Xianjun Jiao
+# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 VERSION="3.17"
 OUT="$1"
 
