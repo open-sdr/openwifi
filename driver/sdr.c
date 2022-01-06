@@ -571,7 +571,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 				if ( !(info->flags & IEEE80211_TX_CTL_NO_ACK) ) {
 					if(aggr_flag)
 					{
-						start_idx = (seq_no>blk_ack_ssn) ? (seq_no-blk_ack_ssn) : (seq_no+(~blk_ack_ssn));
+						start_idx = (seq_no>=blk_ack_ssn) ? (seq_no-blk_ack_ssn) : (seq_no+((~blk_ack_ssn+1)&0x0FFF));
 						tx_fail = (((blk_ack_bitmap>>start_idx)&0x1)==0);
 					}
 					else
@@ -605,7 +605,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 				info->status.rates[2].idx = -1;
 				info->status.rates[3].idx = -1;//in mac80211.h: #define IEEE80211_TX_MAX_RATES	4
 
-				if ( ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
+				if ( tx_fail && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
 					printk("%s openwifi_tx_interrupt: WARNING pkt_no %d/%d tx_result [nof_retx %d pass %d] prio%d wr%d rd%d\n", sdr_compatible_str, i, pkt_cnt, nof_retx+1, !tx_fail, prio, ring->bd_wr_idx, ring->bd_rd_idx);
 				if ( ( (!(info->flags & IEEE80211_TX_CTL_NO_ACK))||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
 					printk("%s openwifi_tx_interrupt: tx_result [nof_retx %d pass %d] prio%d wr%d rd%d num_rand_slot %d cw %d \n", sdr_compatible_str, nof_retx+1, !tx_fail, prio, ring->bd_wr_idx, ring->bd_rd_idx, num_slot_random, cw);
@@ -687,8 +687,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	u32 rate_signal_value,rate_hw_value=0,ack_flag;
 	u32 pkt_need_ack=0, addr1_low32=0, addr2_low32=0, addr3_low32=0, queue_idx=2, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
 	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration;
-	u8 fc_flag,fc_type,fc_subtype,retry_limit_raw=0,*dma_buf,retry_limit_hw_value,rc_flags,*qos_hdr;
-	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_short_gi=false, use_ht_aggr=false, addr_flag, cts_use_traffic_rate=false, force_use_cts_protect=false;
+	u8 fc_flag,fc_type,fc_subtype,retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,*qos_hdr;
+	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_ht_aggr=false, addr_flag, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 s_axis_fifo_threshold, dma_fifo_no_room;
 	enum dma_status status;
@@ -696,7 +696,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	static u32 rate_hw_value_prev = -1, pkt_need_ack_prev = -1;
 	static unsigned int prio_prev = -1;
 	static u8 retry_limit_raw_prev = -1;
-	static bool use_short_gi_prev;
+	static u8 use_short_gi_prev = -1;
 
 	// static bool led_status=0;
 	// struct gpio_led_data *led_dat = cdev_to_gpio_led_data(priv->led[3]);
@@ -875,7 +875,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		// psdu = [ MPDU ]
 		len_psdu = len_mpdu;
 
-		//use_short_gi_prev = false;
+		use_short_gi_prev = -1;
 		rate_hw_value_prev = -1;
 		prio_prev = -1;
 		retry_limit_raw_prev = -1;
@@ -918,7 +918,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		num_byte_pad = num_dma_byte - (LEN_MPDU_DELIM + len_mpdu);
 		if (skb_tailroom(skb)<num_byte_pad) {
 			printk("%s openwifi_tx: WARNING sn %d skb_tailroom(skb)<num_byte_pad!\n", sdr_compatible_str, ring->bd_wr_idx);
-			// skb_pull(skb, LEN_PHY_HEADER);
 			goto openwifi_tx_early_out;
 		}
 		skb_put( skb, num_byte_pad );
@@ -939,6 +938,14 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 	else
 	{
+		// Extend sk_buff to hold padding
+		num_byte_pad = num_dma_byte - len_mpdu;
+		if (skb_tailroom(skb)<num_byte_pad) {
+			printk("%s openwifi_tx: WARNING sn %d skb_tailroom(skb)<num_byte_pad!\n", sdr_compatible_str, ring->bd_wr_idx);
+			goto openwifi_tx_early_out;
+		}
+		skb_put( skb, num_byte_pad );
+
 		dma_buf = skb->data;
 	}
 //	for(i = 0; i <= num_dma_symbol; i++)
