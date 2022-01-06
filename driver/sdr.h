@@ -46,7 +46,6 @@ struct openwifi_ring {
 	struct openwifi_buffer_descriptor *bds;
     u32 bd_wr_idx;
 	u32 bd_rd_idx;
-	u32 queued_cnt;
     u32 stop_flag; // track the stop/wake status between tx interrupt and openwifi_tx
 	// u32 num_dma_symbol_request;
 	// u32 reserved;
