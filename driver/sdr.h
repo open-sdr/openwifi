@@ -35,6 +35,8 @@ struct openwifi_buffer_descriptor {
     // u32 hw_queue_idx;
     // u32 retry_limit;
     // u32 need_ack;
+    bool aggr_flag;
+    u16 seq_no;
     struct sk_buff *skb_linked;
     dma_addr_t dma_mapping_addr;
     // u32 reserved;
@@ -44,6 +46,7 @@ struct openwifi_ring {
 	struct openwifi_buffer_descriptor *bds;
     u32 bd_wr_idx;
 	u32 bd_rd_idx;
+	u32 queued_cnt;
     u32 stop_flag; // track the stop/wake status between tx interrupt and openwifi_tx
 	// u32 num_dma_symbol_request;
 	// u32 reserved;
@@ -88,11 +91,13 @@ union u16_byte2 {
 
 #define MAX_NUM_VIF 4
 
-#define LEN_PHY_HEADER 16
+//#define LEN_PHY_HEADER 16
 #define LEN_PHY_CRC 4
+#define LEN_MPDU_DELIM 4
 
 #define RING_ROOM_THRESHOLD 4
-#define NUM_TX_BD 64 // !!! should align to the fifo size in tx_bit_intf.v
+#define NUM_BIT_NUM_TX_BD 6
+#define NUM_TX_BD (1<<NUM_BIT_NUM_TX_BD) // !!! should align to the fifo size in tx_bit_intf.v
 
 #ifdef USE_NEW_RX_INTERRUPT
 #define NUM_RX_BD 8
@@ -369,7 +374,7 @@ struct openwifi_priv {
 
 	bool use_short_slot;
 	u8 band;
-	u16 channel;
+	u16 channel, tid;
 
 	u32 ampdu_reference;
 

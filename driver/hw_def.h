@@ -30,17 +30,22 @@ const char *tx_intf_compatible_str = "sdr,tx_intf";
 #define TX_INTF_REG_CSI_FUZZER_ADDR                (5*4)
 #define TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_ADDR  (6*4)
 #define TX_INTF_REG_MISC_SEL_ADDR                  (7*4)
-#define TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_ADDR      (8*4)
+#define TX_INTF_REG_TX_CONFIG_ADDR                 (8*4)
 #define TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_ADDR      (9*4)
 #define TX_INTF_REG_CFG_DATA_TO_ANT_ADDR           (10*4)
 #define TX_INTF_REG_S_AXIS_FIFO_TH_ADDR            (11*4)
 #define TX_INTF_REG_TX_HOLD_THRESHOLD_ADDR         (12*4)
 #define TX_INTF_REG_BB_GAIN_ADDR                   (13*4)
 #define TX_INTF_REG_INTERRUPT_SEL_ADDR             (14*4)
+#define TX_INTF_REG_AMPDU_ACTION_CONFIG_ADDR       (15*4)
 #define TX_INTF_REG_ANT_SEL_ADDR                   (16*4)
+#define TX_INTF_REG_PHY_HDR_CONFIG_ADDR            (17*4)
 #define TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR       (21*4)
-#define TX_INTF_REG_PKT_INFO_ADDR                  (22*4)
-#define TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_ADDR     (24*4)
+#define TX_INTF_REG_PKT_INFO1_ADDR                 (22*4)
+#define TX_INTF_REG_PKT_INFO2_ADDR                 (23*4)
+#define TX_INTF_REG_PKT_INFO3_ADDR                 (24*4)
+#define TX_INTF_REG_PKT_INFO4_ADDR                 (25*4)
+#define TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_ADDR     (26*4)
 
 #define TX_INTF_NUM_ANTENNA                        2
 #define TX_INTF_NUM_BYTE_PER_DMA_SYMBOL            (64/8)
@@ -74,16 +79,21 @@ struct tx_intf_driver_api {
 	u32 (*TX_INTF_REG_CSI_FUZZER_read)(void);
 	u32 (*TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read)(void);
 	u32 (*TX_INTF_REG_MISC_SEL_read)(void);
-	u32 (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read)(void);
+	u32 (*TX_INTF_REG_TX_CONFIG_read)(void);
 	u32 (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read)(void);
 	u32 (*TX_INTF_REG_CFG_DATA_TO_ANT_read)(void);
 	u32 (*TX_INTF_REG_S_AXIS_FIFO_TH_read)(void);
 	u32 (*TX_INTF_REG_TX_HOLD_THRESHOLD_read)(void);
 	u32 (*TX_INTF_REG_INTERRUPT_SEL_read)(void);
+	u32 (*TX_INTF_REG_AMPDU_ACTION_CONFIG_read)(void);
 	u32 (*TX_INTF_REG_BB_GAIN_read)(void);
 	u32 (*TX_INTF_REG_ANT_SEL_read)(void);
+	u32 (*TX_INTF_REG_PHY_HDR_CONFIG_read)(void);
 	u32 (*TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read)(void);
-	u32 (*TX_INTF_REG_PKT_INFO_read)(void);
+	u32 (*TX_INTF_REG_PKT_INFO1_read)(void);
+	u32 (*TX_INTF_REG_PKT_INFO2_read)(void);
+	u32 (*TX_INTF_REG_PKT_INFO3_read)(void);
+	u32 (*TX_INTF_REG_PKT_INFO4_read)(void);
 	u32 (*TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read)(void);
 
 	void (*TX_INTF_REG_MULTI_RST_write)(u32 value);
@@ -94,16 +104,21 @@ struct tx_intf_driver_api {
 	void (*TX_INTF_REG_CSI_FUZZER_write)(u32 value);
 	void (*TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write)(u32 value);
 	void (*TX_INTF_REG_MISC_SEL_write)(u32 value);
-	void (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write)(u32 value);
+	void (*TX_INTF_REG_TX_CONFIG_write)(u32 value);
 	void (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write)(u32 value);
 	void (*TX_INTF_REG_CFG_DATA_TO_ANT_write)(u32 value);
 	void (*TX_INTF_REG_S_AXIS_FIFO_TH_write)(u32 value);
 	void (*TX_INTF_REG_TX_HOLD_THRESHOLD_write)(u32 value);
 	void (*TX_INTF_REG_INTERRUPT_SEL_write)(u32 value);
+	void (*TX_INTF_REG_AMPDU_ACTION_CONFIG_write)(u32 value);
 	void (*TX_INTF_REG_BB_GAIN_write)(u32 value);
 	void (*TX_INTF_REG_ANT_SEL_write)(u32 value);
+	void (*TX_INTF_REG_PHY_HDR_CONFIG_write)(u32 value);
 	void (*TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write)(u32 value);
-	void (*TX_INTF_REG_PKT_INFO_write)(u32 value);
+	void (*TX_INTF_REG_PKT_INFO1_write)(u32 value);
+	void (*TX_INTF_REG_PKT_INFO2_write)(u32 value);
+	void (*TX_INTF_REG_PKT_INFO3_write)(u32 value);
+	void (*TX_INTF_REG_PKT_INFO4_write)(u32 value);
 };
 
 // ------------------------------------rx interface----------------------------------------
