@@ -676,7 +676,9 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	u32 dma_fifo_no_room_flag, hw_queue_len;
 	enum dma_status status;
 
-	static u32 rate_hw_value_prev = -1, pkt_need_ack_prev = -1;
+	static u32 addr1_low32_prev = -1, rate_hw_value_prev = -1, pkt_need_ack_prev = -1;
+	static u16 addr1_high16_prev = -1;
+	static __le16 duration_id_prev = -1;
 	static unsigned int prio_prev = -1;
 	static u8 retry_limit_raw_prev = -1;
 	static u8 use_short_gi_prev = -1;
@@ -842,8 +844,13 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		len_mpdu_delim_pad = ((len_mpdu + LEN_PHY_CRC)%4 == 0) ? 0 :(4 - (len_mpdu + LEN_PHY_CRC)%4);
 		len_psdu = LEN_MPDU_DELIM + len_mpdu + LEN_PHY_CRC + len_mpdu_delim_pad;
 
-		if( (rate_hw_value != rate_hw_value_prev) || (use_short_gi != use_short_gi_prev) || (prio != prio_prev) || (retry_limit_raw != retry_limit_raw_prev) || (pkt_need_ack != pkt_need_ack_prev) )
+		if( (addr1_low32 != addr1_low32_prev) || (addr1_high16 != addr1_high16_prev) || (duration_id != duration_id_prev) || 
+			(rate_hw_value != rate_hw_value_prev) || (use_short_gi != use_short_gi_prev) || 
+			(prio != prio_prev) || (retry_limit_raw != retry_limit_raw_prev) || (pkt_need_ack != pkt_need_ack_prev) )
 		{
+			addr1_low32_prev = addr1_low32;
+			addr1_high16_prev = addr1_high16;
+			duration_id_prev = duration_id;
 			rate_hw_value_prev = rate_hw_value;
 			use_short_gi_prev = use_short_gi;
 			prio_prev = prio;
@@ -858,6 +865,9 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		// psdu = [ MPDU ]
 		len_psdu = len_mpdu;
 
+		addr1_low32_prev = -1;
+		addr1_high16_prev = -1;
+		duration_id_prev = -1;
 		use_short_gi_prev = -1;
 		rate_hw_value_prev = -1;
 		prio_prev = -1;
@@ -1556,7 +1566,7 @@ static int openwifi_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *
 	struct ieee80211_sta *sta = params->sta;
 	enum ieee80211_ampdu_mlme_action action = params->action;
 	struct openwifi_priv *priv = hw->priv;
-	u16 max_tx_bytes, buf_size, aggr_dur_us;
+	u16 max_tx_bytes, buf_size;
 	u32 ampdu_action_config;
 
 	switch (action)
@@ -1571,11 +1581,10 @@ static int openwifi_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *
 			break;
 		case IEEE80211_AMPDU_TX_OPERATIONAL:
 			priv->tid = params->tid;
-			aggr_dur_us = 100;
 			buf_size = 4;
 //			buf_size = (params->buf_size) - 1;
 			max_tx_bytes = (1 << (IEEE80211_HT_MAX_AMPDU_FACTOR + sta->ht_cap.ampdu_factor)) - 1;
-			ampdu_action_config = ( aggr_dur_us<<21 | buf_size<<16 | max_tx_bytes );
+			ampdu_action_config = ( sta->ht_cap.ampdu_density<<24 | buf_size<<16 | max_tx_bytes );
 			tx_intf_api->TX_INTF_REG_AMPDU_ACTION_CONFIG_write(ampdu_action_config);
 			break;
 		case IEEE80211_AMPDU_RX_START:
