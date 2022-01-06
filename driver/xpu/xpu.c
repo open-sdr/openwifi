@@ -272,6 +272,14 @@ static inline u32 XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read(void){
 	return reg_read(XPU_REG_ACK_CTL_MAX_NUM_RETRANS_ADDR);
 }
 
+static inline void XPU_REG_AMPDU_ACTION_write(u32 Data) {
+	reg_write(XPU_REG_AMPDU_ACTION_ADDR, Data);
+}
+
+static inline u32 XPU_REG_AMPDU_ACTION_read(void){
+	return reg_read(XPU_REG_AMPDU_ACTION_ADDR);
+}
+
 static inline void XPU_REG_MAC_ADDR_write(u8 *mac_addr) {//, u32 en_flag){
 	XPU_REG_MAC_ADDR_LOW_write( *( (u32*)(mac_addr) ) );
 	XPU_REG_MAC_ADDR_HIGH_write( *( (u16*)(mac_addr + 4) ) );
@@ -528,6 +536,9 @@ static int dev_probe(struct platform_device *pdev)
 
 	xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write=XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write;
 	xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read=XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read;
+
+	xpu_api->XPU_REG_AMPDU_ACTION_write=XPU_REG_AMPDU_ACTION_write;
+	xpu_api->XPU_REG_AMPDU_ACTION_read=XPU_REG_AMPDU_ACTION_read;
 
 	xpu_api->XPU_REG_MAC_ADDR_write=XPU_REG_MAC_ADDR_write;
 

@@ -341,7 +341,8 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct ieee80211_rx_status rx_status = {0};
 	struct sk_buff *skb;
 	struct ieee80211_hdr *hdr;
-	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi;//, fc_di;
+	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0;//, fc_di;
+	bool ht_flag, short_gi, ht_aggr, ht_aggr_last;
 	// u32 dma_driver_buf_idx_mod;
 	u8 *pdata_tmp, fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
@@ -374,8 +375,11 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		len_overflow = (len>(RX_BD_BUF_SIZE-16)?true:false);
 
 		rate_idx =     (*((u16*)(pdata_tmp+14)));
+		ht_flag  =     ((rate_idx&0x10)!=0);
 		short_gi =     ((rate_idx&0x20)!=0);
-		rate_idx =     (rate_idx&0xDF);
+		ht_aggr  =     (ht_flag & ((rate_idx&0x40)!=0));
+		ht_aggr_last = (ht_flag & ((rate_idx&0x80)!=0));
+		rate_idx =     (rate_idx&0x1F);
 
 		fcs_ok = ( len_overflow?0:(*(( u8*)(pdata_tmp+16+len-1))) );
 
@@ -383,7 +387,6 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		// phy_rx_sn_hw = (fcs_ok&0x7f);//0x7f is FPGA limitation
 		// dma_driver_buf_idx_mod = (state.residue&0x7f);
 		fcs_ok = ((fcs_ok&0x80)!=0);
-		ht_flag = ((rate_idx&0x10)!=0);
 
 		if ( (len>=14 && (!len_overflow)) && (rate_idx>=8 && rate_idx<=23)) {
 			// if ( phy_rx_sn_hw!=dma_driver_buf_idx_mod) {
@@ -424,8 +427,8 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				sc = hdr->seq_ctrl;
 
 			if ( (addr1_low32!=0xffffffff || addr1_high16!=0xffff) || (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&4) )
-				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
-					len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
+				printk("%s openwifi_rx_interrupt:%4dbytes ht%d aggr%d/%d sgi%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
+					len, ht_flag, ht_aggr, ht_aggr_last, short_gi, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 #ifdef USE_NEW_RX_INTERRUPT
 					sc, fcs_ok, i, signal);
@@ -457,11 +460,21 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				rx_status.bw = RATE_INFO_BW_20;
 				if (short_gi)
 					rx_status.enc_flags |= RX_ENC_FLAG_SHORT_GI;
+				if(ht_aggr)
+				{
+					rx_status.ampdu_reference = priv->ampdu_reference;
+					rx_status.flag |= RX_FLAG_AMPDU_DETAILS | RX_FLAG_AMPDU_LAST_KNOWN;
+					if (ht_aggr_last)
+						rx_status.flag |= RX_FLAG_AMPDU_IS_LAST;
+				}
 
 				memcpy(IEEE80211_SKB_RXCB(skb), &rx_status, sizeof(rx_status)); // put rx_status into skb->cb, from now on skb->cb is not dma_dsts any more.
 				ieee80211_rx_irqsafe(dev, skb); // call mac80211 function
 			} else
 				printk("%s openwifi_rx_interrupt: WARNING dev_alloc_skb failed!\n", sdr_compatible_str);
+
+			if(ht_aggr_last)
+				priv->ampdu_reference++;
 		}
 		(*((u16*)(pdata_tmp+10))) = 0; // clear the field (set by rx_intf_pl_to_m_axis.v) to indicate the packet has been processed
 		loop_count++;
@@ -1500,6 +1513,37 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
 	(filter_flag>>13)&1,(filter_flag>>12)&1,(filter_flag>>11)&1,(filter_flag>>10)&1,(filter_flag>>9)&1,(filter_flag>>8)&1,(filter_flag>>7)&1,(filter_flag>>6)&1,(filter_flag>>5)&1,(filter_flag>>4)&1,(filter_flag>>3)&1,(filter_flag>>2)&1,(filter_flag>>1)&1);
 }
 
+static int openwifi_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *vif, struct ieee80211_ampdu_params *params)
+{
+	struct ieee80211_sta *sta = params->sta;
+	enum ieee80211_ampdu_mlme_action action = params->action;
+	struct openwifi_priv *priv = hw->priv;
+
+	switch (action)
+	{
+		case IEEE80211_AMPDU_TX_START:
+			ieee80211_start_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
+			break;
+		case IEEE80211_AMPDU_TX_STOP_CONT:
+		case IEEE80211_AMPDU_TX_STOP_FLUSH:
+		case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
+			ieee80211_stop_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
+			break;
+		case IEEE80211_AMPDU_TX_OPERATIONAL:
+			break;
+		case IEEE80211_AMPDU_RX_START:
+			xpu_api->XPU_REG_AMPDU_ACTION_write((params->tid & 0x000F)<<1 | 1);
+			break;
+		case IEEE80211_AMPDU_RX_STOP:
+			xpu_api->XPU_REG_AMPDU_ACTION_write((params->tid & 0x000F)<<1 | 0);
+			break;
+		default:
+			return -EOPNOTSUPP;
+	}
+
+	return 0;
+}
+
 static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *vif, void *data, int len)
 {
 	struct openwifi_priv *priv = hw->priv;
@@ -1881,6 +1925,7 @@ static const struct ieee80211_ops openwifi_ops = {
 	.set_tsf		   = openwifi_set_tsf,
 	.reset_tsf		   = openwifi_reset_tsf,
 	.set_rts_threshold = openwifi_set_rts_threshold,
+	.ampdu_action      = openwifi_ampdu_action,
 	.testmode_cmd	   = openwifi_testmode_cmd,
 };
 
@@ -2143,6 +2188,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band = BAND_5_8GHZ; //this can be changed by band _rf_set_channel() (2.4GHz ERP(OFDM)) (5GHz OFDM)
 	priv->channel = 44;  //currently useless. this can be changed by band _rf_set_channel()
 	priv->use_short_slot = false; //this can be changed by openwifi_bss_info_changed: BSS_CHANGED_ERP_SLOT
+	priv->ampdu_reference = 0;
 
 	priv->band_2GHz.band = NL80211_BAND_2GHZ;
 	priv->band_2GHz.channels = priv->channels_2GHz;
@@ -2151,6 +2197,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_2GHz.n_bitrates = ARRAY_SIZE(priv->rates_2GHz);
 	priv->band_2GHz.ht_cap.ht_supported = true;
 	priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
+	priv->band_2GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
+	priv->band_2GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
 	memset(&priv->band_2GHz.ht_cap.mcs, 0, sizeof(priv->band_2GHz.ht_cap.mcs));
 	priv->band_2GHz.ht_cap.mcs.rx_mask[0] = 0xff;
 	priv->band_2GHz.ht_cap.mcs.tx_params = IEEE80211_HT_MCS_TX_DEFINED;
@@ -2163,6 +2211,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_5GHz.n_bitrates = ARRAY_SIZE(priv->rates_5GHz);
 	priv->band_5GHz.ht_cap.ht_supported = true;
 	priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
+	priv->band_5GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
+	priv->band_5GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
 	memset(&priv->band_5GHz.ht_cap.mcs, 0, sizeof(priv->band_5GHz.ht_cap.mcs));
 	priv->band_5GHz.ht_cap.mcs.rx_mask[0] = 0xff;
 	priv->band_5GHz.ht_cap.mcs.tx_params = IEEE80211_HT_MCS_TX_DEFINED;
@@ -2174,6 +2224,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	ieee80211_hw_set(dev, HOST_BROADCAST_PS_BUFFERING);
 	ieee80211_hw_set(dev, RX_INCLUDES_FCS);
 	ieee80211_hw_set(dev, BEACON_TX_STATUS);
+	ieee80211_hw_set(dev, AMPDU_AGGREGATION);
 
 	dev->vif_data_size = sizeof(struct openwifi_vif);
 	dev->wiphy->interface_modes = 

@@ -261,6 +261,7 @@ const char *xpu_compatible_str = "sdr,xpu";
 #define XPU_REG_CSMA_DEBUG_ADDR           		(9*4)
 #define XPU_REG_BB_RF_DELAY_ADDR         		(10*4)
 #define XPU_REG_ACK_CTL_MAX_NUM_RETRANS_ADDR	(11*4)
+#define XPU_REG_AMPDU_ACTION_ADDR        		(12*4)
 #define XPU_REG_RECV_ACK_COUNT_TOP0_ADDR  		(16*4)
 #define XPU_REG_RECV_ACK_COUNT_TOP1_ADDR  		(17*4)
 #define XPU_REG_SEND_ACK_WAIT_TOP_ADDR    		(18*4)
@@ -400,6 +401,9 @@ struct xpu_driver_api {
 	
 	void (*XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write)(u32 value);
 	u32  (*XPU_REG_ACK_CTL_MAX_NUM_RETRANS_read)(void);
+
+	void (*XPU_REG_AMPDU_ACTION_write)(u32 value);
+	u32  (*XPU_REG_AMPDU_ACTION_read)(void);
 
 	void (*XPU_REG_MAC_ADDR_write)(u8 *mac_addr);
 };

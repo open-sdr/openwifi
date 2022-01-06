@@ -371,6 +371,8 @@ struct openwifi_priv {
 	u8 band;
 	u16 channel;
 
+	u32 ampdu_reference;
+
 	u32 drv_rx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_tx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_xpu_reg_val[MAX_NUM_DRV_REG];
