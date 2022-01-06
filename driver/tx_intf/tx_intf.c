@@ -112,8 +112,20 @@ static inline u32 TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read(void){
 	return reg_read(TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR);
 }
 
-static inline u32 TX_INTF_REG_PKT_INFO_read(void){
-	return reg_read(TX_INTF_REG_PKT_INFO_ADDR);
+static inline u32 TX_INTF_REG_PKT_INFO1_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO1_ADDR);
+}
+
+static inline u32 TX_INTF_REG_PKT_INFO2_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO2_ADDR);
+}
+
+static inline u32 TX_INTF_REG_PKT_INFO3_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO3_ADDR);
+}
+
+static inline u32 TX_INTF_REG_PKT_INFO4_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO4_ADDR);
 }
 
 static inline u32 TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read(void){
@@ -198,8 +210,20 @@ static inline void TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write(u32 value){
 	reg_write(TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR, value);
 }
 
-static inline void TX_INTF_REG_PKT_INFO_write(u32 value){
-	reg_write(TX_INTF_REG_PKT_INFO_ADDR,value);
+static inline void TX_INTF_REG_PKT_INFO1_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO1_ADDR,value);
+}
+
+static inline void TX_INTF_REG_PKT_INFO2_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO2_ADDR,value);
+}
+
+static inline void TX_INTF_REG_PKT_INFO3_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO3_ADDR,value);
+}
+
+static inline void TX_INTF_REG_PKT_INFO4_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO4_ADDR,value);
 }
 
 static const struct of_device_id dev_of_ids[] = {
@@ -362,7 +386,10 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_ANT_SEL_read=TX_INTF_REG_ANT_SEL_read;
 	tx_intf_api->TX_INTF_REG_PHY_HDR_CONFIG_read=TX_INTF_REG_PHY_HDR_CONFIG_read;
 	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read=TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read;
-	tx_intf_api->TX_INTF_REG_PKT_INFO_read=TX_INTF_REG_PKT_INFO_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO1_read=TX_INTF_REG_PKT_INFO1_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO2_read=TX_INTF_REG_PKT_INFO2_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO3_read=TX_INTF_REG_PKT_INFO3_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO4_read=TX_INTF_REG_PKT_INFO4_read;
 	tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read=TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read;
 
 	tx_intf_api->TX_INTF_REG_MULTI_RST_write=TX_INTF_REG_MULTI_RST_write;
@@ -384,7 +411,10 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_ANT_SEL_write=TX_INTF_REG_ANT_SEL_write;
 	tx_intf_api->TX_INTF_REG_PHY_HDR_CONFIG_write=TX_INTF_REG_PHY_HDR_CONFIG_write;
 	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write=TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write;
-	tx_intf_api->TX_INTF_REG_PKT_INFO_write=TX_INTF_REG_PKT_INFO_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO1_write=TX_INTF_REG_PKT_INFO1_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO2_write=TX_INTF_REG_PKT_INFO2_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO3_write=TX_INTF_REG_PKT_INFO3_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO4_write=TX_INTF_REG_PKT_INFO4_write;
 
 	/* Request and map I/O memory */
 	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -392,16 +422,16 @@ static int dev_probe(struct platform_device *pdev)
 	if (IS_ERR(base_addr))
 		return PTR_ERR(base_addr);
 
-	printk("%s dev_probe io start 0x%08x end 0x%08x name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
+	printk("%s dev_probe io start 0x%08llx end 0x%08llx name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
 	printk("%s dev_probe base_addr 0x%p\n", tx_intf_compatible_str,(void*)base_addr);
 	printk("%s dev_probe tx_intf_driver_api_inst 0x%p\n", tx_intf_compatible_str, (void*)(&tx_intf_driver_api_inst) );
 	printk("%s dev_probe             tx_intf_api 0x%p\n", tx_intf_compatible_str, (void*)tx_intf_api);
 
 	printk("%s dev_probe succeed!\n", tx_intf_compatible_str);
 
-	//err = hw_init(TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1, 8, 8, SMALL_FPGA);
-	//err = hw_init(TX_INTF_BYPASS, 8, 8, SMALL_FPGA);
-	err = hw_init(TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1, 8, 8, SMALL_FPGA); // make sure dac is connected to original ad9361 dma
+	//err = hw_init(TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1, 8, 8);
+	//err = hw_init(TX_INTF_BYPASS, 8, 8);
+	err = hw_init(TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1, 8, 8); // make sure dac is connected to original ad9361 dma
 
 	return err;
 }
