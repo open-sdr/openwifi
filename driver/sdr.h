@@ -35,7 +35,6 @@ struct openwifi_buffer_descriptor {
     // u32 hw_queue_idx;
     // u32 retry_limit;
     // u32 need_ack;
-    bool aggr_flag;
     u16 seq_no;
     struct sk_buff *skb_linked;
     dma_addr_t dma_mapping_addr;

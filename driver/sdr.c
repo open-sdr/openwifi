@@ -248,7 +248,6 @@ static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 		ring->bds[i].skb_linked=0; // for tx, skb is from upper layer
 		//at first right after skb allocated, head, data, tail are the same.
 		ring->bds[i].dma_mapping_addr = 0; // for tx, mapping is done after skb is received from upper layer in tx routine
-		ring->bds[i].aggr_flag = false;
 		ring->bds[i].seq_no = 0;
 	}
 
@@ -277,7 +276,6 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 
 		ring->bds[i].skb_linked=0;
 		ring->bds[i].dma_mapping_addr = 0;
-		ring->bds[i].aggr_flag = false;
 		ring->bds[i].seq_no = 0;
 	}
 	if (ring->bds)
@@ -510,7 +508,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 	u8 nof_retx=-1, last_bd_rd_idx, i;
 	u64 blk_ack_bitmap;
 	// u16 prio_rd_idx_store[64]={0};
-	bool aggr_flag, tx_fail=false;
+	bool tx_fail=false;
 
 	spin_lock(&priv->lock);
 
@@ -554,52 +552,36 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 			for(i = 1; i <= pkt_cnt; i++)
 			{
 				ring->bd_rd_idx = (last_bd_rd_idx + i - pkt_cnt + 64)%64;
-				aggr_flag = ring->bds[ring->bd_rd_idx].aggr_flag;
 				seq_no = ring->bds[ring->bd_rd_idx].seq_no;
 				skb = ring->bds[ring->bd_rd_idx].skb_linked;
 
 				dma_unmap_single(priv->tx_chan->device->dev,ring->bds[ring->bd_rd_idx].dma_mapping_addr,
 						skb->len, DMA_MEM_TO_DEV);
 
-				if(aggr_flag)
-				{
-					skb_pull(skb, LEN_MPDU_DELIM);
-					//skb_trim(skb, num_byte_pad_skb);
-				}
 				info = IEEE80211_SKB_CB(skb);
 				ieee80211_tx_info_clear_status(info);
 
-				if ( !(info->flags & IEEE80211_TX_CTL_NO_ACK) ) {
-					if(aggr_flag)
-					{
-						start_idx = (seq_no>=blk_ack_ssn) ? (seq_no-blk_ack_ssn) : (seq_no+((~blk_ack_ssn+1)&0x0FFF));
-						tx_fail = (((blk_ack_bitmap>>start_idx)&0x1)==0);
-					}
-					else
-					{
-						tx_fail = ((blk_ack_bitmap&0x1)==0);
-					}
+				// Aggregation packet
+				if(pkt_cnt > 1)
+				{
+					start_idx = (seq_no>=blk_ack_ssn) ? (seq_no-blk_ack_ssn) : (seq_no+((~blk_ack_ssn+1)&0x0FFF));
+					tx_fail = (((blk_ack_bitmap>>start_idx)&0x1)==0);
+					info->flags |= IEEE80211_TX_STAT_AMPDU;
+					info->status.ampdu_len = 1;
+					info->status.ampdu_ack_len = (tx_fail == true) ? 0 : 1;
 
-					if (tx_fail == false)
-						info->flags |= IEEE80211_TX_STAT_ACK;
-
-					if ((pkt_cnt > 1) && (info->flags & IEEE80211_TX_CTL_AMPDU))
-					{
-						info->flags |= IEEE80211_TX_STAT_AMPDU;
-						info->status.ampdu_len = 1;
-						info->status.ampdu_ack_len = (tx_fail == true) ? 0 : 1;
-					}
-					else
-					{
-						info->flags &= (~IEEE80211_TX_CTL_AMPDU);
-					}
-
-					// printk("%s openwifi_tx_interrupt: rate&try: %d %d %03x; %d %d %03x; %d %d %03x; %d %d %03x\n", sdr_compatible_str,
-					// 	info->status.rates[0].idx,info->status.rates[0].count,info->status.rates[0].flags,
-					// 	info->status.rates[1].idx,info->status.rates[1].count,info->status.rates[1].flags,
-					// 	info->status.rates[2].idx,info->status.rates[2].count,info->status.rates[2].flags,
-					// 	info->status.rates[3].idx,info->status.rates[3].count,info->status.rates[3].flags);
+					skb_pull(skb, LEN_MPDU_DELIM);
+					//skb_trim(skb, num_byte_pad_skb);
 				}
+				// Normal packet
+				else
+				{
+					tx_fail = ((blk_ack_bitmap&0x1)==0);
+					info->flags &= (~IEEE80211_TX_CTL_AMPDU);
+				}
+
+				if (tx_fail == false)
+					info->flags |= IEEE80211_TX_STAT_ACK;
 
 				info->status.rates[0].count = nof_retx + 1; //according to our test, the 1st rate is the most important. we only do retry on the 1st rate
 				info->status.rates[1].idx = -1;
@@ -1023,7 +1005,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 
 	// seems everything is ok. let's mark this pkt in bd descriptor ring
-	ring->bds[ring->bd_wr_idx].aggr_flag = use_ht_aggr;
 	ring->bds[ring->bd_wr_idx].seq_no = (sc&IEEE80211_SCTL_SEQ)>>4;
 	ring->bds[ring->bd_wr_idx].skb_linked = skb;
 	ring->bds[ring->bd_wr_idx].dma_mapping_addr = dma_mapping_addr;
