@@ -4,12 +4,12 @@
  *
  */
 
-#define TABLE_SIZE 256
+#define TABLE_SIZE 1024 //65536
 #define PACKET_BUFFER 64
 #define PB_EMPTY 0
 #define PB_PENDING 1
 
-#define VERSION 0.3
+#define VERSION 0.4
 
 struct rfFeatures_t {
     int64_t timestamp; /* int<64> */
@@ -83,16 +83,19 @@ struct rule_scope {
 };
 
 struct rule_metadata {
-    int time_added;     // Time of rule creation
+    long time_added;     // Time of rule creation
     int last_match;
-    int experience;     // Number of times a rule has been evaluated
+    int experience;     // Number of times a rule is in a match set
+    int source;         // Source of the rule - 0 = cover, 1 = GA
     int true_pos;       // Number of times a rule has correctly matched
     int true_neg;       // Number of times a rule has correctly NOT matched
     int false_pos;      // Number of times a rule has incorrectly matched
     int false_neg;      // Number of times a rule has incorrectly NOT matched
-    float sensitivity;  // TP /(TP+FN)
-    float specificity;  // TN /(TN+FP)
-    float accuracy;     // (TP+TN) / EXP  
+    float sensitivity;  // TP / (TP+FN)
+    float specificity;  // TN / (TN+FP)
+    float accuracy;     // (TP+TN) / EXP 
+    float f_score;      // TP / TP + 0.5(FP+FN)
+    float mcc;          // ((TP * TN) - (FP * FN)) / SQRT((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN))
 };
 
 struct classifier {
@@ -118,6 +121,7 @@ struct pbuffer
     struct packet_buffer buffer[PACKET_BUFFER];
 };
 
+/*
 struct match_set
 {
     uint16_t last_correct;
@@ -125,3 +129,4 @@ struct match_set
     uint16_t correct[TABLE_SIZE];
     uint16_t incorrect[TABLE_SIZE];
 };
+*/

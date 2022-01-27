@@ -235,8 +235,8 @@ int wp4_packet_in(u8 *p_uc_data, u16 wp4_ul_size, u8 port){
     {
         u8 hit;
         {
-            if (((headers.frameCtrl.frameType == 0x0) && ((headers.frameCtrl.subType == 0xa) || (headers.frameCtrl.subType == 0xc)))) 
-                                {
+            if (((headers.frameCtrl.frameType == 0x0) && ((headers.frameCtrl.subType == 0xa) || (headers.frameCtrl.subType == 0xc))))
+                {
                 /* construct key */
                 struct swtch_lookup_tbl_key key = {};
                 struct swtch_lookup_tbl_key wp4_zero = {};

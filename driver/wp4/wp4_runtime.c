@@ -24,8 +24,8 @@ limitations under the License.
 #include "wp4_runtime.h"
 
 // length of the two memory areas
-#define FTPAGES      16
-#define PBPAGES      16 
+#define FTPAGES      24
+#define PBPAGES      24 
 #ifndef VM_RESERVED
 # define  VM_RESERVED   (VM_DONTEXPAND | VM_DONTDUMP)
 #endif
