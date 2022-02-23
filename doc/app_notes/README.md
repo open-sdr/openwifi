@@ -10,6 +10,7 @@ Application notes collect many small topics about using openwifi in different sc
 - [Communication between two SDR boards under AP and client mode](ap-client-two-sdr.md)
 - [Communication between two SDR boards under ad-hoc mode](ad-hoc-two-sdr.md)
 - [From CSI (Channel State Information) to CSI (Chip State Information)](csi.md)
+- [WiFi CSI radar via self CSI capturing](radar-self-csi.md)
 - [Capture IQ sample, AGC gain, RSSI with many types of trigger condition](iq.md)
 - [Capture dual antenna TX/RX IQ for multi-purpose (capture collision)](iq_2ant.md)
 - [IEEE 802.11n (Wi-Fi 4)](ieee80211n.md)
