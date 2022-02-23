@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2019 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-One super power of the openwifi platform is "Full Duplex" which means that openwifi baseband can receive its own TX signal. Just like a radar! This brings a unique capability of "joint radar and communication" to openwifi. For instance, put two directional antennas to openwifi TX and RX, and the CSI (Channel State Information) of the self-TX signal will refect the change of the target object.
+One super power of the openwifi platform is "**Full Duplex**" which means that openwifi baseband can receive its own TX signal. Just like a radar! This brings a unique capability of "**joint radar and communication**" to openwifi. For instance, put two directional antennas to openwifi TX and RX, and the **CSI** (Channel State Information) of the self-TX signal will refect the change of the target object.
  ![](./openwifi-radar.jpg)
 
 ## Quick start
@@ -43,7 +43,7 @@ One super power of the openwifi platform is "Full Duplex" which means that openw
   The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see figures showing run-time **CSI** and **frequency offset**. Meanwhile the python script prints the **timestamp**.
   ![](./csi-screen-shot-radar.jpg)
   
-  While running, all CSI data is also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do CSI analysis offline. In this case, run test_side_info_file_display(0) in Matlab.
+  While running, all CSI data is also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do CSI analysis offline. In this case, run **test_side_info_file_display(0)** in Matlab.
   ![](./csi-screen-shot-radar-matlab.jpg)
   
 Please learn the python and Matlab script for CSI data structure per packet according to your requirement.
