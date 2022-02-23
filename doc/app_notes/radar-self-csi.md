@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2019 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-One super power of the openwifi platform is "Full Duplex" which means that openwifi baseband can receive its own TX signal. Just like a radar! This brings a unique capability of "joint radar and communication" to openwifi. For instance, put two directional antennas to openwifi TX and RX, and the CSI (Channel State Information) of the self-TX signal will refect the change of the target.
+One super power of the openwifi platform is "Full Duplex" which means that openwifi baseband can receive its own TX signal. Just like a radar! This brings a unique capability of "joint radar and communication" to openwifi. For instance, put two directional antennas to openwifi TX and RX, and the CSI (Channel State Information) of the self-TX signal will refect the change of the target object.
  ![](./openwifi-radar.jpg)
 
 ## Quick start
