@@ -181,7 +181,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 ## Easy Access and etc
 
 - FPGA and driver on board update scripts
-  - Setup [ftp server](https://help.ubuntu.com/lts/serverguide/ftp-server.html) on PC, allow anonymous and change ftp root directory to the openwifi directory.
+  - Setup [ftp server](https://ubuntu.com/server/docs/service-ftp) on PC, allow anonymous and change ftp root directory to the openwifi directory.
   - On board:
   ```
   ./sdcard_boot_update.sh $BOARD_NAME
