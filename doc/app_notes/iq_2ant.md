@@ -7,6 +7,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 Instead of [**normal IQ sample capture**](iq.md), this app note introduces how to enable the I/Q capture for dual antennas. Besides the I/Q from the main antenna (that is selected by baseband), the I/Q samples from the other antenna (monitoring antenna) is captured as well (coherently synchronized) in this dual antenna mode. You are suggested to read the [**normal IQ sample capture**](iq.md) to understand how we use the side channel to capture I/Q samples by different trigger conditions.
 
+(By default, openwifi Rx baseband is muted during self Tx, to unmute Rx baseband and capture self Tx signal you need to run "./sdrctl dev sdr0 set reg xpu 1 1" after the test running)
+
 This feature also support capturing TX I/Q (loopback) to test the baseband transmitter.
 
 - [[Quick start for collision capture](#Quick-start-for-collision-capture)]
