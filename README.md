@@ -73,7 +73,7 @@ zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kit
 [[Application notes](doc/app_notes/README.md)]
 
 ## Quick start
-- Burn openwifi board specific img file (from the table) into a SD card. To do this, program "Disks" in Ubuntu can be used (Install: "sudo apt install gnome-disk-utility"). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
+- Restore openwifi board specific img file (from the table) into a SD card. To do this, program "Disks" in Ubuntu can be used (Install: "sudo apt install gnome-disk-utility"). After restoring, the SD card should have two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
   - Copy files in **openwifi/board_name** to the base directory of BOOT partition.
   - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partition
 - Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on. 
