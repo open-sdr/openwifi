@@ -188,7 +188,7 @@ then
 fi
 sleep 0.5
 
-SUBMODULE=wp4-p4
+SUBMODULE=wp4_p4_drv
 if [ $last_input == "remote" ]
   then
     rm $SUBMODULE.ko

@@ -358,6 +358,9 @@ void train(void)
     int j;
     int mCount = 0;
     int cCount = 0;
+    float tpScore = 0;
+    float fnScore = 0;
+    float total_acc = 0;
 
     if (flow_table->last_entry < min_rule) // ==0
     {
@@ -383,10 +386,12 @@ void train(void)
                     cCount++;
                     if (debug_level > 1) printf("!!! True Positive !!! ");
                     flow_table->rule_data[j].true_pos++;
+                    tpScore += flow_table->rule_data[j].f_score;
                     if (debug_level > 1) print_rule(j);
                 } else {
                     if (debug_level > 1) printf("!!! False Negative !!! ");
                     flow_table->rule_data[j].false_neg++;
+                    fnScore += flow_table->rule_data[j].f_score;
                     if (debug_level > 1 ) print_rule(j);
                 }
                 // Update metadata
@@ -402,9 +407,10 @@ void train(void)
                  if ((flow_table->rule_data[j].experience > min_del_exp) && ((flow_table->rule_data[j].f_score < min_del_fs) || (flow_table->rule_data[j].f_score !=flow_table->rule_data[j].f_score))) delete_rule(j);  // If F-score is below min_del_fs or equals NaN
             }
         }
-        if (debug_level > 1) printf(" Total correct (TP+TN) / Class match count = %d/%d\n", cCount, mCount);
         if ((cCount < min_correct_match) && (mCount < max_class_rules) && (headers.mac80211.Addr2 != 0)) cover();
         if ((mCount > 10) && (mCount < max_class_rules)) genetic();
+        total_acc = (((float)tpScore + 0.01 / ((float)fnScore + (float)tpScore + 0.01)*100));
+        printf(" %012llX,%d,%d,%.2f,%.2f\n", headers.mac80211.Addr2, cCount, mCount,((float)cCount/(float)mCount)*100, total_acc);
         return;
     }
 }
@@ -458,7 +464,7 @@ void cover(void)
 
     if ((scope.headers_rfFeatures_rate_idx_exact == 0) && (scope.headers_rfFeatures_phaseOffset_max == 0) && (scope.headers_rfFeatures_phaseOffset_min == 0) && (scope.headers_rfFeatures_rssi_max == 0) && (scope.headers_rfFeatures_rssi_min == 0) && (scope.headers_rfFeatures_pilotOffset_max == 0) && (scope.headers_rfFeatures_pilotOffset_min == 0) && (scope.headers_rfFeatures_magSq_max == 0) && (scope.headers_rfFeatures_magSq_min == 0))
     {
-        if (debug_level > 1) printf("Full wild, no point adding this rule!\n");
+        if (debug_level > 0) printf("Full wild, no point adding this rule!\n");
         return; // Rule is all wildcards to no point adding to population
     }
     
@@ -483,7 +489,7 @@ void genetic(void)
         {
             if (class == 0)
             {
-                class = flow_table->key[j].headers_mac80211_Addr2_class;
+                if (headers.mac80211.Addr2 == flow_table->key[j].headers_mac80211_Addr2_class) class = flow_table->key[j].headers_mac80211_Addr2_class;
                 p1 = j;
             } else if (class == flow_table->key[j].headers_mac80211_Addr2_class)
             {
@@ -497,10 +503,10 @@ void genetic(void)
     
     if (p1 == -1 || p2 == -1) return;
     
-    if (debug_level > 1) printf("Parent 1 ");
-    if (debug_level > 1) print_rule(p1);
-    if (debug_level > 1) printf("Parent 2 ");
-    if (debug_level > 1) print_rule(p2);
+    if (debug_level > 0) printf("Parent 1 ");
+    if (debug_level > 0) print_rule(p1);
+    if (debug_level > 0) printf("Parent 2 ");
+    if (debug_level > 0) print_rule(p2);
     
     // Create offspring 1
     flow_table->key[flow_table->last_entry].headers_mac80211_Addr2_class = flow_table->key[p1].headers_mac80211_Addr2_class;
@@ -555,8 +561,8 @@ void genetic(void)
     flow_table->rule_data[flow_table->last_entry].f_score = 0;
     flow_table->rule_data[flow_table->last_entry].mcc = 0;
     
-    if (debug_level > 1 && debug_level < 10) printf("1 (%d-%d) - New rule added at", p1,p2);
-    if (debug_level > 1 && debug_level < 10) print_rule(flow_table->last_entry);
+    if (debug_level > 0) printf("1 (%d-%d) - New rule added at", p1,p2);
+    if (debug_level > 0) print_rule(flow_table->last_entry);
     flow_table->last_entry++;
 
     // Create offspring 2
@@ -612,8 +618,8 @@ void genetic(void)
     flow_table->rule_data[flow_table->last_entry].f_score = 0;
     flow_table->rule_data[flow_table->last_entry].mcc = 0;
     
-    if (debug_level > 1 && debug_level < 10) printf("2 (%d-%d) - New rule added at", p1,p2);
-    if (debug_level > 1 && debug_level < 10) print_rule(flow_table->last_entry);
+    if (debug_level > 0) printf("2 (%d-%d) - New rule added at", p1,p2);
+    if (debug_level > 0) print_rule(flow_table->last_entry);
     flow_table->last_entry++;
     
     return;
@@ -665,8 +671,8 @@ void add_rule(struct swtch_lookup_tbl_key *key, struct rule_scope *scope, int so
     flow_table->rule_data[flow_table->last_entry].f_score = 0;
     flow_table->rule_data[flow_table->last_entry].mcc = 0;
 
-    if (debug_level > 1) printf("New rule added at");
-    if (debug_level > 1) print_rule(flow_table->last_entry);
+    if (debug_level > 0) printf("New rule added at");
+    if (debug_level > 0) print_rule(flow_table->last_entry);
     flow_table->last_entry++;
     return;
 }
@@ -681,8 +687,8 @@ void clear_flowtable(void)
 
 void delete_rule(int rule)
 {
-    printf("Rule deleted at");
-    print_rule(rule);
+    if (debug_level > 0) printf("Rule deleted at");
+    if (debug_level > 0) print_rule(rule);
     memcpy(&flow_table->key[rule], &flow_table->key[flow_table->last_entry-1], sizeof(struct swtch_lookup_tbl_key));
     memcpy(&flow_table->scope[rule], &flow_table->scope[flow_table->last_entry-1], sizeof(struct rule_scope));
     memcpy(&flow_table->rule_data[rule], &flow_table->rule_data[flow_table->last_entry-1], sizeof(struct rule_metadata));

@@ -49,15 +49,27 @@ int mmap_kmem_pk_buffer(struct file *filp, struct vm_area_struct *vma);
 
 static int mmap_fault(struct vm_fault *vmf);
 
-void dump_rx_packet(u8 *ptr)
+void dump_rx_packet(u8 *ptr, u16 wp4_ul_size)
 {
     int i;
+    u16 j = wp4_ul_size;
+    if (j > 256) j = 256;
+
     printk("\n");
     printk("***********************************************\n");
-    for (i = 0; i < 64; i = i + 16)
+    for (i = 0; i < j; i = i + 16)
         printk("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", *(ptr + i),
         *(ptr + i + 1), *(ptr + i + 2) , *(ptr + i + 3) , *(ptr + i + 4), *(ptr + i + 5), *(ptr + i + 6), *(ptr + i + 7),
         *(ptr + i + 8), *(ptr + i + 9), *(ptr + i + 10) , *(ptr + i + 11) , *(ptr + i + 12), *(ptr + i + 13), *(ptr + i + 14), *(ptr + i + 15));
+    for (i = 0; i < j; i++)
+    {
+        if ((*(ptr + i) > 48) & (*(ptr + i) < 127)) 
+        {
+            printk("%c", *(ptr + i));
+        } else {
+            printk(".");
+        }   
+    }
     printk("***********************************************\n");
     //flow_table->last_entry++;
     //printk("iLastFlow %d\n", flow_table->last_entry);
@@ -237,10 +249,9 @@ void table_exit(void)
 }
 
 /*
- *  Packet poll request
+ *  To CPU
  *
- *  @param skb - pointer to the packet buffer.
- *  @param dev - pointer to the device.
+ *  @param headers - pointer to the packet headers.
  *
  */
 void to_cpu(struct Headers_t headers)
@@ -266,4 +277,41 @@ void to_cpu(struct Headers_t headers)
         pk_buffer->buffer[buffer_no].type = PB_PENDING;
         printk("WP4: Headers loaded into buffer %d \n", buffer_no);         
         return;
+}
+
+/*
+ *  State Update
+ *
+ *  @param state_input - new state.
+ *
+ */
+int state_update(int state_input)
+{
+    printk("WP4: State update called %d \n", state_input);
+    return 0;
+}
+
+/*
+ *  Device Identification
+ *
+ *  @param headers - pointer to the lookup key.
+ *
+ */
+int dev_ident(struct swtch_lookup_tbl_key *key)
+{
+    printk("WP4: dev_ident called. %d\n", key->headers_frameCtrl_subType_exact);
+    return 0;
+}
+
+/*
+ *  SSID Check
+ *
+ *  @param headers - pointer to the frame headers.
+ *
+ */
+int ssid_check(u8 *p_uc_data, u16 wp4_ul_size)
+{
+    printk("WP4: ssid_check called.\n");
+    //dump_rx_packet(p_uc_data, wp4_ul_size);
+    return 0;
 }

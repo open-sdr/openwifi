@@ -21,10 +21,13 @@ limitations under the License.
 #define PB_EMPTY 0
 #define PB_PENDING 1
 
-void dump_rx_packet(u8 *ptr);
+void dump_rx_packet(u8 *ptr, u16 wp4_ul_size);
 int table_init(void);
 void table_exit(void);
 void to_cpu(struct Headers_t headers);
+int state_update(int state_input);
+int dev_ident(struct swtch_lookup_tbl_key *key);
+int ssid_check(u8 *p_uc_data, u16 wp4_ul_size);
 
 struct packet_buffer
 {

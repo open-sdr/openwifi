@@ -61,7 +61,7 @@ extern struct openofdm_tx_driver_api *openofdm_tx_api;
 extern struct openofdm_rx_driver_api *openofdm_rx_api;
 extern struct xpu_driver_api *xpu_api;
 
-extern int wp4_packet_in(u8 *p_uc_data, u16 wp4_ul_size, u8 port);
+//extern int wp4_packet_in(u8 *p_uc_data, u16 wp4_ul_size, u8 port);
 
 static int test_mode = 0; // 0 normal; 1 rx test
 
@@ -72,12 +72,12 @@ MODULE_LICENSE("GPL v2");
 module_param(test_mode, int, 0);
 MODULE_PARM_DESC(myint, "test_mode. 0 normal; 1 rx test");
 
-static inline void dump_rx_packet(u8 *ptr)
+static inline void dump_rx_packet(u8 *ptr, u32 len)
 {
 	int i;
 
 	printk("\n###############################################\n");
-	for (i = 0; i < 64; i = i + 16)
+	for (i = 0; i < len; i = i + 16)
 		printk("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X\n", *(ptr + i),
 		*(ptr + i + 1), *(ptr + i + 2) , *(ptr + i + 3) , *(ptr + i + 4), *(ptr + i + 5), *(ptr + i + 6), *(ptr + i + 7),
 		*(ptr + i + 8), *(ptr + i + 9), *(ptr + i + 10) , *(ptr + i + 11) , *(ptr + i + 12), *(ptr + i + 13), *(ptr + i + 14), *(ptr + i + 15));
@@ -330,9 +330,9 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct sk_buff *skb;
 	struct ieee80211_hdr *hdr;
 	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0, ht_flag, short_gi, fc_di;
-	int aux_val_1, aux_val_2;
-	u32 aux_val_3, aux_val_4;
-	int lookup_out;
+	//int aux_val_1, aux_val_2;
+	//u32 aux_val_3, aux_val_4;
+	//int lookup_out;
 	// u32 dma_driver_buf_idx_mod;
 	u8 *pdata_tmp, fcs_ok, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
@@ -354,10 +354,10 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		len =          (*((u16*)(pdata_tmp+12)));
 		rate_idx =     (*((u16*)(pdata_tmp+14)));
 
-		aux_val_1 =	   (*((int*)(pdata_tmp+16)));	// phase_offset_full_out
-		aux_val_2 =	   (*((int*)(pdata_tmp+20)));	// pilot_phase_out
-		aux_val_3 =	   (*((u32*)(pdata_tmp+24)));	// mag_sq_out
-		aux_val_4 =	   (*((u32*)(pdata_tmp+28)));	// unused
+		rx_status.aux_1 =	   (*((int*)(pdata_tmp+16)));	// phase_offset_full_out
+		rx_status.aux_2 =	   (*((int*)(pdata_tmp+20)));	// pilot_phase_out
+		rx_status.aux_3 =	   (*((u32*)(pdata_tmp+24)));	// mag_sq_out
+		rx_status.aux_4 =	   (*((u32*)(pdata_tmp+28)));	// unused
 
 		len_overflow = (len>(RX_BD_BUF_SIZE-32)?true:false);
 		short_gi =     ((rate_idx&0x20)!=0);
@@ -411,18 +411,18 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			if (len>=28)
 				sc = hdr->seq_ctrl;
 
-			if ( addr1_low32!=0xffffffff || addr1_high16!=0xffff )
-				printk("%s openwifi_rx_interrupt:%4dbytes ht%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
+			printk("%s openwifi_rx_interrupt:%4dbytes ht%d %3dM FC:%04x DI:%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC:%04x fcs:%d buf_idx:%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 					sc, fcs_ok, target_buf_idx_old, signal);
 		}
 		
-		lookup_out = wp4_packet_in(pdata_tmp,len+32,0);
-		printk("!!** Lookup Return Value: %d", lookup_out);
-		printk("!!** Packet received: %4d bytes / ht: %d %3dM (%d) / FC: %04x / DI: %04x / addr1/2/3: %04x%08x/%04x%08x/%04x%08x / SC: %04x / fcs: %d / buf_idx: %d / RSSI: %d / Signal: %ddBm\n", len, ht_flag, wifi_rate_table[rate_idx], rate_idx, hdr->frame_control, hdr->duration_id, reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), sc, fcs_ok, target_buf_idx_old, rssi_val, signal);
-		printk("!!** Phase offset: %d / Pilot offset: %d / Mag Sq: %d / Unused: %08X\n",  aux_val_1, aux_val_2, aux_val_3, aux_val_4);
-		printk("!!** %lld,%04x%08x,%d,%d,%d,%d,%d,%d\n", (((u64)tsft_low) | (((u64)tsft_high)<<32)), reverse16(addr2_high16), reverse32(addr2_low32), aux_val_1, aux_val_2, aux_val_3, len, rssi_val, signal);
+		//printk("!!** Packet received: %4d bytes / ht: %d %3dM (%d) / FC: %04x / DI: %04x / addr1/2/3: %04x%08x/%04x%08x/%04x%08x / SC: %04x / fcs: %d / buf_idx: %d / RSSI: %d / Signal: %ddBm\n", len, ht_flag, wifi_rate_table[rate_idx], rate_idx, hdr->frame_control, hdr->duration_id, reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), sc, fcs_ok, target_buf_idx_old, rssi_val, signal);
+		printk("!!** Phase offset: %d / Pilot offset: %d / Mag Sq: %d / Unused: %08X\n",  rx_status.aux_1, rx_status.aux_2, rx_status.aux_3, rx_status.aux_4);
+		//printk("!!** %lld,%04x%08x,%d,%d,%d,%d,%d,%d\n", (((u64)tsft_low) | (((u64)tsft_high)<<32)), reverse16(addr2_high16), reverse32(addr2_low32), rx_status.aux_1, rx_status.aux_2, rx_status.aux_3, len, rssi_val, signal);
+		//dump_rx_packet(pdata_tmp+32, len);
+		//lookup_out = wp4_packet_in(pdata_tmp,len+32,0);
+		//printk("!!** WP4 Return Value: %d", lookup_out);
 
 		// priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
 		if (content_ok) {
@@ -1435,8 +1435,9 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
 
 	filter_flag = (*total_flags);
 
-	filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO);
-	//filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|MONITOR_ALL); // all pkt will be delivered to arm
+	//filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO);
+	filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|FIF_BCN_PRBRESP_PROMISC|FIF_OTHER_BSS|MY_BEACON);
+	
 
 	//if (priv->vif[0]->type == NL80211_IFTYPE_MONITOR)
 	if ((filter_flag&0xf0) == 0xf0) //FIF_BCN_PRBRESP_PROMISC/FIF_CONTROL/FIF_OTHER_BSS/FIF_PSPOLL are set means monitor mode	
@@ -1446,6 +1447,8 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
 
 	if ( !(filter_flag&FIF_BCN_PRBRESP_PROMISC) )
 		filter_flag = (filter_flag|MY_BEACON);
+
+	//filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|FIF_BCN_PRBRESP_PROMISC|FIF_OTHER_BSS|MONITOR_ALL); // all pkt will be delivered to arm
 
 	filter_flag = (filter_flag|FIF_PSPOLL);
 

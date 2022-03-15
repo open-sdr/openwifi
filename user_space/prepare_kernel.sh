@@ -66,6 +66,7 @@ make oldconfig && make prepare && make modules_prepare
 if [ "$#" -gt 3 ]; then
     if [ -f "$OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/arch/$ARCH_NAME/boot/$IMAGE_TYPE" ]; then
         echo "Kernel found! Skip the time costly Linux kernel compiling."
+        make modules
     else
         make -j12 $IMAGE_TYPE UIMAGE_LOADADDR=0x8000
         make modules
