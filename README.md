@@ -122,11 +122,13 @@ The board actually is an Linux/Ubuntu computer which is running **hostapd** to o
 
 Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to update the fpga bitstream on board.
 
-- Install Vivado/SDK 2018.3 (If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
+- Install Vivado/SDK 2018.3 (Vivado Design Suite - HLx Editions - 2018.3 Full Product Installation. If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
 - Setup environment variables (use absolute path):
   ```
-  export XILINX_DIR=your_Xilinx_directory
+  export XILINX_DIR=your_Xilinx_install_directory
+  (Example: export XILINX_DIR=/opt/Xilinx. The Xilinx directory should include sth like: Downloads, SDK, Vivado, xic)
   export OPENWIFI_HW_DIR=your_openwifi-hw_directory
+  (The directory where you store the open-sdr/openwifi-hw repo via git clone)
   export BOARD_NAME=your_board_name
   ```
 - Pick the FPGA bitstream from openwifi-hw, and generate BOOT.BIN and transfer it on board via ssh channel:
@@ -198,7 +200,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 - Insert the SD card to your Linux PC. Find out the mount point (that has two sub directories BOOT and rootfs), and setup environment variables (use absolute path):
   ```
   export SDCARD_DIR=sdcard_mount_point
-  export XILINX_DIR=your_Xilinx_directory
+  export XILINX_DIR=your_Xilinx_install_directory
   export OPENWIFI_HW_DIR=your_openwifi-hw_directory
   export BOARD_NAME=your_board_name
   ```
