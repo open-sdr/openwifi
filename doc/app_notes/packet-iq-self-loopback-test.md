@@ -33,7 +33,10 @@ want to understand openwifi side channel (for IQ and CSI) deeper.
   (Set 16 to register 8 -- set trigger condition to phy_tx_started signal from openofdm tx core)
   ./sdrctl dev sdr0 set reg xpu 1 1
   (Unmute the baseband self-receiving to receive openwifi own TX signal/packet -- important for self loopback!)
+  ./side_ch_ctl wh5h0
+  (Set the loopback mode to over-the-air)
   ./side_ch_ctl g0
+  (Relay the FPGA IQ capture to the host computer that will show the captured IQ later on)
   ```
   You should see on outputs like:
   ```
@@ -77,31 +80,29 @@ to do further offline analysis, or feed the IQ sample to the openwifi receiver s
   ```
   tcpdump -i sdr0
   ```
-  After the packet injection, you should see the packet information printed by tcpdump from self over-the-air loopback.
+  Run the packet injection "./inject_80211 -m n -r 5 -n 1 sdr0" in another session, you should see the packet information printed by tcpdump from self over-the-air loopback.
   
 - You can also see the openwifi printk message of Rx packet (self Tx looped back) while the packet comes to the openwifi Rx interrupt.
   A new ssh session to the board should be opened to do this before running the packet injection:
   ```
   cd openwifi
   ./sdrctl dev sdr0 set reg drv_rx 7 7
-  (Turn on the openwifi Rx printk logging)
+  ./sdrctl dev sdr0 set reg drv_tx 7 7
+  (Turn on the openwifi Tx/Rx printk logging)
   ```
-  After the packet injection, in the same ssh session run:
+  Stop the "./side_ch_ctl g0" in the very first ssh session. Run the packet injection, then check the printk message:
   ```
+  ./inject_80211/inject_80211 -m n -r 5 -n 1 sdr0
   dmesg
   ```
-  You should see the printk message from openwifi_rx_interrupt() function in the openwifi driver (sdr.c).
+  You should see the printk message of packet Tx and Rx from the openwifi driver (sdr.c).
 
 ## Self loopback config
 
 - By default, the loopback is via the air (from Tx antenna to Rx antenna). FPGA inernal loopback option is offered to have IQ sample and packet without 
-  any interference. To have FPGA internal loopback, run before the packet injection:
+  any interference. To have FPGA internal loopback, replace the "./side_ch_ctl wh5h0" during setup (the very 1st ssh session) by:
   ```
   ./side_ch_ctl wh5h4
-  ```
-  To change back to loopback over the air, run:
-  ```
-  ./side_ch_ctl wh5h0
   ```
 - Lots of packet injection parameters can be set: number of packet, type (data/control/management), MCS/rate, size, interval, etc. Please run the packet injection
   program without any arguments to see the help.
