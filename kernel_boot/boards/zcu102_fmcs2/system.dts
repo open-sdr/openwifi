@@ -2388,53 +2388,53 @@
 		#size-cells = <0x1>;
 		ranges = <0x0 0x0 0x0 0xffffffff>;
 
-		dma@9c400000 {
-			compatible = "adi,axi-dmac-1.00.a";
-			reg = <0x9c400000 0x10000>;
-			#dma-cells = <0x1>;
-			#clock-cells = <0x0>;
-			interrupts = <0x0 0x6d 0x0>;
-			clocks = <0x3 0x47>;
-			linux,phandle = <0x44>;
-			phandle = <0x44>;
+		// dma@9c400000 {
+		// 	compatible = "adi,axi-dmac-1.00.a";
+		// 	reg = <0x9c400000 0x10000>;
+		// 	#dma-cells = <0x1>;
+		// 	#clock-cells = <0x0>;
+		// 	interrupts = <0x0 0x6d 0x0>;
+		// 	clocks = <0x3 0x47>;
+		// 	linux,phandle = <0x44>;
+		// 	phandle = <0x44>;
 
-			adi,channels {
-				#size-cells = <0x0>;
-				#address-cells = <0x1>;
+		// 	adi,channels {
+		// 		#size-cells = <0x0>;
+		// 		#address-cells = <0x1>;
 
-				dma-channel@0 {
-					reg = <0x0>;
-					adi,source-bus-width = <0x40>;
-					adi,source-bus-type = <0x2>;
-					adi,destination-bus-width = <0x40>;
-					adi,destination-bus-type = <0x0>;
-				};
-			};
-		};
+		// 		dma-channel@0 {
+		// 			reg = <0x0>;
+		// 			adi,source-bus-width = <0x40>;
+		// 			adi,source-bus-type = <0x2>;
+		// 			adi,destination-bus-width = <0x40>;
+		// 			adi,destination-bus-type = <0x0>;
+		// 		};
+		// 	};
+		// };
 
-		dma@9c420000 {
-			compatible = "adi,axi-dmac-1.00.a";
-			reg = <0x9c420000 0x10000>;
-			#dma-cells = <0x1>;
-			#clock-cells = <0x0>;
-			interrupts = <0x0 0x6c 0x0>;
-			clocks = <0x3 0x47>;
-			linux,phandle = <0x46>;
-			phandle = <0x46>;
+		// dma@9c420000 {
+		// 	compatible = "adi,axi-dmac-1.00.a";
+		// 	reg = <0x9c420000 0x10000>;
+		// 	#dma-cells = <0x1>;
+		// 	#clock-cells = <0x0>;
+		// 	interrupts = <0x0 0x6c 0x0>;
+		// 	clocks = <0x3 0x47>;
+		// 	linux,phandle = <0x46>;
+		// 	phandle = <0x46>;
 
-			adi,channels {
-				#size-cells = <0x0>;
-				#address-cells = <0x1>;
+		// 	adi,channels {
+		// 		#size-cells = <0x0>;
+		// 		#address-cells = <0x1>;
 
-				dma-channel@0 {
-					reg = <0x0>;
-					adi,source-bus-width = <0x40>;
-					adi,source-bus-type = <0x0>;
-					adi,destination-bus-width = <0x40>;
-					adi,destination-bus-type = <0x2>;
-				};
-			};
-		};
+		// 		dma-channel@0 {
+		// 			reg = <0x0>;
+		// 			adi,source-bus-width = <0x40>;
+		// 			adi,source-bus-type = <0x0>;
+		// 			adi,destination-bus-width = <0x40>;
+		// 			adi,destination-bus-type = <0x2>;
+		// 		};
+		// 	};
+		// };
 
 		sdr: sdr {
 			compatible ="sdr,sdr";
@@ -2563,8 +2563,8 @@
 		cf-ad9361-lpc@99020000 {
 			compatible = "adi,axi-ad9361-6.00.a";
 			reg = <0x99020000 0x6000>;
-			dmas = <0x44 0x0>;
-			dma-names = "rx";
+			// dmas = <0x44 0x0>;
+			// dma-names = "rx";
 			spibus-connected = <0x45>;
 		};
 
@@ -2573,8 +2573,8 @@
 			reg = <0x99024000 0x1000>;
 			clocks = <0x45 0xd>;
 			clock-names = "sampl_clk";
-			dmas = <0x46 0x0>;
-			dma-names = "tx";
+			// dmas = <0x46 0x0>;
+			// dma-names = "tx";
 		};
 
 		/*axi-sysid-0@85000000 {
