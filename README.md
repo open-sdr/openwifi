@@ -73,7 +73,7 @@ zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kit
 [[Application notes](doc/app_notes/README.md)]
 
 ## Quick start
-- Burn openwifi board specific img file (from the table) into a SD card ("Open With Disk Image Writer". Or "dd" command after unzip). The SD card has two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
+- Restore openwifi board specific img file (from the table) into a SD card. To do this, program "Disks" in Ubuntu can be used (Install: "sudo apt install gnome-disk-utility"). After restoring, the SD card should have two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
   - Copy files in **openwifi/board_name** to the base directory of BOOT partition.
   - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partition
 - Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on. 
@@ -122,11 +122,13 @@ The board actually is an Linux/Ubuntu computer which is running **hostapd** to o
 
 Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to update the fpga bitstream on board.
 
-- Install Vivado/SDK 2018.3 (If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
+- Install Vivado/SDK 2018.3 (Vivado Design Suite - HLx Editions - 2018.3 Full Product Installation. If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
 - Setup environment variables (use absolute path):
   ```
-  export XILINX_DIR=your_Xilinx_directory
+  export XILINX_DIR=your_Xilinx_install_directory
+  (Example: export XILINX_DIR=/opt/Xilinx. The Xilinx directory should include sth like: Downloads, SDK, Vivado, xic)
   export OPENWIFI_HW_DIR=your_openwifi-hw_directory
+  (The directory where you store the open-sdr/openwifi-hw repo via git clone)
   export BOARD_NAME=your_board_name
   ```
 - Pick the FPGA bitstream from openwifi-hw, and generate BOOT.BIN and transfer it on board via ssh channel:
@@ -181,7 +183,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 ## Easy Access and etc
 
 - FPGA and driver on board update scripts
-  - Setup [ftp server](https://help.ubuntu.com/lts/serverguide/ftp-server.html) on PC, allow anonymous and change ftp root directory to the openwifi directory.
+  - Setup [ftp server](https://ubuntu.com/server/docs/service-ftp) on PC, allow anonymous and change ftp root directory to the openwifi directory.
   - On board:
   ```
   ./sdcard_boot_update.sh $BOARD_NAME
@@ -198,7 +200,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 - Insert the SD card to your Linux PC. Find out the mount point (that has two sub directories BOOT and rootfs), and setup environment variables (use absolute path):
   ```
   export SDCARD_DIR=sdcard_mount_point
-  export XILINX_DIR=your_Xilinx_directory
+  export XILINX_DIR=your_Xilinx_install_directory
   export OPENWIFI_HW_DIR=your_openwifi-hw_directory
   export BOARD_NAME=your_board_name
   ```

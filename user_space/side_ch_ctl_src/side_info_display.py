@@ -112,6 +112,7 @@ UDP_PORT = 4000         #Local port to listen
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 sock.bind((UDP_IP, UDP_PORT))
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 464) # for low latency. 464 is the minimum udp length in our case (CSI only)
 
 # align with side_ch_control.v and all related user space, remote files
 MAX_NUM_DMA_SYMBOL = 8192

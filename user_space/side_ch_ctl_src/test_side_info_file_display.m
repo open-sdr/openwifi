@@ -1,11 +1,17 @@
 % Xianjun Jiao. xianjun.jiao@imec.be; putaoshu@msn.com
 
-clear all;
+function test_side_info_file_display(num_eq, side_info_filename)
 close all;
 
-num_eq = 8;
+if exist('num_eq', 'var')==0 || isempty(num_eq)
+    num_eq = 8;
+end
 
-a = load('side_info.txt');
+if exist('side_info_filename', 'var')==0 || isempty(side_info_filename)
+    side_info_filename = 'side_info.txt';
+end
+
+a = load(side_info_filename);
 len_a = floor(length(a)/4)*4;
 a = a(1:len_a);
 
