@@ -17,7 +17,7 @@ One super power of the openwifi platform is "**Full Duplex**" which means that o
   ./fosdem.sh
   (After the AP started by above command, you can connect a WiFi client to this openwifi AP)
   (Or setup other scenario according to your requirement)
-  ./ifconfig
+  ifconfig
   (Write down the openwifi AP MAC address. For example 66:55:44:33:22:5a)
   insmod side_ch.ko num_eq_init=0
   ./side_ch_ctl wh1h4001
