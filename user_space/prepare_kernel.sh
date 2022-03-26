@@ -63,6 +63,7 @@ git reset --hard
 # git reset --hard 4e81f0927cfb2fada92fc762dbd65d002848405a
 cp $LINUX_KERNEL_CONFIG_FILE ./.config
 cp $OPENWIFI_DIR/driver/ad9361/ad9361.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361.c -rf
+cp $OPENWIFI_DIR/driver/ad9361/ad9361_conv.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361_conv.c -rf
 
 source $XILINX_DIR/SDK/2018.3/settings64.sh
 export ARCH=$ARCH_NAME
