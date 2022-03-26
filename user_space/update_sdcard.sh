@@ -166,10 +166,14 @@ sudo mkdir $SDCARD_DIR/rootfs/lib/modules
 
 sudo mkdir $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32
 sudo find $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32 -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32/ \;
+sudo mv $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32/xilinx_dma.ko $SDCARD_DIR/rootfs/root/openwifi/drv32
+sudo mv $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32/ad9361_drv.ko $SDCARD_DIR/rootfs/root/openwifi/drv32
 sudo rm $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME32/{axidmatest.ko,adi_axi_hdmi.ko} -f
 
 sudo mkdir $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64
 sudo find $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64 -name \*.ko -exec cp {} $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64/ \;
+sudo mv $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64/xilinx_dma.ko $SDCARD_DIR/rootfs/root/openwifi/drv64
+sudo mv $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64/ad9361_drv.ko $SDCARD_DIR/rootfs/root/openwifi/drv64
 sudo rm $SDCARD_DIR/rootfs/lib/modules/$LINUX_KERNEL_SRC_DIR_NAME64/{axidmatest.ko,adi_axi_hdmi.ko} -f
 
 sudo rm $SDCARD_DIR/rootfs/etc/udev/rules.d/70-persistent-net.rules
