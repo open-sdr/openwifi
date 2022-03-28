@@ -72,6 +72,9 @@ u32 gen_mpdu_crc(u8 *data_in, u32 num_bytes);
 u8 gen_mpdu_delim_crc(u16 m);
 static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant);
 static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_ant);
+int rssi_half_db_to_rssi_dbm(int rssi_half_db, int rssi_correction);
+int rssi_dbm_to_rssi_half_db(int rssi_dbm, int rssi_correction);
+int rssi_correction_lookup_table(u32 freq_MHz);
 
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
@@ -139,9 +142,32 @@ void openwifi_rfkill_exit(struct ieee80211_hw *hw)
 }
 //----------------rfkill end-----------------------------------
 
-//static void ad9361_rf_init(void);
-//static void ad9361_rf_stop(void);
-//static void ad9361_rf_calc_rssi(void);
+inline int rssi_dbm_to_rssi_half_db(int rssi_dbm, int rssi_correction)
+{
+	return ((rssi_correction+rssi_dbm)<<1);
+}
+
+inline int rssi_correction_lookup_table(u32 freq_MHz)
+{
+	int rssi_correction;
+
+	if (freq_MHz<2412) {
+		rssi_correction = 153;
+	} else if (freq_MHz<=2484) {
+		rssi_correction = 153;
+	} else if (freq_MHz<5160) {
+		rssi_correction = 153;
+	} else if (freq_MHz<=5240) {
+		rssi_correction = 145;
+	} else if (freq_MHz<=5320) {
+		rssi_correction = 148;
+	} else {
+		rssi_correction = 148;
+	}
+
+	return rssi_correction;
+}
+
 static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				  struct ieee80211_conf *conf)
 {
@@ -351,6 +377,19 @@ static int rx_dma_setup(struct ieee80211_hw *dev){
 
 	dma_async_issue_pending(priv->rx_chan);
 	return(0);
+}
+
+inline int rssi_half_db_to_rssi_dbm(int rssi_half_db, int rssi_correction) 
+{
+	int rssi_db, rssi_dbm;
+
+	rssi_db = (rssi_half_db>>1);
+
+	rssi_dbm = rssi_db - rssi_correction;
+	
+	rssi_dbm = (rssi_dbm < (-128)? (-128) : rssi_dbm);
+	
+	return rssi_dbm;
 }
 
 static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
@@ -1898,8 +1937,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	// if (test_mode&2)
 	// 	TX_OFFSET_TUNING_ENABLE = false;
 
-	priv->last_auto_fpga_lbt_th = 134;//just to avoid uninitialized
-	priv->rssi_correction = 43;//this will be set in real-time by _rf_set_channel()
+	priv->rssi_correction = rssi_correction_lookup_table(5220);//5220MHz. this will be set in real-time by _rf_set_channel()
+	priv->last_auto_fpga_lbt_th = rssi_dbm_to_rssi_half_db(-78, priv->rssi_correction);//-78dBm. a magic value. just to avoid uninitialized
 
 	//priv->rf_bw = 20000000; // Signal quality issue! NOT use for now. 20MHz or 40MHz. 40MHz need ddc/duc. 20MHz works in bypass mode
 	priv->rf_bw = 40000000; // 20MHz or 40MHz. 40MHz need ddc/duc. 20MHz works in bypass mode
