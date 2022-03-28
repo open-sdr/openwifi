@@ -243,9 +243,11 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 
 	if(fpga_type == LARGE_FPGA)	// LARGE FPGA: MAX_NUM_DMA_SYMBOL = 8192
-		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+		// tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-(210*5)); // threshold is for room to hold the last 4 packets from 4 queue before stop
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-(210*2));
 	else if(fpga_type == SMALL_FPGA)	// SMALL FPGA: MAX_NUM_DMA_SYMBOL = 4096
-		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+		// tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-(210*5)); // threshold is for room to hold the last 4 packets from 4 queue before stop
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-(210*2));
 
 	switch(mode)
 	{
