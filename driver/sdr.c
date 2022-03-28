@@ -452,7 +452,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			if (skb) {
 				skb_put_data(skb,pdata_tmp+16,len);
 
-				rx_status.antenna = 0;
+				rx_status.antenna = priv->runtime_rx_ant_cfg;
 				// def in ieee80211_rate openwifi_rates 0~11. 0~3 11b(1M~11M), 4~11 11a/g(6M~54M)
 				rx_status.rate_idx = wifi_rate_table_mapping[rate_idx];
 				rx_status.signal = signal;
@@ -591,6 +591,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 				info->status.rates[1].idx = -1;
 				info->status.rates[2].idx = -1;
 				info->status.rates[3].idx = -1;//in mac80211.h: #define IEEE80211_TX_MAX_RATES	4
+				info->status.antenna = priv->runtime_tx_ant_cfg;
 
 				if ( tx_fail && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
 					printk("%s openwifi_tx_interrupt: WARNING pkt_no %d/%d tx_result [nof_retx %d pass %d] prio%d wr%d rd%d\n", sdr_compatible_str, i, pkt_cnt, nof_retx+1, !tx_fail, prio, ring->bd_wr_idx, ring->bd_rd_idx);
@@ -1045,6 +1046,113 @@ openwifi_tx_early_out:
 	// printk("%s openwifi_tx: WARNING openwifi_tx_early_out phy_tx_sn %d queue %d\n", sdr_compatible_str,priv->phy_tx_sn,queue_idx);
 }
 
+static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant)
+{
+	struct openwifi_priv *priv = dev->priv;
+	u8 fpga_tx_ant_setting, target_rx_ant;
+	u32 atten_mdb_tx0, atten_mdb_tx1;
+	struct ctrl_outs_control ctrl_out;
+	int ret;
+	
+	printk("%s openwifi_set_antenna: tx_ant%d rx_ant%d\n",sdr_compatible_str,tx_ant,rx_ant);
+
+	if (tx_ant >= 4 || tx_ant == 0) {
+		return -EINVAL;
+	} else if (rx_ant >= 3 || rx_ant == 0) {
+		return -EINVAL;
+	}
+
+	fpga_tx_ant_setting = ((tx_ant<=2)?(tx_ant):(tx_ant+16));
+	target_rx_ant = ((rx_ant&1)?0:1);
+
+	// try rf chip setting firstly, only update internal state variable when rf chip succeed
+	atten_mdb_tx0 = ((tx_ant&1)?(AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]):AD9361_RADIO_OFF_TX_ATT);
+	atten_mdb_tx1 = ((tx_ant&2)?(AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]):AD9361_RADIO_OFF_TX_ATT);
+	ret = ad9361_set_tx_atten(priv->ad9361_phy, atten_mdb_tx0, true, false, true);
+	if (ret < 0) {
+		printk("%s openwifi_set_antenna: WARNING ad9361_set_tx_atten ant0 %d FAIL!\n",sdr_compatible_str, atten_mdb_tx0);
+		return -EINVAL;
+	} else {
+		printk("%s openwifi_set_antenna: ad9361_set_tx_atten ant0 %d OK\n",sdr_compatible_str, atten_mdb_tx0);
+	}
+	ret = ad9361_set_tx_atten(priv->ad9361_phy, atten_mdb_tx1, false, true, true);
+	if (ret < 0) {
+		printk("%s openwifi_set_antenna: WARNING ad9361_set_tx_atten ant1 %d FAIL!\n",sdr_compatible_str, atten_mdb_tx1);
+		return -EINVAL;
+	} else {
+		printk("%s openwifi_set_antenna: ad9361_set_tx_atten ant1 %d OK\n",sdr_compatible_str, atten_mdb_tx1);
+	}
+
+	ctrl_out.en_mask = priv->ctrl_out.en_mask;
+	ctrl_out.index = (target_rx_ant==0?AD9361_CTRL_OUT_INDEX_ANT0:AD9361_CTRL_OUT_INDEX_ANT1);
+	ret = ad9361_ctrl_outs_setup(priv->ad9361_phy, &(ctrl_out));
+	if (ret < 0) {
+		printk("%s openwifi_set_antenna: WARNING ad9361_ctrl_outs_setup en_mask 0x%02x index 0x%02x FAIL!\n",sdr_compatible_str, ctrl_out.en_mask, ctrl_out.index);
+		return -EINVAL;
+	} else {
+		printk("%s openwifi_set_antenna: ad9361_ctrl_outs_setup en_mask 0x%02x index 0x%02x\n",sdr_compatible_str, ctrl_out.en_mask, ctrl_out.index);
+	}
+
+	tx_intf_api->TX_INTF_REG_ANT_SEL_write(fpga_tx_ant_setting);
+	ret = tx_intf_api->TX_INTF_REG_ANT_SEL_read();
+	if (ret != fpga_tx_ant_setting) {
+		printk("%s openwifi_set_antenna: WARNING TX_INTF_REG_ANT_SEL_write target %d read back %d\n",sdr_compatible_str, fpga_tx_ant_setting, ret);
+		return -EINVAL;
+	} else {
+		printk("%s openwifi_set_antenna: TX_INTF_REG_ANT_SEL_write value %d\n",sdr_compatible_str, ret);
+	}
+
+	rx_intf_api->RX_INTF_REG_ANT_SEL_write(target_rx_ant);
+	ret = rx_intf_api->RX_INTF_REG_ANT_SEL_read();
+	if (ret != target_rx_ant) {
+		printk("%s openwifi_set_antenna: WARNING RX_INTF_REG_ANT_SEL_write target %d read back %d\n",sdr_compatible_str, target_rx_ant, ret);
+		return -EINVAL;
+	} else {
+		printk("%s openwifi_set_antenna: RX_INTF_REG_ANT_SEL_write value %d\n",sdr_compatible_str, ret);
+	}
+
+	// update internal state variable
+	priv->runtime_tx_ant_cfg = tx_ant;
+	priv->runtime_rx_ant_cfg = rx_ant;
+
+	if (TX_OFFSET_TUNING_ENABLE)
+		priv->tx_intf_cfg = ((tx_ant&1)?TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0:TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1);//NO USE
+	else {
+		if (tx_ant == 3)
+			priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH;
+		else
+			priv->tx_intf_cfg = ((tx_ant&1)?TX_INTF_BW_20MHZ_AT_0MHZ_ANT0:TX_INTF_BW_20MHZ_AT_0MHZ_ANT1);
+	}
+
+	priv->rx_intf_cfg = (target_rx_ant==0?RX_INTF_BW_20MHZ_AT_0MHZ_ANT0:RX_INTF_BW_20MHZ_AT_0MHZ_ANT1);
+	priv->ctrl_out.index=ctrl_out.index;
+
+	priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
+	priv->rx_freq_offset_to_lo_MHz = rx_intf_fo_mapping[priv->rx_intf_cfg];
+
+	return 0;
+}
+static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_ant)
+{
+	struct openwifi_priv *priv = dev->priv;
+
+	*tx_ant = priv->runtime_tx_ant_cfg;
+	*rx_ant = priv->runtime_rx_ant_cfg;
+
+	printk("%s openwifi_get_antenna: tx_ant%d rx_ant%d\n",sdr_compatible_str, *tx_ant, *rx_ant);
+
+	printk("%s openwifi_get_antenna: drv tx cfg %d offset %d drv rx cfg %d offset %d drv ctrl_out sel %x\n",sdr_compatible_str,
+	priv->tx_intf_cfg, priv->tx_freq_offset_to_lo_MHz, priv->rx_intf_cfg, priv->rx_freq_offset_to_lo_MHz, priv->ctrl_out.index);
+	
+	printk("%s openwifi_get_antenna: fpga tx sel %d rx sel %d\n", sdr_compatible_str, 
+	tx_intf_api->TX_INTF_REG_ANT_SEL_read(), rx_intf_api->RX_INTF_REG_ANT_SEL_read());
+	
+	printk("%s openwifi_get_antenna: rf tx att0 %d tx att1 %d ctrl_out sel %x\n", sdr_compatible_str, 
+	ad9361_get_tx_atten(priv->ad9361_phy, 1), ad9361_get_tx_atten(priv->ad9361_phy, 2), ad9361_spi_read(priv->ad9361_phy->spi, REG_CTRL_OUTPUT_POINTER));
+
+	return 0;
+}
+
 static int openwifi_start(struct ieee80211_hw *dev)
 {
 	struct openwifi_priv *priv = dev->priv;
@@ -1061,34 +1169,14 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_GIT_REV] = GIT_REV;
 
 	//turn on radio
-	if (priv->tx_intf_cfg == TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1) {
-		ad9361_set_tx_atten(priv->ad9361_phy, AD9361_RADIO_ON_TX_ATT, false, true, true); // AD9361_RADIO_ON_TX_ATT 3000 means 3dB, 0 means 0dB
-		reg = ad9361_get_tx_atten(priv->ad9361_phy, 2);
-	} else {
-		ad9361_set_tx_atten(priv->ad9361_phy, AD9361_RADIO_ON_TX_ATT, true, false, true); // AD9361_RADIO_ON_TX_ATT 3000 means 3dB, 0 means 0dB
-		reg = ad9361_get_tx_atten(priv->ad9361_phy, 1);
-	}
-	if (reg == AD9361_RADIO_ON_TX_ATT) {
+	openwifi_set_antenna(dev, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
+	reg = ad9361_get_tx_atten(priv->ad9361_phy, ((priv->runtime_tx_ant_cfg==1 || priv->runtime_tx_ant_cfg==3)?1:2));
+	if (reg == (AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT])) {
 		priv->rfkill_off = 1;// 0 off, 1 on
 		printk("%s openwifi_start: rfkill radio on\n",sdr_compatible_str);
 	}
 	else
-		printk("%s openwifi_start: WARNING rfkill radio on failed. tx att read %d require %d\n",sdr_compatible_str, reg, AD9361_RADIO_ON_TX_ATT);
-
-	if (priv->rx_intf_cfg == RX_INTF_BW_20MHZ_AT_0MHZ_ANT0)
-		priv->ctrl_out.index=0x16;
-	else
-		priv->ctrl_out.index=0x17;
-
-	ret = ad9361_ctrl_outs_setup(priv->ad9361_phy, &(priv->ctrl_out));
-	if (ret < 0) {
-		printk("%s openwifi_start: WARNING ad9361_ctrl_outs_setup %d\n",sdr_compatible_str, ret);
-	} else {
-		printk("%s openwifi_start: ad9361_ctrl_outs_setup en_mask 0x%02x index 0x%02x\n",sdr_compatible_str, priv->ctrl_out.en_mask, priv->ctrl_out.index);
-	}
-
-	priv->rx_freq_offset_to_lo_MHz = rx_intf_fo_mapping[priv->rx_intf_cfg];
-	priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
+		printk("%s openwifi_start: WARNING rfkill radio on failed. tx att read %d require %d\n",sdr_compatible_str, reg, AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]);
 
 	rx_intf_api->hw_init(priv->rx_intf_cfg,8,8);
 	tx_intf_api->hw_init(priv->tx_intf_cfg,8,8,priv->fpga_type);
@@ -1827,23 +1915,33 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	} else {
 		printk("%s openwifi_dev_probe: Warning! priv->rf_bw == %dHz (should be 20000000 or 40000000)\n",sdr_compatible_str, priv->rf_bw);
 	}
-	priv->rx_freq_offset_to_lo_MHz = rx_intf_fo_mapping[priv->rx_intf_cfg];
-	priv->tx_freq_offset_to_lo_MHz = tx_intf_fo_mapping[priv->tx_intf_cfg];
+
 	printk("%s openwifi_dev_probe: test_mode %d\n", sdr_compatible_str, test_mode);
 
+	priv->runtime_tx_ant_cfg = ((priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT0 || priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0)?1:(priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH?3:2));
+	priv->runtime_rx_ant_cfg = (priv->rx_intf_cfg==RX_INTF_BW_20MHZ_AT_0MHZ_ANT0?1:2);
+
+	priv->ctrl_out.en_mask=AD9361_CTRL_OUT_EN_MASK;
+	priv->ctrl_out.index  =(priv->rx_intf_cfg==RX_INTF_BW_20MHZ_AT_0MHZ_ANT0?AD9361_CTRL_OUT_INDEX_ANT0:AD9361_CTRL_OUT_INDEX_ANT1);
+
 	//let's by default turn radio on when probing
-	if (priv->tx_intf_cfg == TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1) {
-		ad9361_set_tx_atten(priv->ad9361_phy, AD9361_RADIO_ON_TX_ATT, false, true, true); // AD9361_RADIO_ON_TX_ATT 3000 means 3dB, 0 means 0dB
-		reg = ad9361_get_tx_atten(priv->ad9361_phy, 2);
-	} else {
-		ad9361_set_tx_atten(priv->ad9361_phy, AD9361_RADIO_ON_TX_ATT, true, false, true); // AD9361_RADIO_ON_TX_ATT 3000 means 3dB, 0 means 0dB
-		reg = ad9361_get_tx_atten(priv->ad9361_phy, 1);
+	err = openwifi_set_antenna(dev, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
+	if (err) {
+		printk("%s openwifi_dev_probe: WARNING openwifi_set_antenna FAIL %d\n",sdr_compatible_str, err);
+		err = -EIO;
+		goto err_free_dev;
 	}
-	if (reg == AD9361_RADIO_ON_TX_ATT) {
+	reg = ad9361_spi_read(priv->ad9361_phy->spi, REG_CTRL_OUTPUT_POINTER);
+	printk("%s openwifi_dev_probe: ad9361_spi_read REG_CTRL_OUTPUT_POINTER 0x%02x\n",sdr_compatible_str, reg);
+	reg = ad9361_spi_read(priv->ad9361_phy->spi, REG_CTRL_OUTPUT_ENABLE);
+	printk("%s openwifi_dev_probe: ad9361_spi_read REG_CTRL_OUTPUT_ENABLE 0x%02x\n",sdr_compatible_str, reg);
+
+	reg = ad9361_get_tx_atten(priv->ad9361_phy, ((priv->runtime_tx_ant_cfg==1 || priv->runtime_tx_ant_cfg==3)?1:2));
+	if (reg == (AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT])) {
 		priv->rfkill_off = 1;// 0 off, 1 on
 		printk("%s openwifi_dev_probe: rfkill radio on\n",sdr_compatible_str);
 	} else
-		printk("%s openwifi_dev_probe: WARNING rfkill radio on failed. tx att read %d require %d\n",sdr_compatible_str, reg, AD9361_RADIO_ON_TX_ATT);
+		printk("%s openwifi_dev_probe: WARNING rfkill radio on failed. tx att read %d require %d\n",sdr_compatible_str, reg, AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]);
 
 	memset(priv->drv_rx_reg_val,0,sizeof(priv->drv_rx_reg_val));
 	memset(priv->drv_tx_reg_val,0,sizeof(priv->drv_tx_reg_val));
@@ -1932,6 +2030,9 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 			BIT(NL80211_IFTYPE_OCB);
 	dev->wiphy->iface_combinations = &openwifi_if_comb;
 	dev->wiphy->n_iface_combinations = 1;
+
+	dev->wiphy->available_antennas_tx = NUM_TX_ANT_MASK;
+	dev->wiphy->available_antennas_rx = NUM_RX_ANT_MASK;
 
 	dev->wiphy->regulatory_flags = (REGULATORY_STRICT_REG|REGULATORY_CUSTOM_REG); // use our own config within strict regulation
 	//dev->wiphy->regulatory_flags = REGULATORY_CUSTOM_REG; // use our own config

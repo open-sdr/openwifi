@@ -72,6 +72,9 @@ union u16_byte2 {
 #define MAX_NUM_LED 4
 #define OPENWIFI_LED_MAX_NAME_LEN 32
 
+#define NUM_TX_ANT_MASK 3
+#define NUM_RX_ANT_MASK 3
+
 // -------------sdrctl reg category-----------------
 enum sdrctl_reg_cat {
 	SDRCTL_REG_CAT_NO_USE = 0,
@@ -136,6 +139,9 @@ enum sdrctl_reg_cat {
 
 #define AD9361_RADIO_OFF_TX_ATT 89750 //please align with ad9361.c
 #define AD9361_RADIO_ON_TX_ATT 000    //please align with rf_init.sh
+#define AD9361_CTRL_OUT_EN_MASK (0xFF) 
+#define AD9361_CTRL_OUT_INDEX_ANT0 (0x16) 
+#define AD9361_CTRL_OUT_INDEX_ANT1 (0x17) 
 
 #define SDR_SUPPORTED_FILTERS	\
 	(FIF_ALLMULTI |				\
@@ -386,6 +392,8 @@ struct openwifi_priv {
 	struct ieee80211_supported_band band_2GHz;
 	struct ieee80211_supported_band band_5GHz;
 	bool rfkill_off;
+	u8 runtime_tx_ant_cfg;
+	u8 runtime_rx_ant_cfg;
 
 	int rssi_correction; // dynamic RSSI correction according to current channel in _rf_set_channel()
 	
