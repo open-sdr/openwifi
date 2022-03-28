@@ -247,6 +247,12 @@ then
   return
 fi
 
+if ps -p $(</tmp/check_calib_inf.pid) > /dev/null
+then
+   kill $(</tmp/check_calib_inf.pid)
+fi
+./check_calib_inf.sh
+
 echo the end
 dmesg
 
