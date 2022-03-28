@@ -215,25 +215,12 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				priv->band = BAND_2_4GHZ;
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
 			}
-			// //xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((45+2)*10)<<16) | 10 ); // high 16 bits to cover sig valid of ACK packet, low 16 bits is adjustment of fcs valid waiting time.  let's add 2us for those device that is really "slow"!
-			// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((45+2+2)*10)<<16) | 10 );//add 2us for longer fir. BUT corrding to FPGA probing test, we do not need this
-			// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 0 );
-			// tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(((10)*10)<<16);
-		}
-		else {
-			//priv->slot_time = 9; //default slot time of OFDM PHY (OFDM by default means 5GHz)
-			// xpu_api->XPU_REG_BAND_CHANNEL_write(BAND_5_8GHZ<<16);
+		} else {
 			if (priv->band != BAND_5_8GHZ) {
 				priv->band = BAND_5_8GHZ;
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
 			}
 		}
-		//printk("%s ad9361_rf_set_channel %dM rssi_correction %d\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction);
-		// //-- use less
-		//clk_prepare_enable(priv->ad9361_phy->clks[RX_RFPLL]);
-		//printk("%s ad9361_rf_set_channel tune to %d read back %llu\n", sdr_compatible_str,conf->chandef.chan->center_freq,2*priv->ad9361_phy->state->current_rx_lo_freq);
-		//ad9361_set_trx_clock_chain_default(priv->ad9361_phy);
-		//printk("%s ad9361_rf_set_channel tune to %d read back %llu\n", sdr_compatible_str,conf->chandef.chan->center_freq,2*priv->ad9361_phy->state->current_rx_lo_freq);
 		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d (auto %d static %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,auto_lbt_th,static_lbt_th);
 	}
 }
