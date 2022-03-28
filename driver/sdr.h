@@ -72,6 +72,20 @@ union u16_byte2 {
 #define MAX_NUM_LED 4
 #define OPENWIFI_LED_MAX_NAME_LEN 32
 
+// -------------sdrctl reg category-----------------
+enum sdrctl_reg_cat {
+	SDRCTL_REG_CAT_NO_USE = 0,
+	SDRCTL_REG_CAT_RF,
+	SDRCTL_REG_CAT_RX_INTF,
+	SDRCTL_REG_CAT_TX_INTF,
+	SDRCTL_REG_CAT_RX,
+	SDRCTL_REG_CAT_TX,
+	SDRCTL_REG_CAT_XPU,
+	SDRCTL_REG_CAT_DRV_RX,
+	SDRCTL_REG_CAT_DRV_TX,
+	SDRCTL_REG_CAT_DRV_XPU,
+};
+
 // ------------ software reg definition ------------
 #define MAX_NUM_DRV_REG            8
 #define DRV_TX_REG_IDX_RATE        0
