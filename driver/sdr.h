@@ -436,6 +436,7 @@ struct openwifi_priv {
 	u32 drv_rx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_tx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_xpu_reg_val[MAX_NUM_DRV_REG];
+	int rf_reg_val[MAX_NUM_RF_REG];
 	int last_auto_fpga_lbt_th;
 	// u8 num_led;
 	// struct led_classdev *led[MAX_NUM_LED];//zc706 has 4 user leds. please find openwifi_dev_probe to see how we get them.
