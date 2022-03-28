@@ -317,7 +317,31 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 		tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write(420);
 		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x4); //.src_sel(slv_reg14[2:0]), 0-s00_axis_tlast,1-ap_start,2-tx_start_from_acc,3-tx_end_from_acc,4-tx_try_complete from xpu
 		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30004); //disable interrupt
-		tx_intf_api->TX_INTF_REG_BB_GAIN_write(100);
+
+		// tx_intf_api->TX_INTF_REG_BB_GAIN_write(100); // value for old design with DUC (FIR + MIXER) -- obsolete due to DUC removal
+		// New test on new design (unified RF BB clock; No DUC)
+		// 5220MHz bb_gain power   EVM
+        //         400     -6dBm   -34/35
+        //         350     -7.2dBm -34/35/36
+        //         300     -8.5dBm -35/36/37 EVM
+
+        // 2437MHz bb_gain power    EVM
+        //         400     -3.2dBm -36/37
+        //         350     -4.4dBm -37/38/39
+        //         300     -5.7dBm -39/40
+        //         less    less    -40/41/42!
+
+		// According to above and more detailed test:
+		// Need to be 290. Otherwise some ofdm symbol's EVM jump high, when there are lots of ofdm symbols in one WiFi packet
+
+		// 2022-03-04 detailed test result:
+		// bb_gain 290 work for 11a/g all mcs
+		// bb_gain 290 work for 11n mcs 1~7 (aggr and non aggr)
+		// bb_gain 290 destroy  11n mcs 0 long (MTU 1500) tx pkt due to high PAPR (Peak to Average Power Ratio)!
+		// bb_gain 250 work for 11n mcs 0
+		// So, a conservative bb_gain 250 should be used
+		tx_intf_api->TX_INTF_REG_BB_GAIN_write(250);
+
 		tx_intf_api->TX_INTF_REG_ANT_SEL_write(ant_sel);
 		tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write((1<<3)|(2<<4));
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0x434);
