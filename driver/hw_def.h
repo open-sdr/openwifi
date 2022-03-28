@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: 2019 UGent
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+// #ifndef __HW_DEF_H_FILE__
+// #define __HW_DEF_H_FILE__
 const char *sdr_compatible_str = "sdr,sdr";
 
 enum openwifi_fpga_type {
@@ -62,7 +64,7 @@ enum tx_intf_mode {
 	TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1,
 };
 
-const int tx_intf_fo_mapping[] = {0, 0, 0, 0,-10,10,-10,10};
+const int tx_intf_fo_mapping[] = {0, 0, 0, 0, 0, -10, 10, -10, 10};
 const u32 dma_symbol_fifo_size_hw_queue[] = {4*1024, 4*1024, 4*1024, 4*1024}; // !!!make sure align to fifo in tx_intf_s_axis.v
 
 struct tx_intf_driver_api {
@@ -422,3 +424,5 @@ struct xpu_driver_api {
 
 	void (*XPU_REG_MAC_ADDR_write)(u8 *mac_addr);
 };
+
+// #endif
