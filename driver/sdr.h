@@ -355,6 +355,7 @@ struct openwifi_priv {
 	int tx_freq_offset_to_lo_MHz;
 	u32 rf_bw;
 	u32 actual_rx_lo;
+	u32 actual_tx_lo;
 
 	struct ieee80211_rate rates_2GHz[12];
 	struct ieee80211_rate rates_5GHz[12];

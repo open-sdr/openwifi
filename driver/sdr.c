@@ -143,6 +143,7 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 
 	if (change_flag) {
 		priv->actual_rx_lo = actual_rx_lo;
+		priv->actual_tx_lo = actual_tx_lo;
 
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
 
@@ -1704,6 +1705,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
 	// //-------------find ad9361-phy driver for lo/channel control---------------
 	priv->actual_rx_lo = 0;
+	priv->actual_tx_lo = 0;
 	tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
 	if (tmp_dev == NULL) {
 		printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);
