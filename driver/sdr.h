@@ -86,20 +86,28 @@ enum sdrctl_reg_cat {
 	SDRCTL_REG_CAT_DRV_XPU,
 };
 
-// ------------ software reg definition ------------
+// ------------ software and RF reg definition ------------
 #define MAX_NUM_DRV_REG            8
 #define DRV_TX_REG_IDX_RATE        0
-#define DRV_TX_REG_IDX_FREQ_BW_CFG 1
+#define DRV_TX_REG_IDX_RATE_HT     1
+#define DRV_TX_REG_IDX_RATE_VHT    2
+#define DRV_TX_REG_IDX_RATE_HE     3
+#define DRV_TX_REG_IDX_ANT_CFG     4
 #define DRV_TX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
-#define DRV_RX_REG_IDX_FREQ_BW_CFG 1
-#define DRV_RX_REG_IDX_EXTRA_FO    2
+#define DRV_RX_REG_IDX_DEMOD_TH    0
+#define DRV_RX_REG_IDX_ANT_CFG     4
 #define DRV_RX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
 #define DRV_XPU_REG_IDX_LBT_TH     0
 #define DRV_XPU_REG_IDX_GIT_REV    (MAX_NUM_DRV_REG-1)
 
-// ------end of software reg definition ------------
+#define MAX_NUM_RF_REG             8
+#define RF_TX_REG_IDX_ATT          0
+#define RF_TX_REG_IDX_FO           1
+#define RF_RX_REG_IDX_GAIN         4
+#define RF_RX_REG_IDX_FO           5
+// ------end of software and RF reg definition ------------
 
 #define MAX_NUM_VIF 4
 
