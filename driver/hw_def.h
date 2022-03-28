@@ -75,13 +75,12 @@ struct tx_intf_driver_api {
 	void (*reg_write)(u32 reg, u32 value);
 
 	u32 (*TX_INTF_REG_MULTI_RST_read)(void);
-	u32 (*TX_INTF_REG_MIXER_CFG_read)(void);
+	u32 (*TX_INTF_REG_ARBITRARY_IQ_read)(void);
 	u32 (*TX_INTF_REG_WIFI_TX_MODE_read)(void);
-	u32 (*TX_INTF_REG_IQ_SRC_SEL_read)(void);
 	u32 (*TX_INTF_REG_CTS_TOSELF_CONFIG_read)(void);
 	u32 (*TX_INTF_REG_CSI_FUZZER_read)(void);
 	u32 (*TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read)(void);
-	u32 (*TX_INTF_REG_MISC_SEL_read)(void);
+	u32 (*TX_INTF_REG_ARBITRARY_IQ_CTL_read)(void);
 	u32 (*TX_INTF_REG_TX_CONFIG_read)(void);
 	u32 (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read)(void);
 	u32 (*TX_INTF_REG_CFG_DATA_TO_ANT_read)(void);
@@ -100,13 +99,12 @@ struct tx_intf_driver_api {
 	u32 (*TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read)(void);
 
 	void (*TX_INTF_REG_MULTI_RST_write)(u32 value);
-	void (*TX_INTF_REG_MIXER_CFG_write)(u32 value);
+	void (*TX_INTF_REG_ARBITRARY_IQ_write)(u32 value);
 	void (*TX_INTF_REG_WIFI_TX_MODE_write)(u32 value);
-	void (*TX_INTF_REG_IQ_SRC_SEL_write)(u32 value);
 	void (*TX_INTF_REG_CTS_TOSELF_CONFIG_write)(u32 value);
 	void (*TX_INTF_REG_CSI_FUZZER_write)(u32 value);
 	void (*TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write)(u32 value);
-	void (*TX_INTF_REG_MISC_SEL_write)(u32 value);
+	void (*TX_INTF_REG_ARBITRARY_IQ_CTL_write)(u32 value);
 	void (*TX_INTF_REG_TX_CONFIG_write)(u32 value);
 	void (*TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write)(u32 value);
 	void (*TX_INTF_REG_CFG_DATA_TO_ANT_write)(u32 value);

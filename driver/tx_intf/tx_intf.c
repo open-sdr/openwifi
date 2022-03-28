@@ -40,16 +40,12 @@ static inline u32 TX_INTF_REG_MULTI_RST_read(void){
 	return reg_read(TX_INTF_REG_MULTI_RST_ADDR);
 }
 
-static inline u32 TX_INTF_REG_MIXER_CFG_read(void){
-	return reg_read(TX_INTF_REG_MIXER_CFG_ADDR);
+static inline u32 TX_INTF_REG_ARBITRARY_IQ_read(void){
+	return reg_read(TX_INTF_REG_ARBITRARY_IQ_ADDR);
 }
 
 static inline u32 TX_INTF_REG_WIFI_TX_MODE_read(void){
 	return reg_read(TX_INTF_REG_WIFI_TX_MODE_ADDR);
-}
-
-static inline u32 TX_INTF_REG_IQ_SRC_SEL_read(void){
-	return reg_read(TX_INTF_REG_IQ_SRC_SEL_ADDR);
 }
 
 static inline u32 TX_INTF_REG_CTS_TOSELF_CONFIG_read(void){
@@ -64,8 +60,8 @@ static inline u32 TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read(void){
 	return reg_read(TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_ADDR);
 }
 
-static inline u32 TX_INTF_REG_MISC_SEL_read(void){
-	return reg_read(TX_INTF_REG_MISC_SEL_ADDR);
+static inline u32 TX_INTF_REG_ARBITRARY_IQ_CTL_read(void){
+	return reg_read(TX_INTF_REG_ARBITRARY_IQ_CTL_ADDR);
 }
 
 static inline u32 TX_INTF_REG_TX_CONFIG_read(void){
@@ -138,16 +134,12 @@ static inline void TX_INTF_REG_MULTI_RST_write(u32 value){
 	reg_write(TX_INTF_REG_MULTI_RST_ADDR, value);
 }
 
-static inline void TX_INTF_REG_MIXER_CFG_write(u32 value){
-	reg_write(TX_INTF_REG_MIXER_CFG_ADDR, value);
+static inline void TX_INTF_REG_ARBITRARY_IQ_write(u32 value){
+	reg_write(TX_INTF_REG_ARBITRARY_IQ_ADDR, value);
 }
 
 static inline void TX_INTF_REG_WIFI_TX_MODE_write(u32 value){
 	reg_write(TX_INTF_REG_WIFI_TX_MODE_ADDR, value);
-}
-
-static inline void TX_INTF_REG_IQ_SRC_SEL_write(u32 value){
-	reg_write(TX_INTF_REG_IQ_SRC_SEL_ADDR, value);
 }
 
 static inline void TX_INTF_REG_CTS_TOSELF_CONFIG_write(u32 value){
@@ -162,8 +154,8 @@ static inline void TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(u32 value){
 	reg_write(TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_ADDR, value);
 }
 
-static inline void TX_INTF_REG_MISC_SEL_write(u32 value){
-	reg_write(TX_INTF_REG_MISC_SEL_ADDR, value);
+static inline void TX_INTF_REG_ARBITRARY_IQ_CTL_write(u32 value){
+	reg_write(TX_INTF_REG_ARBITRARY_IQ_CTL_ADDR, value);
 }
 
 static inline void TX_INTF_REG_TX_CONFIG_write(u32 value){
@@ -238,7 +230,7 @@ EXPORT_SYMBOL(tx_intf_api);
 
 static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_symbol_to_ps, enum openwifi_fpga_type fpga_type){
 	int err=0, i;
-	u32 mixer_cfg=0, duc_input_ch_sel = 0, ant_sel=0;
+	u32 mixer_cfg=0, ant_sel=0;
 
 	printk("%s hw_init mode %d\n", tx_intf_compatible_str, mode);
 
@@ -250,7 +242,6 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 	for (i=0;i<8;i++)
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 
-
 	if(fpga_type == LARGE_FPGA)	// LARGE FPGA: MAX_NUM_DMA_SYMBOL = 8192
 		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
 	else if(fpga_type == SMALL_FPGA)	// SMALL FPGA: MAX_NUM_DMA_SYMBOL = 4096
@@ -259,56 +250,54 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 	switch(mode)
 	{
 		case TX_INTF_AXIS_LOOP_BACK:
-			tx_intf_api->TX_INTF_REG_MISC_SEL_write(0<<1);// bit1: 0-connect dac to ADI dma; 1-connect dac to our intf
 			printk("%s hw_init mode TX_INTF_AXIS_LOOP_BACK\n", tx_intf_compatible_str);
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_0MHZ_ANT0:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT0\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F400;
-			duc_input_ch_sel = 0;
 			ant_sel=1;
+			break;
+
+		case TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH:
+			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT0\n", tx_intf_compatible_str);
+			mixer_cfg = 0x2001F400;
+			ant_sel=0x11;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F602;
-			duc_input_ch_sel = 0;
 			ant_sel=1;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT0:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT0\n", tx_intf_compatible_str);
 			mixer_cfg = 0x200202F6;
-			duc_input_ch_sel = 0;
 			ant_sel=1;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_0MHZ_ANT1:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT1\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F400;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F602;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1\n", tx_intf_compatible_str);
 			mixer_cfg = 0x200202F6;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 
 		case TX_INTF_BYPASS:
 			printk("%s hw_init mode TX_INTF_BYPASS\n", tx_intf_compatible_str);
 			mixer_cfg = 0x200202F6;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 		
@@ -318,14 +307,10 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 	}
 
 	if (mode!=TX_INTF_AXIS_LOOP_BACK) {
-		tx_intf_api->TX_INTF_REG_MISC_SEL_write(1<<1);// bit1: 0-connect dac to ADI dma; 1-connect dac to our intf
-
-		tx_intf_api->TX_INTF_REG_MIXER_CFG_write(mixer_cfg);
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
-		tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write(duc_input_ch_sel);
 		tx_intf_api->TX_INTF_REG_CSI_FUZZER_write(0);
 		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
-
+	
 		tx_intf_api->TX_INTF_REG_TX_CONFIG_write(tx_config);
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0);
@@ -374,13 +359,12 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->reg_write=reg_write;
 
 	tx_intf_api->TX_INTF_REG_MULTI_RST_read=TX_INTF_REG_MULTI_RST_read;
-	tx_intf_api->TX_INTF_REG_MIXER_CFG_read=TX_INTF_REG_MIXER_CFG_read;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_read=TX_INTF_REG_ARBITRARY_IQ_read;
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_read=TX_INTF_REG_WIFI_TX_MODE_read;
-	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_read=TX_INTF_REG_IQ_SRC_SEL_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_read=TX_INTF_REG_CTS_TOSELF_CONFIG_read;
 	tx_intf_api->TX_INTF_REG_CSI_FUZZER_read=TX_INTF_REG_CSI_FUZZER_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read;
-	tx_intf_api->TX_INTF_REG_MISC_SEL_read=TX_INTF_REG_MISC_SEL_read;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_CTL_read=TX_INTF_REG_ARBITRARY_IQ_CTL_read;
 	tx_intf_api->TX_INTF_REG_TX_CONFIG_read=TX_INTF_REG_TX_CONFIG_read;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_read=TX_INTF_REG_CFG_DATA_TO_ANT_read;
@@ -399,13 +383,12 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read=TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read;
 
 	tx_intf_api->TX_INTF_REG_MULTI_RST_write=TX_INTF_REG_MULTI_RST_write;
-	tx_intf_api->TX_INTF_REG_MIXER_CFG_write=TX_INTF_REG_MIXER_CFG_write;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_write=TX_INTF_REG_ARBITRARY_IQ_write;
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write=TX_INTF_REG_WIFI_TX_MODE_write;
-	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write=TX_INTF_REG_IQ_SRC_SEL_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_write=TX_INTF_REG_CTS_TOSELF_CONFIG_write;
 	tx_intf_api->TX_INTF_REG_CSI_FUZZER_write=TX_INTF_REG_CSI_FUZZER_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write;
-	tx_intf_api->TX_INTF_REG_MISC_SEL_write=TX_INTF_REG_MISC_SEL_write;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_CTL_write=TX_INTF_REG_ARBITRARY_IQ_CTL_write;
 	tx_intf_api->TX_INTF_REG_TX_CONFIG_write=TX_INTF_REG_TX_CONFIG_write;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write=TX_INTF_REG_CFG_DATA_TO_ANT_write;
