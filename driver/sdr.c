@@ -2095,6 +2095,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 		ieee80211_hw_set(dev, AMPDU_AGGREGATION);
 	}
 
+	dev->extra_tx_headroom = LEN_MPDU_DELIM;
 
 	dev->vif_data_size = sizeof(struct openwifi_vif);
 	dev->wiphy->interface_modes = 
