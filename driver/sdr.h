@@ -255,18 +255,18 @@ static const struct ieee80211_channel openwifi_5GHz_channels[] = {
 };
 
 static const struct ieee80211_iface_limit openwifi_if_limits[] = {
-	{ .max = 2048,	.types = BIT(NL80211_IFTYPE_STATION) },
-	{ .max = 4,	.types =
+	{ .max = MAX_NUM_VIF,	.types = BIT(NL80211_IFTYPE_STATION) },
+	{ .max = MAX_NUM_VIF,	.types =
 #ifdef CONFIG_MAC80211_MESH
 				 BIT(NL80211_IFTYPE_MESH_POINT) |
 #endif
-				 BIT(NL80211_IFTYPE_AP) },
+				 BIT(NL80211_IFTYPE_AP)},
 };
 
 static const struct ieee80211_iface_combination openwifi_if_comb = {
 	.limits = openwifi_if_limits,
 	.n_limits = ARRAY_SIZE(openwifi_if_limits),
-	.max_interfaces = 2048,
+	.max_interfaces = MAX_NUM_VIF,
 	.num_different_channels = 1,
 	.radar_detect_widths =	BIT(NL80211_CHAN_WIDTH_20_NOHT) |
 					BIT(NL80211_CHAN_WIDTH_20) |
