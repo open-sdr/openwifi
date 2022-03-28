@@ -74,14 +74,22 @@ u8 gen_mpdu_delim_crc(u16 m);
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
 
-static int test_mode = 0; // 0 normal; 1 rx test
+static int test_mode = 0; // bit0: aggregation enable(1)/disable(0); NO USE ANY MORE: bit1: tx offset tuning enable(0)/disable(1)
+// Internal indication variables after parsing test_mode
+static bool AGGR_ENABLE = false;
+static bool TX_OFFSET_TUNING_ENABLE = false;
+
+static int init_tx_att = 0;
 
 MODULE_AUTHOR("Xianjun Jiao");
 MODULE_DESCRIPTION("SDR driver");
 MODULE_LICENSE("GPL v2");
 
 module_param(test_mode, int, 0);
-MODULE_PARM_DESC(myint, "test_mode. 0 normal; 1 rx test");
+MODULE_PARM_DESC(myint, "test_mode. bit0: aggregation enable(1)/disable(0)");
+
+module_param(init_tx_att, int, 0);
+MODULE_PARM_DESC(myint, "init_tx_att. TX attenuation in dB*1000	example: set to 3000 for 3dB attenuation");
 
 // ---------------rfkill---------------------------------------
 static bool openwifi_is_radio_enabled(struct openwifi_priv *priv)
@@ -1662,6 +1670,10 @@ static int openwifi_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *
 	u16 max_tx_bytes, buf_size;
 	u32 ampdu_action_config;
 
+	if (!AGGR_ENABLE) {
+		return -EOPNOTSUPP;
+	}
+
 	switch (action)
 	{
 		case IEEE80211_AMPDU_TX_START:
@@ -1874,7 +1886,14 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	// }
 	// else
 	// 	printk("%s openwifi_dev_probe: WARNING rfkill radio off failed. tx att read %d %d require %d\n",sdr_compatible_str, reg, reg1, AD9361_RADIO_OFF_TX_ATT);
+
+	// //-----------------------------parse the test_mode input--------------------------------
+	if (test_mode&1)
+		AGGR_ENABLE = true;
 	
+	// if (test_mode&2)
+	// 	TX_OFFSET_TUNING_ENABLE = false;
+
 	priv->last_auto_fpga_lbt_th = 134;//just to avoid uninitialized
 	priv->rssi_correction = 43;//this will be set in real-time by _rf_set_channel()
 
@@ -1918,7 +1937,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 		printk("%s openwifi_dev_probe: Warning! priv->rf_bw == %dHz (should be 20000000 or 40000000)\n",sdr_compatible_str, priv->rf_bw);
 	}
 
-	printk("%s openwifi_dev_probe: test_mode %d\n", sdr_compatible_str, test_mode);
+	printk("%s openwifi_dev_probe: test_mode %d AGGR_ENABLE %d TX_OFFSET_TUNING_ENABLE %d init_tx_att %d\n", sdr_compatible_str, test_mode, AGGR_ENABLE, TX_OFFSET_TUNING_ENABLE, init_tx_att);
 
 	priv->runtime_tx_ant_cfg = ((priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT0 || priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0)?1:(priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH?3:2));
 	priv->runtime_rx_ant_cfg = (priv->rx_intf_cfg==RX_INTF_BW_20MHZ_AT_0MHZ_ANT0?1:2);
@@ -1930,6 +1949,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	memset(priv->drv_tx_reg_val,0,sizeof(priv->drv_tx_reg_val));
 	memset(priv->drv_xpu_reg_val,0,sizeof(priv->drv_xpu_reg_val));
 	memset(priv->rf_reg_val,0,sizeof(priv->rf_reg_val));
+
+	priv->rf_reg_val[RF_TX_REG_IDX_ATT] = init_tx_att;
 
 	//let's by default turn radio on when probing
 	err = openwifi_set_antenna(dev, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
@@ -1994,8 +2015,10 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_2GHz.n_bitrates = ARRAY_SIZE(priv->rates_2GHz);
 	priv->band_2GHz.ht_cap.ht_supported = true;
 	priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
-	priv->band_2GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
-	priv->band_2GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
+	if (AGGR_ENABLE) {
+		priv->band_2GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
+		priv->band_2GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
+	}
 	memset(&priv->band_2GHz.ht_cap.mcs, 0, sizeof(priv->band_2GHz.ht_cap.mcs));
 	priv->band_2GHz.ht_cap.mcs.rx_mask[0] = 0xff;
 	priv->band_2GHz.ht_cap.mcs.tx_params = IEEE80211_HT_MCS_TX_DEFINED;
@@ -2008,8 +2031,10 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_5GHz.n_bitrates = ARRAY_SIZE(priv->rates_5GHz);
 	priv->band_5GHz.ht_cap.ht_supported = true;
 	priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
-	priv->band_5GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
-	priv->band_5GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
+	if (AGGR_ENABLE) {
+		priv->band_5GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
+		priv->band_5GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
+	}
 	memset(&priv->band_5GHz.ht_cap.mcs, 0, sizeof(priv->band_5GHz.ht_cap.mcs));
 	priv->band_5GHz.ht_cap.mcs.rx_mask[0] = 0xff;
 	priv->band_5GHz.ht_cap.mcs.tx_params = IEEE80211_HT_MCS_TX_DEFINED;
@@ -2021,7 +2046,10 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	ieee80211_hw_set(dev, HOST_BROADCAST_PS_BUFFERING);
 	ieee80211_hw_set(dev, RX_INCLUDES_FCS);
 	ieee80211_hw_set(dev, BEACON_TX_STATUS);
-	ieee80211_hw_set(dev, AMPDU_AGGREGATION);
+	if (AGGR_ENABLE) {
+		ieee80211_hw_set(dev, AMPDU_AGGREGATION);
+	}
+
 
 	dev->vif_data_size = sizeof(struct openwifi_vif);
 	dev->wiphy->interface_modes = 
