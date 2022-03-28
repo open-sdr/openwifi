@@ -91,9 +91,9 @@ static inline u32 hw_init(enum openofdm_rx_mode mode){
 	printk("%s hw_init input: power_thres %d dc_running_sum_th %d min_plateau %d\n", openofdm_rx_compatible_str, OPENOFDM_RX_POWER_THRES_INIT, OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT, OPENOFDM_RX_MIN_PLATEAU_INIT);
 
 	// 1) power threshold configuration and reset
-	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write(0);
-	openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write(100);
-	openofdm_rx_api->OPENOFDM_RX_REG_SOFT_DECODING_write(1);
+	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write((OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT<<16)|OPENOFDM_RX_POWER_THRES_INIT); // turn on signal watchdog by default
+	openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write(OPENOFDM_RX_MIN_PLATEAU_INIT);
+	openofdm_rx_api->OPENOFDM_RX_REG_SOFT_DECODING_write((OPENWIFI_MAX_SIGNAL_LEN_TH<<16)|1); //bit1 enable soft decoding; bit31~16 max pkt length threshold
 
 	//rst
 	for (i=0;i<8;i++)

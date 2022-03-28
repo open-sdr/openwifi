@@ -320,7 +320,7 @@ static inline u32 hw_init(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		//bit16: 1-auto m_axis rst (sig_valid_from_acc|sig_invalid_from_acc|ht_sig_valid|ht_sig_invalid|ht_unsupported); 0-normal
 		//bit24: 1-disable m_axis fifo_rst_by_fcs_invalid; 0-enable
 		//bit29,28: sig_valid_mode. 0- non-ht sig valid; 1- ht sig valid other- both
-		rx_intf_api->RX_INTF_REG_START_TRANS_TO_PS_write(0);
+		rx_intf_api->RX_INTF_REG_START_TRANS_TO_PS_write(OPENWIFI_MAX_SIGNAL_LEN_TH<<16); //bit31~16 max pkt length threshold
 		rx_intf_api->RX_INTF_REG_START_TRANS_TO_PS_SRC_SEL_write(0);
 		// 0-wifi_rx packet out; 1-loopback from input of wifi_rx
 		

@@ -213,6 +213,36 @@ enum openofdm_rx_mode {
 	OPENOFDM_RX_NORMAL,
 };
 
+#define OPENOFDM_RX_POWER_THRES_INIT 124
+// Above 118 is based on these test result (2022-03-09)
+// FMCOMMS3
+// 2437M
+// 11a/g BPSK 6M, Rx sensitivity level dmesg report -85dBm
+// priv->rssi_correction = 153; rssi_half_db/2 = 153-85=68; rssi_half_db = 136
+// 5180M
+// 11a/g BPSK 6m, Rx sensitivity level dmesg report -84dBm
+// priv->rssi_correction = 145; rssi_half_db/2 = 145-84=61; rssi_half_db = 122
+// 5320M
+// 11a/g BPSK 6m, Rx sensitivity level dmesg report -86dBm
+// priv->rssi_correction = 148; rssi_half_db/2 = 148-86=62; rssi_half_db = 124
+
+// FMCOMMS2
+// 2437M
+// 11a/g BPSK 6M, Rx sensitivity level dmesg report -80dBm
+// priv->rssi_correction = 153; rssi_half_db/2 = 153-80=73; rssi_half_db = 146
+// 5180M
+// 11a/g BPSK 6m, Rx sensitivity level dmesg report -83dBm
+// priv->rssi_correction = 145; rssi_half_db/2 = 145-83=62; rssi_half_db = 124
+// 5320M
+// 11a/g BPSK 6m, Rx sensitivity level dmesg report -86dBm
+// priv->rssi_correction = 148; rssi_half_db/2 = 148-86=62; rssi_half_db = 124
+
+#define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-84)
+#define OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT 64
+#define OPENOFDM_RX_MIN_PLATEAU_INIT 100
+
+#define OPENWIFI_MAX_SIGNAL_LEN_TH 1700 //Packet longer than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
+
 struct openofdm_rx_driver_api {
 	u32 (*hw_init)(enum openofdm_rx_mode mode);
 

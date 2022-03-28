@@ -430,7 +430,7 @@ static inline u32 hw_init(enum xpu_mode mode){
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
-	xpu_api->XPU_REG_DIFS_ADVANCE_write(2); //us
+	xpu_api->XPU_REG_DIFS_ADVANCE_write((OPENWIFI_MAX_SIGNAL_LEN_TH<<16)|2); //us. bit31~16 max pkt length threshold
 
 	printk("%s hw_init err %d\n", xpu_compatible_str, err);
 	return(err);
