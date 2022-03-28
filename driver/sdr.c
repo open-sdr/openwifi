@@ -88,12 +88,12 @@ static bool openwifi_is_radio_enabled(struct openwifi_priv *priv)
 {
 	int reg;
 
-	if (priv->tx_intf_cfg == TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1)
-		reg = ad9361_get_tx_atten(priv->ad9361_phy, 2);
-	else
+	if (priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT0 || priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0 || priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH)
 		reg = ad9361_get_tx_atten(priv->ad9361_phy, 1);
+	else
+		reg = ad9361_get_tx_atten(priv->ad9361_phy, 2);
 
-	if (reg == AD9361_RADIO_ON_TX_ATT)
+	if (reg == (AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]))
 		return true;// 0 off, 1 on
 	return false;
 }
