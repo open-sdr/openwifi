@@ -1719,11 +1719,13 @@ static int openwifi_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *
 	{
 		case IEEE80211_AMPDU_TX_START:
 			ieee80211_start_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
+			printk("%s openwifi_ampdu_action: start TX aggregation. tid %d\n", sdr_compatible_str, params->tid);
 			break;
 		case IEEE80211_AMPDU_TX_STOP_CONT:
 		case IEEE80211_AMPDU_TX_STOP_FLUSH:
 		case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
 			ieee80211_stop_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
+			printk("%s openwifi_ampdu_action: stop TX aggregation. tid %d\n", sdr_compatible_str, params->tid);
 			break;
 		case IEEE80211_AMPDU_TX_OPERATIONAL:
 			buf_size = 4;
@@ -1731,6 +1733,8 @@ static int openwifi_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *
 			max_tx_bytes = (1 << (IEEE80211_HT_MAX_AMPDU_FACTOR + sta->ht_cap.ampdu_factor)) - 1;
 			ampdu_action_config = ( sta->ht_cap.ampdu_density<<24 | buf_size<<16 | max_tx_bytes );
 			tx_intf_api->TX_INTF_REG_AMPDU_ACTION_CONFIG_write(ampdu_action_config);
+			printk("%s openwifi_ampdu_action: TX operational. tid %d max_tx_bytes %d ampdu_density %d buf_size %d\n", 
+			sdr_compatible_str, params->tid, max_tx_bytes, sta->ht_cap.ampdu_density, buf_size);
 			break;
 		case IEEE80211_AMPDU_RX_START:
 			printk("%s openwifi_ampdu_action: start RX aggregation. tid %d\n", sdr_compatible_str, params->tid);
