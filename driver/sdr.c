@@ -1538,7 +1538,16 @@ static int openwifi_add_interface(struct ieee80211_hw *dev,
 	INIT_DELAYED_WORK(&vif_priv->beacon_work, openwifi_beacon_work);
 	vif_priv->enable_beacon = false;
 
-	printk("%s openwifi_add_interface end with vif idx %d\n", sdr_compatible_str,vif_priv->idx);
+	priv->mac_addr[0] = vif->addr[0];
+	priv->mac_addr[1] = vif->addr[1];
+	priv->mac_addr[2] = vif->addr[2];
+	priv->mac_addr[3] = vif->addr[3];
+	priv->mac_addr[4] = vif->addr[4];
+	priv->mac_addr[5] = vif->addr[5];
+	xpu_api->XPU_REG_MAC_ADDR_write(priv->mac_addr); // set mac addr in fpga
+
+	printk("%s openwifi_add_interface end with vif idx %d addr %02x:%02x:%02x:%02x:%02x:%02x\n", sdr_compatible_str,vif_priv->idx,
+	vif->addr[0],vif->addr[1],vif->addr[2],vif->addr[3],vif->addr[4],vif->addr[5]);
 
 	return 0;
 }
