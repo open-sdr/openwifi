@@ -70,6 +70,8 @@ extern struct xpu_driver_api *xpu_api;
 
 u32 gen_mpdu_crc(u8 *data_in, u32 num_bytes);
 u8 gen_mpdu_delim_crc(u16 m);
+static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant);
+static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_ant);
 
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
@@ -1711,6 +1713,8 @@ static const struct ieee80211_ops openwifi_ops = {
 	.add_interface	   = openwifi_add_interface,
 	.remove_interface  = openwifi_remove_interface,
 	.config			   = openwifi_config,
+	.set_antenna       = openwifi_set_antenna,
+	.get_antenna       = openwifi_get_antenna,
 	.bss_info_changed  = openwifi_bss_info_changed,
 	.conf_tx		   = openwifi_conf_tx,
 	.prepare_multicast = openwifi_prepare_multicast,
