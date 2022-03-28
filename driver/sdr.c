@@ -1935,7 +1935,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->openofdm_rx_cfg = OPENOFDM_RX_NORMAL;
 
 	printk("%s openwifi_dev_probe: priv->rf_bw == %dHz. bool for 20000000 %d, 40000000 %d\n",sdr_compatible_str, priv->rf_bw, (priv->rf_bw==20000000) , (priv->rf_bw==40000000) );
-	if (priv->rf_bw == 20000000) {
+	if (priv->rf_bw == 20000000) { //DO NOT USE. Not used for long time.
 		priv->rx_intf_cfg = RX_INTF_BYPASS;
 		priv->tx_intf_cfg = TX_INTF_BYPASS;
 		//priv->rx_freq_offset_to_lo_MHz = 0;
@@ -1946,7 +1946,10 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
 		// // test ddc at central, duc at central+10M. It works. And also change rx BW from 40MHz to 20MHz in rf_init.sh. Rx sampling rate is still 40Msps
 		priv->rx_intf_cfg = RX_INTF_BW_20MHZ_AT_0MHZ_ANT0;
-		priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0; // Let's use rx0 tx0 as default mode, because it works for both 9361 and 9364
+		if (TX_OFFSET_TUNING_ENABLE)
+			priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0; // Let's use rx0 tx0 as default mode, because it works for both 9361 and 9364
+		else
+			priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_0MHZ_ANT0;
 		// // try another antenna option
 		//priv->rx_intf_cfg = RX_INTF_BW_20MHZ_AT_0MHZ_ANT1;
 		//priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0;
