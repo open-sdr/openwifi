@@ -70,6 +70,7 @@ extern struct xpu_driver_api *xpu_api;
 
 u32 gen_mpdu_crc(u8 *data_in, u32 num_bytes);
 u8 gen_mpdu_delim_crc(u16 m);
+u32 reverse32(u32 d);
 static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant);
 static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_ant);
 int rssi_half_db_to_rssi_dbm(int rssi_half_db, int rssi_correction);
