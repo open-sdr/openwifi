@@ -1872,20 +1872,6 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	}
 	printk("%s ad9361_spi_to_phy ad9361-phy: %s\n", sdr_compatible_str, priv->ad9361_phy->spi->modalias);
 
-	priv->ctrl_out.en_mask=0xFF;
-	priv->ctrl_out.index=0x16;
-	err = ad9361_ctrl_outs_setup(priv->ad9361_phy, &(priv->ctrl_out));
-	if (err < 0) {
-		printk("%s openwifi_dev_probe: WARNING ad9361_ctrl_outs_setup %d\n",sdr_compatible_str, err);
-	} else {
-		printk("%s openwifi_dev_probe: ad9361_ctrl_outs_setup en_mask 0x%02x index 0x%02x\n",sdr_compatible_str, priv->ctrl_out.en_mask, priv->ctrl_out.index);
-	}
-
-	reg = ad9361_spi_read(priv->ad9361_phy->spi, REG_CTRL_OUTPUT_POINTER);
-	printk("%s openwifi_dev_probe: ad9361_spi_read REG_CTRL_OUTPUT_POINTER 0x%02x\n",sdr_compatible_str, reg);
-	reg = ad9361_spi_read(priv->ad9361_phy->spi, REG_CTRL_OUTPUT_ENABLE);
-	printk("%s openwifi_dev_probe: ad9361_spi_read REG_CTRL_OUTPUT_ENABLE 0x%02x\n",sdr_compatible_str, reg);
-
 	// //-------------find driver: axi_ad9361 hdl ref design module, dac channel---------------
 	tmp_dev = bus_find_device( &platform_bus_type, NULL, "cf-ad9361-dds-core-lpc", custom_match_platform_dev );
 	if (!tmp_dev) {
