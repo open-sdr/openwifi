@@ -1163,10 +1163,12 @@ static int openwifi_start(struct ieee80211_hw *dev)
 		priv->vif[i] = NULL;
 	}
 
-	memset(priv->drv_tx_reg_val, 0, sizeof(priv->drv_tx_reg_val));
+	// //keep software registers persistent between NIC down and up for multiple times
+	/*memset(priv->drv_tx_reg_val, 0, sizeof(priv->drv_tx_reg_val));
 	memset(priv->drv_rx_reg_val, 0, sizeof(priv->drv_rx_reg_val));
 	memset(priv->drv_xpu_reg_val, 0, sizeof(priv->drv_xpu_reg_val));
-	priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_GIT_REV] = GIT_REV;
+	memset(priv->rf_reg_val,0,sizeof(priv->rf_reg_val));
+	priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_GIT_REV] = GIT_REV;*/
 
 	//turn on radio
 	openwifi_set_antenna(dev, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
@@ -1924,6 +1926,11 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->ctrl_out.en_mask=AD9361_CTRL_OUT_EN_MASK;
 	priv->ctrl_out.index  =(priv->rx_intf_cfg==RX_INTF_BW_20MHZ_AT_0MHZ_ANT0?AD9361_CTRL_OUT_INDEX_ANT0:AD9361_CTRL_OUT_INDEX_ANT1);
 
+	memset(priv->drv_rx_reg_val,0,sizeof(priv->drv_rx_reg_val));
+	memset(priv->drv_tx_reg_val,0,sizeof(priv->drv_tx_reg_val));
+	memset(priv->drv_xpu_reg_val,0,sizeof(priv->drv_xpu_reg_val));
+	memset(priv->rf_reg_val,0,sizeof(priv->rf_reg_val));
+
 	//let's by default turn radio on when probing
 	err = openwifi_set_antenna(dev, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
 	if (err) {
@@ -1943,9 +1950,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	} else
 		printk("%s openwifi_dev_probe: WARNING rfkill radio on failed. tx att read %d require %d\n",sdr_compatible_str, reg, AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]);
 
-	memset(priv->drv_rx_reg_val,0,sizeof(priv->drv_rx_reg_val));
-	memset(priv->drv_tx_reg_val,0,sizeof(priv->drv_tx_reg_val));
-	memset(priv->drv_xpu_reg_val,0,sizeof(priv->drv_xpu_reg_val));
+	priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_GIT_REV] = GIT_REV;
 
 	// //set ad9361 in certain mode
 	#if 0
