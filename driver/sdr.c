@@ -179,13 +179,13 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 	int static_lbt_th, auto_lbt_th, fpga_lbt_th;
 
 	if (change_flag) {
-		priv->actual_rx_lo = actual_rx_lo;
-		priv->actual_tx_lo = actual_tx_lo;
-
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
 
-		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo )>>1) );
 		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo )>>1) );
+		priv->actual_tx_lo = actual_tx_lo;
+
+		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo )>>1) );
+		priv->actual_rx_lo = actual_rx_lo;
 
 		if (actual_rx_lo<2412) {
 			priv->rssi_correction = 153;
