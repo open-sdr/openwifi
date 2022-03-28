@@ -1496,8 +1496,8 @@ resched:
 	 * schedule next beacon
 	 * TODO: use hardware support for beacon timing
 	 */
-	schedule_delayed_work(&vif_priv->beacon_work,
-			usecs_to_jiffies(1024 * vif->bss_conf.beacon_int));
+	schedule_delayed_work(&vif_priv->beacon_work, usecs_to_jiffies(1024 * vif->bss_conf.beacon_int));
+	// printk("%s openwifi_beacon_work beacon_int %d\n", sdr_compatible_str, vif->bss_conf.beacon_int);
 }
 
 static int openwifi_add_interface(struct ieee80211_hw *dev,
