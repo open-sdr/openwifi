@@ -210,8 +210,6 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		priv->last_auto_fpga_lbt_th = auto_lbt_th;
 		
 		if (actual_rx_lo < 2500) {
-			//priv->slot_time = 20; //20 is default slot time in ERP(OFDM)/11g 2.4G; short one is 9.
-			//xpu_api->XPU_REG_BAND_CHANNEL_write(BAND_2_4GHZ<<16);
 			if (priv->band != BAND_2_4GHZ) {
 				priv->band = BAND_2_4GHZ;
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
@@ -228,11 +226,6 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				priv->band = BAND_5_8GHZ;
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
 			}
-			// //xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((51+2)*10)<<16) | 10 ); // because 5GHz needs longer SIFS (16 instead of 10), we need 58 instead of 48 for XPU low mac setting.  let's add 2us for those device that is really "slow"!
-			// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP_write( (((51+2+2)*10)<<16) | 10 );//add 2us for longer fir.  BUT corrding to FPGA probing test, we do not need this
-			// //xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 60*10 );
-			// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( 50*10 );// for longer fir we need this delay 1us shorter
-			// tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(((16)*10)<<16);
 		}
 		//printk("%s ad9361_rf_set_channel %dM rssi_correction %d\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction);
 		// //-- use less
@@ -749,11 +742,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	// 	}
 	// }
 
-	if (test_mode==1){
-		printk("%s openwifi_tx: WARNING test_mode==1\n", sdr_compatible_str);
-		goto openwifi_tx_early_out;
-	}
-
 	if (skb->data_len>0) {// more data are not in linear data area skb->data
 		printk("%s openwifi_tx: WARNING skb->data_len>0\n", sdr_compatible_str);
 		goto openwifi_tx_early_out;
@@ -1091,7 +1079,7 @@ openwifi_tx_early_out_after_lock:
 	return;
 
 openwifi_tx_early_out:
-	dev_kfree_skb(skb);
+	//dev_kfree_skb(skb);
 	// printk("%s openwifi_tx: WARNING openwifi_tx_early_out phy_tx_sn %d queue %d\n", sdr_compatible_str,priv->phy_tx_sn,queue_idx);
 }
 
@@ -1205,7 +1193,7 @@ static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_a
 static int openwifi_start(struct ieee80211_hw *dev)
 {
 	struct openwifi_priv *priv = dev->priv;
-	int ret, i, rssi_half_db_offset, agc_gain_delay;//rssi_half_db_th, 
+	int ret, i;
 	u32 reg;
 
 	for (i=0; i<MAX_NUM_VIF; i++) {
@@ -1235,71 +1223,14 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	openofdm_rx_api->hw_init(priv->openofdm_rx_cfg);
 	xpu_api->hw_init(priv->xpu_cfg);
 
-	agc_gain_delay = 50; //samples
-	rssi_half_db_offset = 150; // to be consistent 
-	xpu_api->XPU_REG_RSSI_DB_CFG_write(0x80000000|((rssi_half_db_offset<<16)|agc_gain_delay) );
-	xpu_api->XPU_REG_RSSI_DB_CFG_write((~0x80000000)&((rssi_half_db_offset<<16)|agc_gain_delay) );
-	
-	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write(0);
-	// rssi_half_db_th = 87<<1; // -62dBm // will setup in runtime in _rf_set_channel
-	// xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
-	xpu_api->XPU_REG_FORCE_IDLE_MISC_write(75); //control the duration to force ch_idle after decoding a packet due to imperfection of agc and signals
-
-	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((40)<<16)|0 );//high 16bit 5GHz; low 16 bit 2.4GHz (Attention, current tx core has around 1.19us starting delay that makes the ack fall behind 10us SIFS in 2.4GHz! Need to improve TX in 2.4GHz!)
-	//xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51+23)<<16)|(0+23) );//we have more time when we use FIR in AD9361
-
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
-
-	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
-	
-	// //xpu_api->XPU_REG_BB_RF_DELAY_write(51); // fine tuned value at 0.005us. old: dac-->ant port: 0.6us, 57 taps fir at 40MHz: 1.425us; round trip: 2*(0.6+1.425)=4.05us; 4.05*10=41
-	// xpu_api->XPU_REG_BB_RF_DELAY_write(47);//add .5us for slightly longer fir -- already in xpu.c
 	xpu_api->XPU_REG_MAC_ADDR_write(priv->mac_addr);
 
-	// setup time schedule of 4 slices
-	// slice 0
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write(50000-1); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write(0); //start 0ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write(50000-1); //end 50ms
-
-	// slice 1
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((1<<20)|(50000-1)); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((1<<20)|(0)); //start 0ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(20000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(50000-1)); //end 20ms
-
-	// slice 2
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((2<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(20000)); //start 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(0)); //start 20ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(40000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(50000-1)); //end 20ms
-
-	// slice 3
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((3<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(40000)); //start 40ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(0)); //start 40ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-
-	// all slice sync rest
-	xpu_api->XPU_REG_MULTI_RST_write(1<<7); //bit7 reset the counter for all queues at the same time
-	xpu_api->XPU_REG_MULTI_RST_write(0<<7); 
-
-	//xpu_api->XPU_REG_MAC_ADDR_HIGH_write( (*( (u16*)(priv->mac_addr + 4) )) );
 	printk("%s openwifi_start: rx_intf_cfg %d openofdm_rx_cfg %d tx_intf_cfg %d openofdm_tx_cfg %d\n",sdr_compatible_str, priv->rx_intf_cfg, priv->openofdm_rx_cfg, priv->tx_intf_cfg, priv->openofdm_tx_cfg);
 	printk("%s openwifi_start: rx_freq_offset_to_lo_MHz %d tx_freq_offset_to_lo_MHz %d\n",sdr_compatible_str, priv->rx_freq_offset_to_lo_MHz, priv->tx_freq_offset_to_lo_MHz);
 
 	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30004); //disable tx interrupt
 	rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write(0x100); // disable rx interrupt by interrupt test mode
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(1); // hold M AXIS in reset status
-
-	if (test_mode==1) {
-		printk("%s openwifi_start: test_mode==1\n",sdr_compatible_str);
-		goto normal_out;
-	}
 
 	priv->rx_chan = dma_request_slave_channel(&(priv->pdev->dev), "rx_dma_s2mm");
 	if (IS_ERR(priv->rx_chan) || priv->rx_chan==NULL) {
@@ -1360,9 +1291,8 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(0); // release M AXIS
 	xpu_api->XPU_REG_TSF_LOAD_VAL_write(0,0); // reset tsf timer
 
-	//ieee80211_wake_queue(dev, 0);
 
-normal_out:
+// normal_out:
 	printk("%s openwifi_start: normal end\n", sdr_compatible_str);
 	return 0;
 
@@ -1383,10 +1313,6 @@ static void openwifi_stop(struct ieee80211_hw *dev)
 	u32 reg, reg1;
 	int i;
 
-	if (test_mode==1){
-		pr_info("%s openwifi_stop: test_mode==1\n", sdr_compatible_str);
-		goto normal_out;
-	}
 
 	//turn off radio
 	#if 1
@@ -1426,7 +1352,7 @@ static void openwifi_stop(struct ieee80211_hw *dev)
 	free_irq(priv->irq_rx, dev);
 	free_irq(priv->irq_tx, dev);
 
-normal_out:
+// normal_out:
 	printk("%s openwifi_stop\n", sdr_compatible_str);
 }
 
