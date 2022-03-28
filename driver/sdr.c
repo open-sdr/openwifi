@@ -2018,7 +2018,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_2GHz.bitrates = priv->rates_2GHz;
 	priv->band_2GHz.n_bitrates = ARRAY_SIZE(priv->rates_2GHz);
 	priv->band_2GHz.ht_cap.ht_supported = true;
-	priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
+	// priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
 	if (AGGR_ENABLE) {
 		priv->band_2GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
 		priv->band_2GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
@@ -2034,7 +2034,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_5GHz.bitrates = priv->rates_5GHz;
 	priv->band_5GHz.n_bitrates = ARRAY_SIZE(priv->rates_5GHz);
 	priv->band_5GHz.ht_cap.ht_supported = true;
-	priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20;
+	// priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
 	if (AGGR_ENABLE) {
 		priv->band_5GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
 		priv->band_5GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
