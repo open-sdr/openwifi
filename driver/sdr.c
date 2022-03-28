@@ -1810,8 +1810,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	}
 
 	// //-------------find ad9361-phy driver for lo/channel control---------------
-	priv->actual_rx_lo = 0;
-	priv->actual_tx_lo = 0;
+	priv->actual_rx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
+	priv->actual_tx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
 	tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
 	if (tmp_dev == NULL) {
 		printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);
