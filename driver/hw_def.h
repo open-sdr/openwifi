@@ -25,13 +25,12 @@ enum openwifi_band {
 const char *tx_intf_compatible_str = "sdr,tx_intf";
 
 #define TX_INTF_REG_MULTI_RST_ADDR                 (0*4)
-#define TX_INTF_REG_MIXER_CFG_ADDR                 (1*4)
+#define TX_INTF_REG_ARBITRARY_IQ_ADDR              (1*4)
 #define TX_INTF_REG_WIFI_TX_MODE_ADDR              (2*4)
-#define TX_INTF_REG_IQ_SRC_SEL_ADDR                (3*4)
 #define TX_INTF_REG_CTS_TOSELF_CONFIG_ADDR         (4*4)
 #define TX_INTF_REG_CSI_FUZZER_ADDR                (5*4)
 #define TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_ADDR  (6*4)
-#define TX_INTF_REG_MISC_SEL_ADDR                  (7*4)
+#define TX_INTF_REG_ARBITRARY_IQ_CTL_ADDR          (7*4)
 #define TX_INTF_REG_TX_CONFIG_ADDR                 (8*4)
 #define TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_ADDR      (9*4)
 #define TX_INTF_REG_CFG_DATA_TO_ANT_ADDR           (10*4)
