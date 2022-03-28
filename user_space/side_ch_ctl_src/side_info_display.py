@@ -22,8 +22,7 @@ def display_side_info(freq_offset, csi, equalizer, CSI_LEN, EQUALIZER_LEN):
     plt.ylabel("Hz")
     plt.title("freq offset")
     plt.plot(display_side_info.freq_offset_store)
-    fig_freq_offset.show()
-    plt.pause(0.0001)
+    fig_freq_offset.canvas.flush_events()
 
     good_row_idx = 0
     if ( len(equalizer)==0 ):
@@ -60,8 +59,7 @@ def display_side_info(freq_offset, csi, equalizer, CSI_LEN, EQUALIZER_LEN):
         ax_phase_csi.set_xlabel("subcarrier idx")
         ax_phase_csi.set_ylabel("phase")
         plt.plot(np.angle(csi_for_plot))
-        fig_csi.show()
-        plt.pause(0.0001)
+        fig_csi.canvas.flush_events()
 
     if ( (len(equalizer)>0) and (good_row_idx>0) ):
         fig_equalizer = plt.figure(2)
@@ -70,8 +68,7 @@ def display_side_info(freq_offset, csi, equalizer, CSI_LEN, EQUALIZER_LEN):
         plt.ylabel("Q")
         plt.title("equalizer")
         plt.scatter(equalizer_for_plot.real, equalizer_for_plot.imag)
-        fig_freq_offset.show()
-        plt.pause(0.0001)
+        fig_freq_offset.canvas.flush_events()
 
 def parse_side_info(side_info, num_eq, CSI_LEN, EQUALIZER_LEN, HEADER_LEN):
     # print(len(side_info), num_eq, CSI_LEN, EQUALIZER_LEN, HEADER_LEN)
@@ -134,6 +131,8 @@ num_byte_per_trans = 8*num_dma_symbol_per_trans
 if os.path.exists("side_info.txt"):
     os.remove("side_info.txt")
 side_info_fd=open('side_info.txt','a')
+
+plt.ion()
 
 while True:
     try:

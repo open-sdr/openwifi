@@ -18,8 +18,7 @@ def display_iq(iq_capture, agc_gain, rssi_half_db):
     plt.plot(iq_capture.real, 'b')
     plt.plot(iq_capture.imag, 'r')
     plt.ylim(-32767, 32767)
-    fig_iq_capture.show()
-    plt.pause(0.0001)
+    fig_iq_capture.canvas.flush_events()
 
     agc_gain_lock = np.copy(agc_gain)
     agc_gain_lock[agc_gain>127] = 80 # agc lock
@@ -36,8 +35,7 @@ def display_iq(iq_capture, agc_gain, rssi_half_db):
     plt.plot(agc_gain_value, 'b')
     plt.plot(agc_gain_lock, 'r')
     plt.ylim(0, 82)
-    fig_agc_gain.show()
-    plt.pause(0.0001)
+    fig_agc_gain.canvas.flush_events()
 
     fig_rssi_half_db = plt.figure(2)
     fig_rssi_half_db.clf()
@@ -46,8 +44,7 @@ def display_iq(iq_capture, agc_gain, rssi_half_db):
     plt.title("RSSI half dB (uncalibrated)")
     plt.plot(rssi_half_db)
     plt.ylim(100, 270)
-    fig_rssi_half_db.show()
-    plt.pause(0.0001)
+    fig_rssi_half_db.canvas.flush_events()
 
 def parse_iq(iq, iq_len):
     # print(len(iq), iq_len)
@@ -98,6 +95,8 @@ if os.path.exists("iq.txt"):
     os.remove("iq.txt")
 iq_fd=open('iq.txt','a')
 
+plt.ion()
+
 while True:
     try:
         data, addr = sock.recvfrom(MAX_NUM_DMA_SYMBOL*8) # buffer size
@@ -119,5 +118,5 @@ while True:
         break
 
 print('close()')
-side_info_fd.close()
+iq_fd.close()
 sock.close()
