@@ -2077,9 +2077,20 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	printk("%s openwifi_dev_probe: band_2GHz.n_channels %d n_bitrates %d band_5GHz.n_channels %d n_bitrates %d\n",sdr_compatible_str,
 	priv->band_2GHz.n_channels,priv->band_2GHz.n_bitrates,priv->band_5GHz.n_channels,priv->band_5GHz.n_bitrates);
 
-	ieee80211_hw_set(dev, HOST_BROADCAST_PS_BUFFERING);
+	// ieee80211_hw_set(dev, HOST_BROADCAST_PS_BUFFERING); // remove this because we don't want: mac80211.h: host buffers frame for PS and we fetch them via ieee80211_get_buffered_bc()
 	ieee80211_hw_set(dev, RX_INCLUDES_FCS);
-	ieee80211_hw_set(dev, BEACON_TX_STATUS);
+	ieee80211_hw_set(dev, BEACON_TX_STATUS);//mac80211.h: The device/driver provides TX status for sent beacons.
+
+	ieee80211_hw_set(dev, REPORTS_TX_ACK_STATUS);//mac80211.h: Hardware can provide ack status reports of Tx frames to the stack
+
+	// * @IEEE80211_HW_AP_LINK_PS: When operating in AP mode the device
+	// *	autonomously manages the PS status of connected stations. When
+	// *	this flag is set mac80211 will not trigger PS mode for connected
+	// *	stations based on the PM bit of incoming frames.
+	// *	Use ieee80211_start_ps()/ieee8021_end_ps() to manually configure
+	// *	the PS mode of connected stations.
+	ieee80211_hw_set(dev, AP_LINK_PS);
+
 	if (AGGR_ENABLE) {
 		ieee80211_hw_set(dev, AMPDU_AGGREGATION);
 	}
