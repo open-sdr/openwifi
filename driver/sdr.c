@@ -1625,8 +1625,10 @@ static void openwifi_bss_info_changed(struct ieee80211_hw *dev,
 
 	if (changed & (BSS_CHANGED_BEACON_ENABLED | BSS_CHANGED_BEACON)) {
 		cancel_delayed_work_sync(&vif_priv->beacon_work);
-		if (vif_priv->enable_beacon)
+		if (vif_priv->enable_beacon) {
 			schedule_work(&vif_priv->beacon_work.work);
+			printk("%s openwifi_bss_info_changed WARNING enable_beacon\n",sdr_compatible_str);
+		}
 		printk("%s openwifi_bss_info_changed WARNING BSS_CHANGED_BEACON_ENABLED %d BSS_CHANGED_BEACON %d\n",sdr_compatible_str,
 		changed&BSS_CHANGED_BEACON_ENABLED,changed&BSS_CHANGED_BEACON);
 	}
