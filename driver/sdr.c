@@ -1801,7 +1801,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	struct openwifi_priv *priv;
 	int err=1, rand_val;
 	const char *chip_name, *fpga_model;
-	u32 reg;//, reg1;
+	u32 reg, i;//, reg1;
 
 	struct device_node *np = pdev->dev.of_node;
 
