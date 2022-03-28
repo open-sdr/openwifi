@@ -214,9 +214,6 @@ enum openofdm_rx_mode {
 };
 
 struct openofdm_rx_driver_api {
-	u32 power_thres;
-	u32 min_plateau;
-
 	u32 (*hw_init)(enum openofdm_rx_mode mode);
 
 	u32 (*reg_read)(u32 reg);
