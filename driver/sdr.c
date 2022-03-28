@@ -173,43 +173,39 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				  struct ieee80211_conf *conf)
 {
 	struct openwifi_priv *priv = dev->priv;
-	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz + priv->drv_rx_reg_val[DRV_RX_REG_IDX_EXTRA_FO];
+	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz;
 	u32 actual_tx_lo;
 	bool change_flag = (actual_rx_lo != priv->actual_rx_lo);
-	int static_lbt_th, auto_lbt_th, fpga_lbt_th;
+	int static_lbt_th, auto_lbt_th, fpga_lbt_th, receiver_rssi_dbm_th;
 
 	if (change_flag) {
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
 
-		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo )>>1) );
+		// -------------------Tx Lo tuning-------------------
+		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ( ((u64)1000000ull)*((u64)actual_tx_lo ) + priv->rf_reg_val[RF_TX_REG_IDX_FO] )>>1) );
 		priv->actual_tx_lo = actual_tx_lo;
 
-		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo )>>1) );
+		// -------------------Rx Lo tuning-------------------
+		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ( ((u64)1000000ull)*((u64)actual_rx_lo ) + priv->rf_reg_val[RF_RX_REG_IDX_FO] )>>1) );
 		priv->actual_rx_lo = actual_rx_lo;
 
-		if (actual_rx_lo<2412) {
-			priv->rssi_correction = 153;
-		} else if (actual_rx_lo<=2484) {
-			priv->rssi_correction = 153;
-		} else if (actual_rx_lo<5160) {
-			priv->rssi_correction = 153;
-		} else if (actual_rx_lo<=5240) {
-			priv->rssi_correction = 145;
-		} else if (actual_rx_lo<=5320) {
-			priv->rssi_correction = 148;
-		} else {
-			priv->rssi_correction = 148;
-		}
+		// get rssi correction value from lookup table
+		priv->rssi_correction = rssi_correction_lookup_table(actual_rx_lo);
 
+		// set appropriate lbt threshold
 		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
 		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
-		auto_lbt_th = ((priv->rssi_correction-62-16)<<1);
-		static_lbt_th = priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH];
-		fpga_lbt_th = (static_lbt_th==0?auto_lbt_th:static_lbt_th);
+		// auto_lbt_th = ((priv->rssi_correction-62-16)<<1);
+		auto_lbt_th = rssi_dbm_to_rssi_half_db(-78, priv->rssi_correction); // -78dBm, the same as above ((priv->rssi_correction-62-16)<<1)
+		static_lbt_th = rssi_dbm_to_rssi_half_db(-(priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]), priv->rssi_correction);
+		fpga_lbt_th = (priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]==0?auto_lbt_th:static_lbt_th);
 		xpu_api->XPU_REG_LBT_TH_write(fpga_lbt_th);
-
 		priv->last_auto_fpga_lbt_th = auto_lbt_th;
-		
+
+		// Set rssi_half_db threshold (-85dBm equivalent) to receiver. Receiver will not react to signal lower than this rssi. See test records (OPENOFDM_RX_POWER_THRES_INIT in hw_def.h)
+		receiver_rssi_dbm_th = (priv->drv_rx_reg_val[DRV_RX_REG_IDX_DEMOD_TH]==0?OPENOFDM_RX_RSSI_DBM_TH_DEFAULT:(-priv->drv_rx_reg_val[DRV_RX_REG_IDX_DEMOD_TH]));
+		openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write((OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT<<16)|rssi_dbm_to_rssi_half_db(receiver_rssi_dbm_th, priv->rssi_correction));
+
 		if (actual_rx_lo < 2500) {
 			if (priv->band != BAND_2_4GHZ) {
 				priv->band = BAND_2_4GHZ;
@@ -221,7 +217,7 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
 			}
 		}
-		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d (auto %d static %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,auto_lbt_th,static_lbt_th);
+		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d(%ddBm) (auto %d static %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,rssi_half_db_to_rssi_dbm(fpga_lbt_th, priv->rssi_correction),auto_lbt_th,static_lbt_th);
 	}
 }
 
