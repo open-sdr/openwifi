@@ -1815,20 +1815,20 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
 	if (tmp_dev == NULL) {
 		printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);
-		err = -ENOMEM;
+		err = -ENODEV;
 		goto err_free_dev;
 	}
 	printk("%s bus_find_device ad9361-phy: %s. driver_data pointer %p\n", sdr_compatible_str, ((struct spi_device*)tmp_dev)->modalias, (void*)(((struct spi_device*)tmp_dev)->dev.driver_data));
 	if (((struct spi_device*)tmp_dev)->dev.driver_data == NULL) {
 		printk(KERN_ERR "%s find_dev ad9361-phy failed. dev.driver_data == NULL\n",sdr_compatible_str);
-		err = -ENOMEM;
+		err = -ENODEV;
 		goto err_free_dev;
 	}
 	
 	priv->ad9361_phy = ad9361_spi_to_phy((struct spi_device*)tmp_dev);
 	if (!(priv->ad9361_phy)) {
 		printk(KERN_ERR "%s ad9361_spi_to_phy failed\n",sdr_compatible_str);
-		err = -ENOMEM;
+		err = -ENODEV;
 		goto err_free_dev;
 	}
 	printk("%s ad9361_spi_to_phy ad9361-phy: %s\n", sdr_compatible_str, priv->ad9361_phy->spi->modalias);
@@ -1851,28 +1851,28 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	tmp_dev = bus_find_device( &platform_bus_type, NULL, "cf-ad9361-dds-core-lpc", custom_match_platform_dev );
 	if (!tmp_dev) {
 		printk(KERN_ERR "%s bus_find_device platform_bus_type cf-ad9361-dds-core-lpc failed\n",sdr_compatible_str);
-		err = -ENOMEM;
+		err = -ENODEV;
 		goto err_free_dev;
 	}
 
 	tmp_pdev = to_platform_device(tmp_dev);
 	if (!tmp_pdev) {
 		printk(KERN_ERR "%s to_platform_device failed\n",sdr_compatible_str);
-		err = -ENOMEM;
+		err = -ENODEV;
 		goto err_free_dev;
 	}
 
 	tmp_indio_dev = platform_get_drvdata(tmp_pdev);
 	if (!tmp_indio_dev) {
 		printk(KERN_ERR "%s platform_get_drvdata failed\n",sdr_compatible_str);
-		err = -ENOMEM;
+		err = -ENODEV;
 		goto err_free_dev;
 	}
 
 	priv->dds_st = iio_priv(tmp_indio_dev);
 	if (!(priv->dds_st)) {
 		printk(KERN_ERR "%s iio_priv failed\n",sdr_compatible_str);
-		err = -ENOMEM;
+		err = -ENODEV;
 		goto err_free_dev;
 	}
 	printk("%s openwifi_dev_probe: cf-ad9361-dds-core-lpc dds_st->version %08x chip_info->name %s\n",sdr_compatible_str,priv->dds_st->version,priv->dds_st->chip_info->name);
@@ -1939,6 +1939,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 		#endif
 	} else {
 		printk("%s openwifi_dev_probe: Warning! priv->rf_bw == %dHz (should be 20000000 or 40000000)\n",sdr_compatible_str, priv->rf_bw);
+		err = -EBADRQC;
+		goto err_free_dev;
 	}
 
 	printk("%s openwifi_dev_probe: test_mode %d AGGR_ENABLE %d TX_OFFSET_TUNING_ENABLE %d init_tx_att %d\n", sdr_compatible_str, test_mode, AGGR_ENABLE, TX_OFFSET_TUNING_ENABLE, init_tx_att);
@@ -2106,9 +2108,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	if (!is_valid_ether_addr(priv->mac_addr)) {
 		printk(KERN_WARNING "%s openwifi_dev_probe: WARNING Invalid hwaddr! Using randomly generated MAC addr\n",sdr_compatible_str);
 		eth_random_addr(priv->mac_addr);
-	} else {
-		printk("%s openwifi_dev_probe: mac_addr %02x:%02x:%02x:%02x:%02x:%02x\n",sdr_compatible_str,priv->mac_addr[0],priv->mac_addr[1],priv->mac_addr[2],priv->mac_addr[3],priv->mac_addr[4],priv->mac_addr[5]);
 	}
+	printk("%s openwifi_dev_probe: mac_addr %02x:%02x:%02x:%02x:%02x:%02x\n",sdr_compatible_str,priv->mac_addr[0],priv->mac_addr[1],priv->mac_addr[2],priv->mac_addr[3],priv->mac_addr[4],priv->mac_addr[5]);
 	SET_IEEE80211_PERM_ADDR(dev, priv->mac_addr);
 
 	spin_lock_init(&priv->lock);
@@ -2116,6 +2117,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	err = ieee80211_register_hw(dev);
 	if (err) {
 		pr_err(KERN_ERR "%s openwifi_dev_probe: WARNING Cannot register device\n",sdr_compatible_str);
+		err = -EIO;
 		goto err_free_dev;
 	} else {
 		printk("%s openwifi_dev_probe: ieee80211_register_hw %d\n",sdr_compatible_str, err);
