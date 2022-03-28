@@ -28,7 +28,7 @@ for i=1:num_iq_capture
     sp = (i-1)*num_data_in_each_iq_capture + 1;
     ep = i*num_data_in_each_iq_capture;
     timestamp(i) = b(sp,1) + (2^16)*b(sp,2) + (2^32)*b(sp,3) + (2^48)*b(sp,4);
-    iq_capture(:,i) = 1i.*b((sp+1):ep,1) + b((sp+1):ep,2);
+    iq_capture(:,i) = b((sp+1):ep,1) + 1i.*b((sp+1):ep,2);
     agc_gain(:,i) = b((sp+1):ep,3);
     rssi_half_db(:,i) = b((sp+1):ep,4);
 end
