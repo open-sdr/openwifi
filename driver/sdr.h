@@ -35,6 +35,8 @@ struct openwifi_buffer_descriptor {
     // u32 hw_queue_idx;
     // u32 retry_limit;
     // u32 need_ack;
+	u8 prio;
+	u16 len_mpdu;
     u16 seq_no;
     struct sk_buff *skb_linked;
     dma_addr_t dma_mapping_addr;
@@ -45,7 +47,7 @@ struct openwifi_ring {
 	struct openwifi_buffer_descriptor *bds;
     u32 bd_wr_idx;
 	u32 bd_rd_idx;
-    u32 stop_flag; // track the stop/wake status between tx interrupt and openwifi_tx
+    int stop_flag; // -1: normal run; X>=0: stop due to queueX full
 	// u32 num_dma_symbol_request;
 	// u32 reserved;
 } __packed;
@@ -127,7 +129,7 @@ enum sdrctl_reg_cat {
 #define LEN_PHY_CRC 4
 #define LEN_MPDU_DELIM 4
 
-#define RING_ROOM_THRESHOLD 4
+#define RING_ROOM_THRESHOLD 2
 #define NUM_BIT_NUM_TX_BD 6
 #define NUM_TX_BD (1<<NUM_BIT_NUM_TX_BD) // !!! should align to the fifo size in tx_bit_intf.v
 
