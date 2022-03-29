@@ -707,6 +707,72 @@ static inline struct gpio_led_data * //please align with the implementation in l
 	return container_of(led_cdev, struct gpio_led_data, cdev);
 }
 
+inline int calc_n_ofdm(int num_octet, int n_dbps)
+{
+	int num_bit, num_ofdm_sym;
+	
+	num_bit      = 22+num_octet*8;
+	num_ofdm_sym = (num_bit/n_dbps) + ((num_bit%n_dbps)!=0);
+
+	return (num_ofdm_sym);
+}
+
+inline __le16 gen_ht_duration_id(__le16 frame_control, __le16 aid, u8 qos_hdr, bool use_ht_aggr, u16 rate_hw_value, u16 sifs) 
+{
+// COTS wifi ht QoS data duration field analysis (lots of capture):
+
+// ht non-aggr QoS data: 44, type 2 (data frame) sub-type 8 (1000) 21.7/52/57.8/58.5/65Mbps
+// ack     ht 36 + 4*[(22+14*8)/78] = 36 + 4*2 = 44
+// ack legacy 20 + 4*[(22+14*8)/72] = 20 + 4*2 = 28
+
+// ht non-aggr QoS data: 60, type 2 (data frame) sub-type 8 (1000) 6.5Mbps
+// ack     ht 36 + 4*[(22+14*8)/26] = 36 + 4*6 = 60
+// ack legacy 20 + 4*[(22+14*8)/24] = 20 + 4*6 = 44
+
+// ht     aggr QoS data: 52, type 2 (data frame) sub-type 8 (1000) 19.5/28.9/39/57.8/65/72.2Mbps
+// ack     ht 36 + 4*[(22+32*8)/78] = 36 + 4*4 = 52
+// ack legacy 20 + 4*[(22+32*8)/72] = 20 + 4*4 = 36
+
+// ht     aggr QoS data: 60, type 2 (data frame) sub-type 8 (1000) 13/14.4Mbps
+// ack     ht 36 + 4*[(22+32*8)/52] = 36 + 4*6 = 60
+// ack legacy 20 + 4*[(22+32*8)/48] = 20 + 4*6 = 44
+
+// ht and legacy rate mapping is ont one on one, instead it is modulation combined with coding rate
+// modulate  coding  ht-mcs ht-n_dbps legacy-mcs legacy-n_dbps
+// BPSK      1/2     0      26        4          24
+// QPSK      1/2     1      52        6          48
+// QPSK      3/4     2      78        7          72
+// 16QAM     1/2     3      104       8          96
+// 16QAM     3/4     4      156       9          144
+// 64QAM     2/3     5      208       10         192
+// 64QAM     3/4     6      234       11         216
+
+// conclusion: duration is: assume ack/blk-ack uses legacy, plus SIFS
+
+// other observation: ht always use QoS data, not data (sub-type)
+// other observation: management/control frame always in non-ht
+
+	__le16 dur = 0;
+	u16 n_dbps;
+	int num_octet, num_ofdm_sym;
+
+	if (ieee80211_is_pspoll(frame_control)) {
+		dur = (aid|0xc000);
+	} else if (ieee80211_is_data_qos(frame_control) && (~(qos_hdr&IEEE80211_QOS_CTL_ACK_POLICY_NOACK))) {
+		rate_hw_value = (rate_hw_value>6?6:rate_hw_value);
+		n_dbps = (rate_hw_value==0?wifi_n_dbps_table[4]:wifi_n_dbps_table[rate_hw_value+5]);
+		num_octet = (use_ht_aggr?32:14); //32 bytes for compressed block ack; 14 bytes for normal ack
+		num_ofdm_sym = calc_n_ofdm(num_octet, n_dbps);
+		dur = sifs + 20 + 4*num_ofdm_sym; // 20us legacy preamble
+		// printk("%s gen_ht_duration_id: num_octet %d n_dbps %d num_ofdm_sym %d dur %d\n", sdr_compatible_str, 
+		// num_octet, n_dbps, num_ofdm_sym, dur);
+	} else {
+		printk("%s openwifi_tx: WARNING gen_ht_duration_id wrong pkt type!\n", sdr_compatible_str);
+	}
+
+	return dur;
+}
+
 static void openwifi_tx(struct ieee80211_hw *dev,
 		       struct ieee80211_tx_control *control,
 		       struct sk_buff *skb)
@@ -791,7 +857,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		addr3_high16 = *((u16*)(hdr->addr3));
 	}
 
-	duration_id = hdr->duration_id;
 	frame_control=hdr->frame_control;
 	pkt_need_ack = (!(info->flags&IEEE80211_TX_CTL_NO_ACK));
 
@@ -825,6 +890,12 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		rate_hw_value = 1;
 
 	sifs = (priv->actual_rx_lo<2500?10:16);
+
+	if (use_ht_rate) {
+		// printk("%s openwifi_tx: rate_hw_value %d aggr %d sifs %d\n", sdr_compatible_str, rate_hw_value, use_ht_aggr, sifs);
+		hdr->duration_id = gen_ht_duration_id(frame_control, control->sta->aid, qos_hdr, use_ht_aggr, rate_hw_value, sifs); //linux only do it for 11a/g, not for 11n and later
+	}
+	duration_id = hdr->duration_id;
 
 	if (use_rts_cts)
 		printk("%s openwifi_tx: WARNING sn %d use_rts_cts is not supported!\n", sdr_compatible_str, ring->bd_wr_idx);
