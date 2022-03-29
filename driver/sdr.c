@@ -758,6 +758,11 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 	// get Linux priority/queue setting info and target mac address
 	prio = skb_get_queue_mapping(skb);
+	if (prio >= MAX_NUM_HW_QUEUE) {
+		printk("%s openwifi_tx: WARNING prio%d\n", sdr_compatible_str, prio);
+		goto openwifi_tx_early_out;
+	}
+
 	addr1_low32  = *((u32*)(hdr->addr1+2));
 	ring = &(priv->tx_ring[prio]);
 
