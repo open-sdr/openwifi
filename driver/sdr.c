@@ -458,21 +458,16 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 
 		signal = rssi_half_db_to_rssi_dbm(rssi_half_db, priv->rssi_correction);
 
-		// fc_di =        (*((u32*)(pdata_tmp+16)));
-		// addr1_high16 = (*((u16*)(pdata_tmp+16+4)));
-		// addr1_low32  = (*((u32*)(pdata_tmp+16+4+2)));
-		// addr2_high16 = (*((u16*)(pdata_tmp+16+6+4)));
-		// addr2_low32  = (*((u32*)(pdata_tmp+16+6+4+2)));
-		// addr3_high16 = (*((u16*)(pdata_tmp+16+12+4)));
-		// addr3_low32  = (*((u32*)(pdata_tmp+16+12+4+2)));
+		hdr = (struct ieee80211_hdr *)(pdata_tmp+16);
+		if (len>=20) {
+			addr2_low32  = *((u32*)(hdr->addr2+2));
+			addr2_high16 = *((u16*)(hdr->addr2));
+		}
+
+		addr1_low32  = *((u32*)(hdr->addr1+2));
+		addr1_high16 = *((u16*)(hdr->addr1));
+
 		if ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&2) || ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) && fcs_ok==0 ) ) {
-			hdr = (struct ieee80211_hdr *)(pdata_tmp+16);
-			addr1_low32  = *((u32*)(hdr->addr1+2));
-			addr1_high16 = *((u16*)(hdr->addr1));
-			if (len>=20) {
-				addr2_low32  = *((u32*)(hdr->addr2+2));
-				addr2_high16 = *((u16*)(hdr->addr2));
-			}
 			if (len>=26) {
 				addr3_low32  = *((u32*)(hdr->addr3+2));
 				addr3_high16 = *((u16*)(hdr->addr3));
