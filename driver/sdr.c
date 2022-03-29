@@ -273,7 +273,7 @@ static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 	struct openwifi_ring *ring = &(priv->tx_ring[ring_idx]);
 	int i;
 
-	ring->stop_flag = 0;
+	ring->stop_flag = -1;
 	ring->bd_wr_idx = 0;
 	ring->bd_rd_idx = 0;
 	ring->bds = kmalloc(sizeof(struct openwifi_buffer_descriptor)*NUM_TX_BD,GFP_KERNEL);
@@ -283,10 +283,12 @@ static int openwifi_init_tx_ring(struct openwifi_priv *priv, int ring_idx)
 	}
 
 	for (i = 0; i < NUM_TX_BD; i++) {
-		ring->bds[i].skb_linked=0; // for tx, skb is from upper layer
+		ring->bds[i].skb_linked=NULL; // for tx, skb is from upper layer
 		//at first right after skb allocated, head, data, tail are the same.
 		ring->bds[i].dma_mapping_addr = 0; // for tx, mapping is done after skb is received from upper layer in tx routine
-		ring->bds[i].seq_no = 0;
+		ring->bds[i].seq_no = 0xffff; // invalid value
+		ring->bds[i].prio = 0xff; // invalid value
+		ring->bds[i].len_mpdu = 0; // invalid value
 	}
 
 	return 0;
@@ -297,7 +299,7 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 	struct openwifi_ring *ring = &(priv->tx_ring[ring_idx]);
 	int i;
 
-	ring->stop_flag = 0;
+	ring->stop_flag = -1;
 	ring->bd_wr_idx = 0;
 	ring->bd_rd_idx = 0;
 	for (i = 0; i < NUM_TX_BD; i++) {
@@ -312,9 +314,11 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
 			printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08x\n", sdr_compatible_str, 
 			ring_idx, i, (void*)(ring->bds[i].skb_linked), (unsigned int)(ring->bds[i].dma_mapping_addr));
 
-		ring->bds[i].skb_linked=0;
+		ring->bds[i].skb_linked=NULL;
 		ring->bds[i].dma_mapping_addr = 0;
-		ring->bds[i].seq_no = 0;
+		ring->bds[i].seq_no = 0xffff; // invalid value
+		ring->bds[i].prio = 0xff; // invalid value
+		ring->bds[i].len_mpdu = 0; // invalid value
 	}
 	if (ring->bds)
 		kfree(ring->bds);
@@ -552,16 +556,17 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 {
 	struct ieee80211_hw *dev = dev_id;
 	struct openwifi_priv *priv = dev->priv;
-	struct openwifi_ring *ring;
+	struct openwifi_ring *ring, *drv_ring_tmp;
 	struct sk_buff *skb;
 	struct ieee80211_tx_info *info;
-	u32 reg_val1, hw_queue_len, reg_val2, prio, queue_idx, dma_fifo_no_room_flag, num_slot_random, cw, loop_count=0;
+	struct ieee80211_hdr *hdr;
+	u32 reg_val1, hw_queue_len, reg_val2, dma_fifo_no_room_flag, num_slot_random, cw, loop_count=0, addr1_low32, mcs_for_sysfs;
 	u16 seq_no, pkt_cnt, blk_ack_ssn, start_idx;
-	u8 nof_retx=-1, last_bd_rd_idx, i;
+	u8 nof_retx=-1, last_bd_rd_idx, i, prio, queue_idx, nof_retx_stat;
 	u64 blk_ack_bitmap;
 	// u16 prio_rd_idx_store[64]={0};
-	bool tx_fail=false;
-	bool use_ht_aggr;
+	bool tx_fail=false, fpga_queue_has_room=false;
+	bool use_ht_aggr, pkt_need_ack, use_ht_rate, prio_wake_up_flag = false;
 
 	spin_lock(&priv->lock);
 
@@ -585,27 +590,49 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 			pkt_cnt = (reg_val2&0x3F);
 			blk_ack_ssn = ((reg_val2>>6)&0xFFF);
 
-			ring = &(priv->tx_ring[prio]);
+			queue_idx = ((reg_val1>>15)&(MAX_NUM_HW_QUEUE-1));
+			dma_fifo_no_room_flag = tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read();
+			hw_queue_len = tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read();
+			// check which linux prio is stopped by this queue (queue_idx)
+			for (i=0; i<MAX_NUM_SW_QUEUE; i++) {
+				drv_ring_tmp = &(priv->tx_ring[i]);
+				if ( drv_ring_tmp->stop_flag == prio ) {
 
-			if ( ring->stop_flag == 1) {
-				// Wake up Linux queue if FPGA and driver ring have room
-				queue_idx = ((reg_val1>>15)&(MAX_NUM_HW_QUEUE-1));
-				dma_fifo_no_room_flag = tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read();
-				hw_queue_len = tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read();
+					if ( ((dma_fifo_no_room_flag>>i)&1)==0 && (NUM_TX_BD-((hw_queue_len>>(i*8))&0xFF))>=RING_ROOM_THRESHOLD )
+						fpga_queue_has_room=true;
+					else
+						fpga_queue_has_room=false;
 
-				if ( ((dma_fifo_no_room_flag>>queue_idx)&1)==0 && (NUM_TX_BD-((hw_queue_len>>(queue_idx*8))&0xFF))>=RING_ROOM_THRESHOLD ) {
-					// printk("%s openwifi_tx_interrupt: WARNING ieee80211_wake_queue loop %d call %d\n", sdr_compatible_str, loop_count, priv->call_counter);
-					printk("%s openwifi_tx_interrupt: WARNING ieee80211_wake_queue prio %d queue %d no room flag %x hw queue len %08x wr %d rd %d\n", sdr_compatible_str,
-					prio, queue_idx, dma_fifo_no_room_flag, hw_queue_len, ring->bd_wr_idx, last_bd_rd_idx);
-					ieee80211_wake_queue(dev, prio);
-					ring->stop_flag = 0;
+					// Wake up Linux queue due to the current fpga queue releases some room
+					if( priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_NORMAL_QUEUE_STOP )
+						printk("%s openwifi_tx_interrupt: WARNING ieee80211_wake_queue prio%d i%d queue%d no room flag%x hwq len%08x wr%d rd%d\n", sdr_compatible_str,
+						        prio, i, queue_idx, dma_fifo_no_room_flag, hw_queue_len, drv_ring_tmp->bd_wr_idx, last_bd_rd_idx);
+						
+					if (fpga_queue_has_room) {
+						prio_wake_up_flag = true;
+						drv_ring_tmp->stop_flag = -1;
+
+					} else {
+						if( priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_NORMAL_QUEUE_STOP )
+							printk("%s openwifi_tx_interrupt: WARNING no room! prio_wake_up_flag%d\n", sdr_compatible_str, prio_wake_up_flag);
+					}
 				}
 			}
+			if (prio_wake_up_flag)
+				ieee80211_wake_queue(dev, prio);
 
+			ring = &(priv->tx_ring[queue_idx]);
 			for(i = 1; i <= pkt_cnt; i++)
 			{
 				ring->bd_rd_idx = (last_bd_rd_idx + i - pkt_cnt + 64)%64;
 				seq_no = ring->bds[ring->bd_rd_idx].seq_no;
+
+				if (seq_no == 0xffff) {// it has been forced cleared by the openwifi_tx (due to out-of-order Tx of different queues to the air?)
+					printk("%s openwifi_tx_interrupt: WARNING wr%d rd%d last_bd_rd_idx%d i%d pkt_cnt%d prio%d fpga q%d hwq len%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%llu\n", sdr_compatible_str,
+					ring->bd_wr_idx, ring->bd_rd_idx, last_bd_rd_idx, i, pkt_cnt, prio, queue_idx, hw_queue_len, ring->bds[ring->bd_rd_idx].prio, ring->bds[ring->bd_rd_idx].len_mpdu, seq_no, ring->bds[ring->bd_rd_idx].skb_linked, ring->bds[ring->bd_rd_idx].dma_mapping_addr);
+					continue;
+				}
+
 				skb = ring->bds[ring->bd_rd_idx].skb_linked;
 
 				dma_unmap_single(priv->tx_chan->device->dev,ring->bds[ring->bd_rd_idx].dma_mapping_addr,
@@ -634,21 +661,28 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 					info->flags &= (~IEEE80211_TX_CTL_AMPDU);
 				}
 
+				pkt_need_ack = (!(info->flags & IEEE80211_TX_CTL_NO_ACK));
 				if (tx_fail == false)
 					info->flags |= IEEE80211_TX_STAT_ACK;
 
 				info->status.rates[0].count = nof_retx + 1; //according to our test, the 1st rate is the most important. we only do retry on the 1st rate
 				info->status.rates[1].idx = -1;
-				info->status.rates[2].idx = -1;
-				info->status.rates[3].idx = -1;//in mac80211.h: #define IEEE80211_TX_MAX_RATES	4
+				// info->status.rates[2].idx = -1;
+				// info->status.rates[3].idx = -1;//in mac80211.h: #define IEEE80211_TX_MAX_RATES	4
 				info->status.antenna = priv->runtime_tx_ant_cfg;
 
-				if ( tx_fail && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
-					printk("%s openwifi_tx_interrupt: WARNING pkt_no %d/%d tx_result [nof_retx %d pass %d] prio%d wr%d rd%d\n", sdr_compatible_str, i, pkt_cnt, nof_retx+1, !tx_fail, prio, ring->bd_wr_idx, ring->bd_rd_idx);
-				if ( ( (!(info->flags & IEEE80211_TX_CTL_NO_ACK))||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&2) )
-					printk("%s openwifi_tx_interrupt: tx_result [nof_retx %d pass %d] prio%d wr%d rd%d num_rand_slot %d cw %d \n", sdr_compatible_str, nof_retx+1, !tx_fail, prio, ring->bd_wr_idx, ring->bd_rd_idx, num_slot_random, cw);
+				if ( ( (!pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_BROADCAST) ) || ( (pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_UNICAST) ) ){
+					printk("%s openwifi_tx_interrupt: tx_result [nof_retx %d pass %d] SC%d prio%d q%d wr%d rd%d num_slot%d cw%d hwq len%08x no_room_flag%x\n", sdr_compatible_str,
+					nof_retx+1, !tx_fail, seq_no, prio, queue_idx, ring->bd_wr_idx, ring->bd_rd_idx, num_slot_random, cw, hw_queue_len, dma_fifo_no_room_flag);
+				}
 
 				ieee80211_tx_status_irqsafe(dev, skb);
+
+				ring->bds[ring->bd_rd_idx].prio = 0xff; // invalid value
+				ring->bds[ring->bd_rd_idx].len_mpdu = 0; // invalid value
+				ring->bds[ring->bd_rd_idx].seq_no = 0xffff;
+				ring->bds[ring->bd_rd_idx].skb_linked = NULL;
+				ring->bds[ring->bd_rd_idx].dma_mapping_addr = 0;
 			}
 			
 			loop_count++;
@@ -658,7 +692,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 		} else
 			break;
 	}
-	if ( loop_count!=1 && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&1) )
+	if ( loop_count!=1 && ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG])&DMESG_LOG_ERROR) )
 		printk("%s openwifi_tx_interrupt: WARNING loop_count %d\n", sdr_compatible_str, loop_count);
 
 	spin_unlock(&priv->lock);
@@ -776,6 +810,19 @@ inline __le16 gen_ht_duration_id(__le16 frame_control, __le16 aid, u8 qos_hdr, b
 	return dur;
 }
 
+inline void report_pkt_loss_due_to_driver_drop(struct ieee80211_hw *dev, struct sk_buff *skb)
+{
+	struct openwifi_priv *priv = dev->priv;
+	struct ieee80211_tx_info *info;
+
+	info = IEEE80211_SKB_CB(skb);
+	ieee80211_tx_info_clear_status(info);
+	info->status.rates[0].count = 1;
+	info->status.rates[1].idx = -1;
+	info->status.antenna = priv->runtime_tx_ant_cfg;
+	ieee80211_tx_status_irqsafe(dev, skb);
+}
+
 static void openwifi_tx(struct ieee80211_hw *dev,
 		       struct ieee80211_tx_control *control,
 		       struct sk_buff *skb)
@@ -786,12 +833,13 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
 	struct openwifi_ring *ring = NULL;
 	struct sk_buff *skb_new; // temp skb for internal use
+	struct ieee80211_tx_info *info_skipped;
 	dma_addr_t dma_mapping_addr;
-	unsigned int i;
+	unsigned int i, j, empty_bd_idx = 0;
 	u16 rate_signal_value, rate_hw_value, len_mpdu, len_psdu, num_dma_symbol, len_mpdu_delim_pad=0, num_byte_pad;
 	u32 num_dma_byte, addr1_low32, addr2_low32=0, addr3_low32=0, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
 	u16 addr1_high16, addr2_high16=0, addr3_high16=0, sc, seq_no=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration, n_dbps;
-	u8 pkt_need_ack, retry_limit_raw,use_short_gi,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr,prio,queue_idx;
+	u8 pkt_need_ack, retry_limit_raw,use_short_gi,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr,prio,queue_idx,drv_ring_idx;
 	bool drv_seqno=false, use_rts_cts, use_cts_protect, ht_aggr_start=false, use_ht_rate, use_ht_aggr, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 dma_fifo_no_room_flag, hw_queue_len, delay_count=0;
@@ -833,23 +881,73 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 
 	addr1_low32  = *((u32*)(hdr->addr1+2));
-	ring = &(priv->tx_ring[prio]);
 
-	// -------------- DO your idea here! Map Linux/SW "prio" to hardware "queue_idx" -----------
+	// ---- DO your idea here! Map Linux/SW "prio" to driver "drv_ring_idx" (then 1on1 to FPGA queue_idx) ---
 	if (priv->slice_idx == 0xFFFFFFFF) {// use Linux default prio setting, if there isn't any slice config
-		queue_idx = prio;
-	} else {// customized prio to queue_idx mapping
-		//if (fc_type==2 && fc_subtype==0 && (!addr_flag)) { // for unicast data packet only
+		drv_ring_idx = prio;
+	} else {// customized prio to drv_ring_idx mapping
 		// check current packet belonging to which slice/hw-queue
-			for (i=0; i<MAX_NUM_HW_QUEUE; i++) {
-				if ( priv->dest_mac_addr_queue_map[i] == addr1_low32 ) {
-					break;
-				}
+		for (i=0; i<MAX_NUM_HW_QUEUE; i++) {
+			if ( priv->dest_mac_addr_queue_map[i] == addr1_low32 ) {
+				break;
 			}
-		//}
-		queue_idx = (i>=MAX_NUM_HW_QUEUE?2:i); // if no address is hit, use FPGA queue 2. because the queue 2 is the longest.
+		}
+		drv_ring_idx = (i>=MAX_NUM_HW_QUEUE?prio:i); // if no address is hit
 	}
-	// -------------------- end of Map Linux/SW "prio" to hardware "queue_idx" ------------------
+
+	ring = &(priv->tx_ring[drv_ring_idx]);
+
+	spin_lock_irqsave(&priv->lock, flags);
+	if (ring->bds[ring->bd_wr_idx].seq_no != 0xffff) { // not cleared yet by interrupt
+		for (i=1; i<NUM_TX_BD; i++) {
+			if (ring->bds[(ring->bd_wr_idx+i)&(NUM_TX_BD-1)].seq_no == 0xffff) {
+				empty_bd_idx = i;
+				break;
+			}
+		}
+		hw_queue_len = tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read();
+		if (empty_bd_idx) { // clear all bds before the empty bd and report failure to Linux
+			for (i=0; i<empty_bd_idx; i++) {
+				j = ( (ring->bd_wr_idx+i)&(NUM_TX_BD-1) );
+				printk("%s openwifi_tx: WARNING fake stop queue empty_bd_idx%d i%d lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%llu\n", sdr_compatible_str,
+				empty_bd_idx, i, prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked, ring->bds[j].dma_mapping_addr);
+				// tell Linux this skb failed
+				skb_new = ring->bds[j].skb_linked;
+				dma_unmap_single(priv->tx_chan->device->dev,ring->bds[j].dma_mapping_addr,
+							skb_new->len, DMA_MEM_TO_DEV);
+				info_skipped = IEEE80211_SKB_CB(skb_new);
+				ieee80211_tx_info_clear_status(info_skipped);
+				info_skipped->status.rates[0].count = 1;
+				info_skipped->status.rates[1].idx = -1;
+				info_skipped->status.antenna = priv->runtime_tx_ant_cfg;
+				ieee80211_tx_status_irqsafe(dev, skb_new);
+
+				ring->bds[j].prio = 0xff; // invalid value
+				ring->bds[j].len_mpdu = 0; // invalid value
+				ring->bds[j].seq_no = 0xffff;
+				ring->bds[j].skb_linked = NULL;
+				ring->bds[j].dma_mapping_addr = 0;
+
+			}
+			if (ring->stop_flag != -1) { //the interrupt seems will never come, we need to wake up the queue in case the interrupt will never wake it up
+				ieee80211_wake_queue(dev, ring->stop_flag);
+				ring->stop_flag = -1;
+			}
+		} else {
+			j = ring->bd_wr_idx;
+			printk("%s openwifi_tx: WARNING real stop queue lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%llu\n", sdr_compatible_str,
+			prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked, ring->bds[j].dma_mapping_addr);
+	
+			ieee80211_stop_queue(dev, prio); // here we should stop those prio related to the queue idx flag set in TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read
+			ring->stop_flag = prio;
+
+			spin_unlock_irqrestore(&priv->lock, flags);
+			goto openwifi_tx_early_out;
+		}
+	}
+	spin_unlock_irqrestore(&priv->lock, flags);
+	// -------------------- end of Map Linux/SW "prio" to driver "drv_ring_idx" ------------------
+
 	// get other info from packet header
 	addr1_high16 = *((u16*)(hdr->addr1));
 	if (len_mpdu>=20) {
@@ -1007,11 +1105,11 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 	num_dma_symbol = (len_psdu>>TX_INTF_NUM_BYTE_PER_DMA_SYMBOL_IN_BITS) + ((len_psdu&(TX_INTF_NUM_BYTE_PER_DMA_SYMBOL-1))!=0);
 
-	if ( ( (!pkt_need_ack)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
-		printk("%s openwifi_tx: %4dbytes ht%d aggr%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
-			len_mpdu, (use_ht_rate == false ? 0 : 1), (use_ht_aggr == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
+	if ( ( (!pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_BROADCAST) ) || ( (pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_UNICAST) ) ) 
+		printk("%s openwifi_tx: %dB RC%x %dM FC%04x DI%04x ADDR%04x%08x/%04x%08x/%04x%08x flag%08x QoS%02x SC%d_%d retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
+			len_mpdu, rc_flags, (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
-			seq_no, info->flags, retry_limit_raw, pkt_need_ack, prio, queue_idx,
+			info->flags, qos_hdr, seq_no, drv_seqno, retry_limit_raw, pkt_need_ack, prio, drv_ring_idx,
 			// use_rts_cts,use_cts_protect|force_use_cts_protect,wifi_rate_all[cts_rate_hw_value],cts_duration,
 			ring->bd_wr_idx,ring->bd_rd_idx);
 
@@ -1100,6 +1198,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 	retry_limit_hw_value = ( retry_limit_raw==0?0:((retry_limit_raw - 1)&0xF) );
 
+	queue_idx = drv_ring_idx; // from driver ring idx to FPGA queue_idx mapping
+
 	cts_rate_signal_value = wifi_mcs_table_11b_force_up[cts_rate_hw_value];
 	cts_reg = ((use_cts_protect|force_use_cts_protect)<<31 | cts_use_traffic_rate<<30 | cts_duration<<8 | cts_rate_signal_value<<4 | rate_signal_value);
 	tx_config = ( prio<<26 | ring->bd_wr_idx<<20 | queue_idx<<18 | retry_limit_hw_value<<14 | pkt_need_ack<<13 | num_dma_symbol );
@@ -1121,12 +1221,14 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	// -------------check whether FPGA dma fifo and queue (queue_idx) has enough room-------------
 	dma_fifo_no_room_flag = tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read();
 	hw_queue_len = tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read();
-	if ( ((dma_fifo_no_room_flag>>queue_idx)&1) || ((NUM_TX_BD-((hw_queue_len>>(queue_idx*8))&0xFF))<RING_ROOM_THRESHOLD)  || ring->stop_flag==1 ) {
+	if ( ((dma_fifo_no_room_flag>>queue_idx)&1) || ((NUM_TX_BD-((hw_queue_len>>(queue_idx*8))&0xFF))<=RING_ROOM_THRESHOLD)  || ring->stop_flag>=0 ) {
+		if( priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_NORMAL_QUEUE_STOP )
+			printk("%s openwifi_tx: WARNING ieee80211_stop_queue prio%d queue%d no room flag%x hwq len%08x request%d wr%d rd%d\n", sdr_compatible_str,
+			        prio, queue_idx, dma_fifo_no_room_flag, hw_queue_len, num_dma_symbol, ring->bd_wr_idx, ring->bd_rd_idx);
+
 		ieee80211_stop_queue(dev, prio); // here we should stop those prio related to the queue idx flag set in TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read
-		printk("%s openwifi_tx: WARNING ieee80211_stop_queue prio %d queue %d no room flag %x hw queue len %08x request %d wr %d rd %d\n", sdr_compatible_str,
-		prio, queue_idx, dma_fifo_no_room_flag, hw_queue_len, num_dma_symbol, ring->bd_wr_idx, ring->bd_rd_idx);
-		ring->stop_flag = 1;
-		goto openwifi_tx_early_out_after_lock;
+		ring->stop_flag = prio;
+		// goto openwifi_tx_early_out_after_lock;
 	}
 	// --------end of check whether FPGA fifo (queue_idx) has enough room------------
 
@@ -1173,6 +1275,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 
 	// seems everything is ok. let's mark this pkt in bd descriptor ring
+	ring->bds[ring->bd_wr_idx].prio = prio;
+	ring->bds[ring->bd_wr_idx].len_mpdu = len_mpdu;
 	ring->bds[ring->bd_wr_idx].seq_no = seq_no;
 	ring->bds[ring->bd_wr_idx].skb_linked = skb;
 	ring->bds[ring->bd_wr_idx].dma_mapping_addr = dma_mapping_addr;
@@ -1189,13 +1293,15 @@ openwifi_tx_after_dma_mapping:
 	dma_unmap_single(priv->tx_chan->device->dev, dma_mapping_addr, num_dma_byte, DMA_MEM_TO_DEV);
 
 openwifi_tx_early_out_after_lock:
-	dev_kfree_skb(skb);
 	spin_unlock_irqrestore(&priv->lock, flags);
+	report_pkt_loss_due_to_driver_drop(dev, skb);
+	// dev_kfree_skb(skb);
 	// printk("%s openwifi_tx: WARNING openwifi_tx_after_dma_mapping phy_tx_sn %d queue %d\n", sdr_compatible_str,priv->phy_tx_sn,queue_idx);
 	return;
 
 openwifi_tx_early_out:
-	//dev_kfree_skb(skb);
+	report_pkt_loss_due_to_driver_drop(dev, skb);
+	// dev_kfree_skb(skb);
 	// printk("%s openwifi_tx: WARNING openwifi_tx_early_out phy_tx_sn %d queue %d\n", sdr_compatible_str,priv->phy_tx_sn,queue_idx);
 }
 
