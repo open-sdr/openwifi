@@ -451,7 +451,8 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			// }
 			content_ok = true;
 		} else {
-			printk("%s openwifi_rx: WARNING content!\n", sdr_compatible_str);
+			printk("%s openwifi_rx: WARNING content! len%d overflow%d rate_idx%d\n", sdr_compatible_str, 
+			len, len_overflow, rate_idx);
 			content_ok = false;
 		}
 
