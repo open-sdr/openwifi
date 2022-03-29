@@ -1404,6 +1404,10 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(0); // release M AXIS
 	xpu_api->XPU_REG_TSF_LOAD_VAL_write(0,0); // reset tsf timer
 
+	// disable ad9361 auto calibration and enable openwifi fpga spi control
+	priv->ad9361_phy->state->auto_cal_en = false;   // turn off auto Tx quadrature calib.
+	priv->ad9361_phy->state->manual_tx_quad_cal_en = true;  // turn on manual Tx quadrature calib.
+	xpu_api->XPU_REG_SPI_DISABLE_write(0);
 
 // normal_out:
 	printk("%s openwifi_start: normal end\n", sdr_compatible_str);
