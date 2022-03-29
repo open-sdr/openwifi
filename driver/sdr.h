@@ -377,6 +377,69 @@ struct cf_axi_dds_state {
 };
 // ===== end of copy from adi-linux/drivers/iio/frequency/cf_axi_dds.c =====
 
+struct openwifi_stat {
+	u32 stat_enable;
+
+	u32 tx_prio_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_interrupt_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_stop0_fake_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_stop0_real_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_stop1_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_wakeup_num[MAX_NUM_SW_QUEUE];
+
+	u32 tx_queue_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_interrupt_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_stop0_fake_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_stop0_real_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_stop1_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_wakeup_num[MAX_NUM_HW_QUEUE];
+	
+	u32 tx_data_pkt_need_ack_num_total;
+	u32 tx_data_pkt_need_ack_num_total_fail;
+
+	u32 tx_data_pkt_need_ack_num_retx[6];
+	u32 tx_data_pkt_need_ack_num_retx_fail[6];
+
+	u32 tx_data_pkt_mcs_realtime;
+	u32 tx_data_pkt_fail_mcs_realtime;
+
+	u32 tx_mgmt_pkt_need_ack_num_total;
+	u32 tx_mgmt_pkt_need_ack_num_total_fail;
+	
+	u32 tx_mgmt_pkt_need_ack_num_retx[3];
+	u32 tx_mgmt_pkt_need_ack_num_retx_fail[3];
+
+	u32 tx_mgmt_pkt_mcs_realtime;
+	u32 tx_mgmt_pkt_fail_mcs_realtime;
+
+	u32 rx_target_sender_mac_addr;
+	u32 rx_data_ok_agc_gain_value_realtime;
+	u32 rx_data_fail_agc_gain_value_realtime;
+	u32 rx_mgmt_ok_agc_gain_value_realtime;
+	u32 rx_mgmt_fail_agc_gain_value_realtime;
+	u32 rx_ack_ok_agc_gain_value_realtime;
+
+	u32 rx_monitor_all;
+	u32 rx_data_pkt_num_total;
+	u32 rx_data_pkt_num_fail;
+	u32 rx_mgmt_pkt_num_total;
+	u32 rx_mgmt_pkt_num_fail;
+	u32 rx_ack_pkt_num_total;
+	u32 rx_ack_pkt_num_fail;
+
+	u32 rx_data_pkt_mcs_realtime;
+	u32 rx_data_pkt_fail_mcs_realtime;
+	u32 rx_mgmt_pkt_mcs_realtime;
+	u32 rx_mgmt_pkt_fail_mcs_realtime;
+	u32 rx_ack_pkt_mcs_realtime;
+
+	u32 restrict_freq_mhz;
+
+	u32 csma_cfg0;
+	u32 cw_max_min_cfg;
+
+};
+
 #define RX_DMA_CYCLIC_MODE
 struct openwifi_priv {
 	struct platform_device *pdev;
@@ -450,6 +513,13 @@ struct openwifi_priv {
 	u32 drv_xpu_reg_val[MAX_NUM_DRV_REG];
 	int rf_reg_val[MAX_NUM_RF_REG];
 	int last_auto_fpga_lbt_th;
+
+	struct bin_attribute bin_iq;
+	u32 tx_intf_arbitrary_iq[512];
+	u16 tx_intf_arbitrary_iq_num;
+	u8  tx_intf_iq_ctl;
+
+	struct openwifi_stat stat;
 	// u8 num_led;
 	// struct led_classdev *led[MAX_NUM_LED];//zc706 has 4 user leds. please find openwifi_dev_probe to see how we get them.
 	// char led_name[MAX_NUM_LED][OPENWIFI_LED_MAX_NAME_LEN];
