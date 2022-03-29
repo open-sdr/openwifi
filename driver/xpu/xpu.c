@@ -416,7 +416,7 @@ static inline u32 hw_init(enum xpu_mode mode){
 	}
 	xpu_api->XPU_REG_BAND_CHANNEL_write((false<<24)|(BAND_5_8GHZ<<16)|44);//use_short_slot==false; 5.8GHz; channel 44 -- default setting to sync with priv->band/channel/use_short_slot
 
-	agc_gain_delay = 50; //samples
+	agc_gain_delay = 39; //samples
 	rssi_half_db_offset = 75<<1;
 	xpu_api->XPU_REG_RSSI_DB_CFG_write(0x80000000|((rssi_half_db_offset<<16)|agc_gain_delay) );
 	xpu_api->XPU_REG_RSSI_DB_CFG_write((~0x80000000)&((rssi_half_db_offset<<16)|agc_gain_delay) );
