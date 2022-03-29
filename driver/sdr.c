@@ -446,11 +446,11 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 
 		if ( (len>=14 && (!len_overflow)) && (rate_idx>=8 && rate_idx<=23)) {
 			// if ( phy_rx_sn_hw!=dma_driver_buf_idx_mod) {
-			// 	printk("%s openwifi_rx_interrupt: WARNING sn %d next buf_idx %d!\n", sdr_compatible_str,phy_rx_sn_hw,dma_driver_buf_idx_mod);
+			// 	printk("%s openwifi_rx: WARNING sn %d next buf_idx %d!\n", sdr_compatible_str,phy_rx_sn_hw,dma_driver_buf_idx_mod);
 			// }
 			content_ok = true;
 		} else {
-			printk("%s openwifi_rx_interrupt: WARNING content!\n", sdr_compatible_str);
+			printk("%s openwifi_rx: WARNING content!\n", sdr_compatible_str);
 			content_ok = false;
 		}
 
@@ -483,7 +483,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				sc = hdr->seq_ctrl;
 
 			if ( (addr1_low32!=0xffffffff || addr1_high16!=0xffff) || (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&4) )
-				printk("%s openwifi_rx_interrupt:%4dbytes ht%d aggr%d/%d sgi%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
+				printk("%s openwifi_rx:%4dbytes ht%d aggr%d/%d sgi%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, ht_aggr, ht_aggr_last, short_gi, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 #ifdef USE_NEW_RX_INTERRUPT
@@ -527,7 +527,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				memcpy(IEEE80211_SKB_RXCB(skb), &rx_status, sizeof(rx_status)); // put rx_status into skb->cb, from now on skb->cb is not dma_dsts any more.
 				ieee80211_rx_irqsafe(dev, skb); // call mac80211 function
 			} else
-				printk("%s openwifi_rx_interrupt: WARNING dev_alloc_skb failed!\n", sdr_compatible_str);
+				printk("%s openwifi_rx: WARNING dev_alloc_skb failed!\n", sdr_compatible_str);
 
 			if(ht_aggr_last)
 				priv->ampdu_reference++;
@@ -540,9 +540,9 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	}
 
 	if ( loop_count!=1 && (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) )
-		printk("%s openwifi_rx_interrupt: WARNING loop_count %d\n", sdr_compatible_str,loop_count);
+		printk("%s openwifi_rx: WARNING loop_count %d\n", sdr_compatible_str,loop_count);
 	
-// openwifi_rx_interrupt_out:
+// openwifi_rx_out:
 	spin_unlock(&priv->lock);
 	return IRQ_HANDLED;
 }
