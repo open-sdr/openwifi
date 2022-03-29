@@ -930,14 +930,6 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		seq_no = (sc&IEEE80211_SCTL_SEQ)>>4;
 	}
 
-	if ( ( (!pkt_need_ack)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
-		printk("%s openwifi_tx: %4dbytes ht%d aggr%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
-			len_mpdu, (use_ht_rate == false ? 0 : 1), (use_ht_aggr == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
-			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
-			seq_no, info->flags, retry_limit_raw, pkt_need_ack, prio, queue_idx,
-			// use_rts_cts,use_cts_protect|force_use_cts_protect,wifi_rate_all[cts_rate_hw_value],cts_duration,
-			ring->bd_wr_idx,ring->bd_rd_idx);
-
 		// printk("%s openwifi_tx: rate&try: %d %d %03x; %d %d %03x; %d %d %03x; %d %d %03x\n", sdr_compatible_str,
 		// 	info->status.rates[0].idx,info->status.rates[0].count,info->status.rates[0].flags,
 		// 	info->status.rates[1].idx,info->status.rates[1].count,info->status.rates[1].flags,
@@ -1010,6 +1002,14 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		// pkt_need_ack_prev = -1;
 	}
 	num_dma_symbol = (len_psdu>>TX_INTF_NUM_BYTE_PER_DMA_SYMBOL_IN_BITS) + ((len_psdu&(TX_INTF_NUM_BYTE_PER_DMA_SYMBOL-1))!=0);
+
+	if ( ( (!pkt_need_ack)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
+		printk("%s openwifi_tx: %4dbytes ht%d aggr%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
+			len_mpdu, (use_ht_rate == false ? 0 : 1), (use_ht_aggr == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
+			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
+			seq_no, info->flags, retry_limit_raw, pkt_need_ack, prio, queue_idx,
+			// use_rts_cts,use_cts_protect|force_use_cts_protect,wifi_rate_all[cts_rate_hw_value],cts_duration,
+			ring->bd_wr_idx,ring->bd_rd_idx);
 
 	// check whether the packet is bigger than DMA buffer size
 	num_dma_byte = (num_dma_symbol<<TX_INTF_NUM_BYTE_PER_DMA_SYMBOL_IN_BITS);
