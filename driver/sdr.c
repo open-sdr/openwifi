@@ -728,10 +728,12 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	u32 dma_fifo_no_room_flag, hw_queue_len;
 	enum dma_status status;
 
-	static u32 addr1_low32_prev = -1, rate_hw_value_prev = -1, pkt_need_ack_prev = -1;
+	static u32 addr1_low32_prev = -1;
+	static u16 rate_hw_value_prev = -1;
+	static u8 pkt_need_ack_prev = -1;
 	static u16 addr1_high16_prev = -1;
 	static __le16 duration_id_prev = -1;
-	static unsigned int prio_prev = -1;
+	static u8 prio_prev = -1;
 	static u8 retry_limit_raw_prev = -1;
 	static u8 use_short_gi_prev = -1;
 
