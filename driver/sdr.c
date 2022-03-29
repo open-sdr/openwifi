@@ -1330,6 +1330,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		status = dma_async_is_tx_complete(priv->tx_chan, priv->tx_cookie, NULL, NULL);
 		delay_count++;
 		udelay(4);
+		// udelay(priv->stat.dbg_ch1);
 	}
 	if (status!=DMA_COMPLETE) {
 		printk("%s openwifi_tx: WARNING status!=DMA_COMPLETE\n", sdr_compatible_str);
@@ -2550,6 +2551,9 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->stat.csma_cfg0 = 0;
 	priv->stat.cw_max_min_cfg = 0;
 
+	priv->stat.dbg_ch0 = 0;
+	priv->stat.dbg_ch1 = 0;
+	priv->stat.dbg_ch2 = 0;
 
 	// // //--------------------hook leds (not complete yet)--------------------------------
 	// tmp_dev = bus_find_device( &platform_bus_type, NULL, "leds", custom_match_platform_dev ); //leds is the name in devicetree, not "compatible" field

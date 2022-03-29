@@ -438,6 +438,9 @@ struct openwifi_stat {
 	u32 csma_cfg0;
 	u32 cw_max_min_cfg;
 
+	u32 dbg_ch0;
+	u32 dbg_ch1;
+	u32 dbg_ch2;
 };
 
 #define RX_DMA_CYCLIC_MODE

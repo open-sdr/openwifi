@@ -1081,6 +1081,76 @@ static ssize_t cw_max_min_cfg_store(struct device *input_dev, struct device_attr
 	return ret ? ret : len;
 }
 
+static ssize_t dbg_ch0_show(struct device *input_dev, struct device_attribute *attr, char *buf) 
+{
+	struct platform_device *pdev = to_platform_device(input_dev);
+	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
+	struct openwifi_priv *priv = dev->priv;
+	
+	return sprintf(buf, "%u\n", priv->stat.dbg_ch0);
+}
+static ssize_t dbg_ch0_store(struct device *input_dev, struct device_attribute *attr, const char *buf, size_t len) 
+{
+	struct platform_device *pdev = to_platform_device(input_dev);
+	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
+	struct openwifi_priv *priv = dev->priv;
+
+	long readin;
+	u32 ret = kstrtol(buf, 10, &readin);
+
+	priv->stat.dbg_ch0 = readin;
+
+	// xpu_api->XPU_REG_DIFS_ADVANCE_write((readin<<16)|2); //us. bit31~16 max pkt length threshold
+	// rx_intf_api->RX_INTF_REG_START_TRANS_TO_PS_write(readin<<16); //bit31~16 max pkt length threshold
+	// openofdm_rx_api->OPENOFDM_RX_REG_SOFT_DECODING_write((readin<<16)|1); //bit1 enable soft decoding; bit31~16 max pkt length threshold
+
+	return ret ? ret : len;
+}
+
+static ssize_t dbg_ch1_show(struct device *input_dev, struct device_attribute *attr, char *buf) 
+{
+	struct platform_device *pdev = to_platform_device(input_dev);
+	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
+	struct openwifi_priv *priv = dev->priv;
+	
+	return sprintf(buf, "%u\n", priv->stat.dbg_ch1);
+}
+static ssize_t dbg_ch1_store(struct device *input_dev, struct device_attribute *attr, const char *buf, size_t len) 
+{
+	struct platform_device *pdev = to_platform_device(input_dev);
+	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
+	struct openwifi_priv *priv = dev->priv;
+
+	long readin;
+	u32 ret = kstrtol(buf, 10, &readin);
+
+	priv->stat.dbg_ch1 = readin;
+
+	return ret ? ret : len;
+}
+
+static ssize_t dbg_ch2_show(struct device *input_dev, struct device_attribute *attr, char *buf) 
+{
+	struct platform_device *pdev = to_platform_device(input_dev);
+	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
+	struct openwifi_priv *priv = dev->priv;
+	
+	return sprintf(buf, "%u\n", priv->stat.dbg_ch2);
+}
+static ssize_t dbg_ch2_store(struct device *input_dev, struct device_attribute *attr, const char *buf, size_t len) 
+{
+	struct platform_device *pdev = to_platform_device(input_dev);
+	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
+	struct openwifi_priv *priv = dev->priv;
+
+	long readin;
+	u32 ret = kstrtol(buf, 10, &readin);
+
+	priv->stat.dbg_ch2 = readin;
+
+	return ret ? ret : len;
+}
+
 static DEVICE_ATTR(stat_enable, S_IRUGO | S_IWUSR, stat_enable_show, stat_enable_store);
 static DEVICE_ATTR(tx_prio_queue, S_IRUGO | S_IWUSR, tx_prio_queue_show, tx_prio_queue_store);
 static DEVICE_ATTR(tx_data_pkt_need_ack_num_total, S_IRUGO | S_IWUSR, tx_data_pkt_need_ack_num_total_show, tx_data_pkt_need_ack_num_total_store);
@@ -1124,6 +1194,10 @@ static DEVICE_ATTR(restrict_freq_mhz, S_IRUGO | S_IWUSR, restrict_freq_mhz_show,
 
 static DEVICE_ATTR(csma_cfg0, S_IRUGO | S_IWUSR, csma_cfg0_show, csma_cfg0_store);
 static DEVICE_ATTR(cw_max_min_cfg, S_IRUGO | S_IWUSR, cw_max_min_cfg_show, cw_max_min_cfg_store);
+
+static DEVICE_ATTR(dbg_ch0, S_IRUGO | S_IWUSR, dbg_ch0_show, dbg_ch0_store);
+static DEVICE_ATTR(dbg_ch1, S_IRUGO | S_IWUSR, dbg_ch1_show, dbg_ch1_store);
+static DEVICE_ATTR(dbg_ch2, S_IRUGO | S_IWUSR, dbg_ch2_show, dbg_ch2_store);
 
 static struct attribute *stat_attributes[] = {
 	&dev_attr_stat_enable.attr,
@@ -1173,6 +1247,10 @@ static struct attribute *stat_attributes[] = {
 
 	&dev_attr_csma_cfg0.attr,
 	&dev_attr_cw_max_min_cfg.attr,
+
+	&dev_attr_dbg_ch0.attr,
+	&dev_attr_dbg_ch1.attr,
+	&dev_attr_dbg_ch2.attr,
 
 	NULL,
 };
