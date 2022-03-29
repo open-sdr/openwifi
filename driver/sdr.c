@@ -722,7 +722,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	u32 rate_signal_value,rate_hw_value=0,ack_flag;
 	u32 pkt_need_ack=0, addr1_low32=0, addr2_low32=0, addr3_low32=0, queue_idx=2, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
 	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration;
-	u8 fc_flag,fc_type,fc_subtype,retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,*qos_hdr;
+	u8 fc_flag,fc_type,fc_subtype,retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
 	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_ht_aggr=false, addr_flag, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 dma_fifo_no_room_flag, hw_queue_len;
@@ -816,6 +816,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	use_ht_rate = ((rc_flags&IEEE80211_TX_RC_MCS)!=0);
 	use_short_gi = ((rc_flags&IEEE80211_TX_RC_SHORT_GI)!=0);
 	use_ht_aggr = ((info->flags&IEEE80211_TX_CTL_AMPDU)!=0);
+	qos_hdr = (*(ieee80211_get_qos_ctl(hdr)));
 
 	if (use_rts_cts)
 		printk("%s openwifi_tx: WARNING sn %d use_rts_cts is not supported!\n", sdr_compatible_str, ring->bd_wr_idx);
@@ -880,10 +881,9 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 	if(use_ht_aggr)
 	{
-		qos_hdr = ieee80211_get_qos_ctl(hdr);
-		if(ieee80211_is_data_qos(frame_control) == false || qos_hdr[0] != priv->tid)
+		if(ieee80211_is_data_qos(frame_control) == false)
 		{
-			printk("%s openwifi_tx: WARNING packet is either not qos or tid %u does not match registered tid %u\n", sdr_compatible_str, qos_hdr[0], priv->tid);
+			printk("%s openwifi_tx: WARNING packet is not QoS packet!\n", sdr_compatible_str);
 			goto openwifi_tx_early_out;
 		}
 
