@@ -280,6 +280,14 @@ static inline u32 XPU_REG_AMPDU_ACTION_read(void){
 	return reg_read(XPU_REG_AMPDU_ACTION_ADDR);
 }
 
+static inline void XPU_REG_SPI_DISABLE_write(u32 Data) {
+	reg_write(XPU_REG_SPI_DISABLE_ADDR, Data);
+}
+
+static inline u32 XPU_REG_SPI_DISABLE_read(void){
+	return reg_read(XPU_REG_SPI_DISABLE_ADDR);
+}
+
 static inline void XPU_REG_MAC_ADDR_write(u8 *mac_addr) {//, u32 en_flag){
 	XPU_REG_MAC_ADDR_LOW_write( *( (u32*)(mac_addr) ) );
 	XPU_REG_MAC_ADDR_HIGH_write( *( (u16*)(mac_addr + 4) ) );
@@ -359,8 +367,8 @@ static inline u32 hw_init(enum xpu_mode mode){
 
 	//xpu_api->XPU_REG_ACK_CTL_MAX_NUM_RETRANS_write(3); // if this > 0, it will override mac80211 set value, and set static retransmission limit
 	
-	// xpu_api->XPU_REG_BB_RF_DELAY_write((1<<8)|47);
-	xpu_api->XPU_REG_BB_RF_DELAY_write((10<<8)|40); // extended rf is ongoing for perfect muting. (10<<8)|40 is verified good for zcu102/zed
+	// From CMW measurement: lo up 1us before the packet; lo down 0.4us after the packet/RF port switches 1.2us before and 0.2us after
+	xpu_api->XPU_REG_BB_RF_DELAY_write((16<<24)|(0<<16)|(26<<8)|9); // calibrated by ila and spectrum analyzer (trigger mode)
 
 	// setup time schedule of 4 slices
 	// slice 0
@@ -539,6 +547,9 @@ static int dev_probe(struct platform_device *pdev)
 
 	xpu_api->XPU_REG_AMPDU_ACTION_write=XPU_REG_AMPDU_ACTION_write;
 	xpu_api->XPU_REG_AMPDU_ACTION_read=XPU_REG_AMPDU_ACTION_read;
+
+	xpu_api->XPU_REG_SPI_DISABLE_write=XPU_REG_SPI_DISABLE_write;
+	xpu_api->XPU_REG_SPI_DISABLE_read=XPU_REG_SPI_DISABLE_read;	
 
 	xpu_api->XPU_REG_MAC_ADDR_write=XPU_REG_MAC_ADDR_write;
 

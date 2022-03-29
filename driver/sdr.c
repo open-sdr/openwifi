@@ -55,6 +55,7 @@ extern int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb,
 			       bool tx1, bool tx2, bool immed);
 extern int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
 				  struct ctrl_outs_control *ctrl);
+extern int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg); 
 
 #include "../user_space/sdrctl_src/nl80211_testmode_def.h"
 #include "hw_def.h"
@@ -175,11 +176,17 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 	struct openwifi_priv *priv = dev->priv;
 	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz;
 	u32 actual_tx_lo;
+	u32 spi_disable; 
+	u32 diff_tx_lo; 
 	bool change_flag = (actual_rx_lo != priv->actual_rx_lo);
 	int static_lbt_th, auto_lbt_th, fpga_lbt_th, receiver_rssi_dbm_th;
+	struct timeval tv;
+	unsigned long time_before = 0; 
+	unsigned long time_after = 0;  
 
 	if (change_flag) {
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
+		diff_tx_lo = priv->last_tx_quad_cal_lo > actual_tx_lo ? priv->last_tx_quad_cal_lo - actual_tx_lo : actual_tx_lo - priv->last_tx_quad_cal_lo;
 
 		// -------------------Tx Lo tuning-------------------
 		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ( ((u64)1000000ull)*((u64)actual_tx_lo ) + priv->rf_reg_val[RF_TX_REG_IDX_FO] )>>1) );
@@ -188,6 +195,20 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		// -------------------Rx Lo tuning-------------------
 		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ( ((u64)1000000ull)*((u64)actual_rx_lo ) + priv->rf_reg_val[RF_RX_REG_IDX_FO] )>>1) );
 		priv->actual_rx_lo = actual_rx_lo;
+		
+		// call Tx Quadrature calibration if frequency change is more than 100MHz 
+		if (diff_tx_lo > 100) {
+			priv->last_tx_quad_cal_lo = actual_tx_lo; 
+			do_gettimeofday(&tv);
+			time_before = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
+			spi_disable = xpu_api->XPU_REG_SPI_DISABLE_read();  // disable FPGA SPI module
+			xpu_api->XPU_REG_SPI_DISABLE_write(1);  
+			ad9361_do_calib_run(priv->ad9361_phy, TX_QUAD_CAL, (int)priv->ad9361_phy->state->last_tx_quad_cal_phase); 
+			// restore original SPI disable state
+			xpu_api->XPU_REG_SPI_DISABLE_write(spi_disable);  
+			do_gettimeofday(&tv);
+			time_after = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
+		}
 
 		// get rssi correction value from lookup table
 		priv->rssi_correction = rssi_correction_lookup_table(actual_rx_lo);
@@ -217,7 +238,7 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
 			}
 		}
-		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d(%ddBm) (auto %d static %d)\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,rssi_half_db_to_rssi_dbm(fpga_lbt_th, priv->rssi_correction),auto_lbt_th,static_lbt_th);
+		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d(%ddBm) (auto %d static %d) tx_quad_cal duration %lu us\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,rssi_half_db_to_rssi_dbm(fpga_lbt_th, priv->rssi_correction),auto_lbt_th,static_lbt_th, time_after-time_before);
 	}
 }
 
@@ -1297,6 +1318,10 @@ static void openwifi_stop(struct ieee80211_hw *dev)
 	u32 reg, reg1;
 	int i;
 
+	// enable ad9361 auto calibration and disable openwifi fpga spi control
+	priv->ad9361_phy->state->auto_cal_en = true;   // turn on auto Tx quadrature calib.
+	priv->ad9361_phy->state->manual_tx_quad_cal_en = false;  // turn off manual Tx quadrature calib.
+	xpu_api->XPU_REG_SPI_DISABLE_write(1);
 
 	//turn off radio
 	#if 1
@@ -1776,6 +1801,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	// //-------------find ad9361-phy driver for lo/channel control---------------
 	priv->actual_rx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
 	priv->actual_tx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
+	priv->last_tx_quad_cal_lo = 1000;
 	tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
 	if (tmp_dev == NULL) {
 		printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);

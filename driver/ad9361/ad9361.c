@@ -5178,7 +5178,7 @@ static int ad9361_setup(struct ad9361_rf_phy *phy)
 
 }
 
-static int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
+int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
 {
 	struct ad9361_rf_phy_state *st = phy->state;
 	int ret;
@@ -5211,6 +5211,7 @@ static int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
 
 	return ret;
 }
+EXPORT_SYMBOL(ad9361_do_calib_run); 
 
 static int ad9361_update_rf_bandwidth(struct ad9361_rf_phy *phy,
 				     u32 rf_rx_bw, u32 rf_tx_bw)
