@@ -397,13 +397,14 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	struct ieee80211_rx_status rx_status = {0};
 	struct sk_buff *skb;
 	struct ieee80211_hdr *hdr;
-	u32 addr1_low32=0, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0;//, fc_di;
+	u32 addr1_low32, addr2_low32=0, addr3_low32=0, len, rate_idx, tsft_low, tsft_high, loop_count=0;//, fc_di;
 	bool ht_flag, short_gi, ht_aggr, ht_aggr_last;
 	// u32 dma_driver_buf_idx_mod;
-	u8 *pdata_tmp, fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
+	u8 *pdata_tmp;
+	u8 fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
-	u16 agc_status_and_pkt_exist_flag, rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, seq_no=0;
-	bool content_ok = false, len_overflow = false;
+	u16 agc_status_and_pkt_exist_flag, rssi_val, addr1_high16, addr2_high16=0, addr3_high16=0, seq_no=0;
+	bool content_ok, len_overflow;
 
 #ifdef USE_NEW_RX_INTERRUPT
 	int i;
