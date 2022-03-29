@@ -403,7 +403,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	u8 *pdata_tmp;
 	u8 fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
-	u16 agc_status_and_pkt_exist_flag, rssi_val, addr1_high16, addr2_high16=0, addr3_high16=0, seq_no=0;
+	u16 agc_status_and_pkt_exist_flag, rssi_half_db, addr1_high16, addr2_high16=0, addr3_high16=0, seq_no=0;
 	bool content_ok, len_overflow;
 
 #ifdef USE_NEW_RX_INTERRUPT
@@ -426,7 +426,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 
 		tsft_low =     (*((u32*)(pdata_tmp+0 )));
 		tsft_high =    (*((u32*)(pdata_tmp+4 )));
-		rssi_val =     (*((u16*)(pdata_tmp+8 )));
+		rssi_half_db = (*((u16*)(pdata_tmp+8 )));
 		len =          (*((u16*)(pdata_tmp+12)));
 
 		len_overflow = (len>(RX_BD_BUF_SIZE-16)?true:false);
@@ -455,11 +455,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			content_ok = false;
 		}
 
-		rssi_val = (rssi_val>>1);
-		if ( (rssi_val+128)<priv->rssi_correction )
-			signal = -128;
-		else
-			signal = rssi_val - priv->rssi_correction;
+		signal = rssi_half_db_to_rssi_dbm(rssi_half_db, priv->rssi_correction);
 
 		// fc_di =        (*((u32*)(pdata_tmp+16)));
 		// addr1_high16 = (*((u16*)(pdata_tmp+16+4)));
