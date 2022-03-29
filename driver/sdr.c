@@ -719,11 +719,11 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	dma_addr_t dma_mapping_addr;
 	unsigned int prio=0, i;
 	u32 num_dma_symbol, len_mpdu = 0, len_mpdu_delim_pad = 0, num_dma_byte, len_psdu, num_byte_pad;
-	u32 rate_signal_value,rate_hw_value=0,ack_flag;
+	u32 rate_signal_value,rate_hw_value=0;
 	u32 pkt_need_ack=0, addr1_low32=0, addr2_low32=0, addr3_low32=0, queue_idx=2, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
 	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration;
-	u8 fc_flag,fc_type,fc_subtype,retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
-	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_ht_aggr=false, addr_flag, cts_use_traffic_rate=false, force_use_cts_protect=false;
+	u8 retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
+	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_ht_aggr=false, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 dma_fifo_no_room_flag, hw_queue_len;
 	enum dma_status status;
@@ -794,26 +794,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 	duration_id = hdr->duration_id;
 	frame_control=hdr->frame_control;
-	ack_flag = (info->flags&IEEE80211_TX_CTL_NO_ACK);
-	fc_type = ((frame_control)>>2)&3;
-	fc_subtype = ((frame_control)>>4)&0xf;
-	fc_flag = ( fc_type==2 || fc_type==0 || (fc_type==1 && (fc_subtype==8 || fc_subtype==9 || fc_subtype==10) ) );
-	//if it is broadcasting or multicasting addr
-	addr_flag = ( (addr1_low32==0 && addr1_high16==0) || 
-	              (addr1_low32==0xFFFFFFFF && addr1_high16==0xFFFF) ||
-				  (addr1_high16==0x3333) ||
-				  (addr1_high16==0x0001 && hdr->addr1[2]==0x5E)  );
-	if ( fc_flag && ( !addr_flag ) && (!ack_flag) ) { // unicast data frame
-		pkt_need_ack = 1; //FPGA need to wait ACK after this pkt sent
-	} else {
-		pkt_need_ack = 0;
-	}
-
-	// get Linux rate (MCS) setting
-	rate_hw_value = ieee80211_get_tx_rate(dev, info)->hw_value;
-	//rate_hw_value = 10; //4:6M, 5:9M, 6:12M, 7:18M, 8:24M, 9:36M, 10:48M, 11:54M
-	if (priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE]>0 && fc_type==2 && (!addr_flag)) //rate override command
-		rate_hw_value = priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE];
+	pkt_need_ack = (!(info->flags&IEEE80211_TX_CTL_NO_ACK));
 
 	retry_limit_raw = info->control.rates[0].count;
 
@@ -824,6 +805,25 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	use_short_gi = ((rc_flags&IEEE80211_TX_RC_SHORT_GI)!=0);
 	use_ht_aggr = ((info->flags&IEEE80211_TX_CTL_AMPDU)!=0);
 	qos_hdr = (*(ieee80211_get_qos_ctl(hdr)));
+
+	// get Linux rate (MCS) setting
+	rate_hw_value = ieee80211_get_tx_rate(dev, info)->hw_value;
+	// drv_tx_reg_val[DRV_TX_REG_IDX_RATE]
+	// override rate legacy: 4:6M,   5:9M,  6:12M,  7:18M, 8:24M, 9:36M, 10:48M,   11:54M
+	// drv_tx_reg_val[DRV_TX_REG_IDX_RATE_HT] 
+	// override rate     ht: 4:6.5M, 5:13M, 6:19.5M,7:26M, 8:39M, 9:52M, 10:58.5M, 11:65M
+	if ( ieee80211_is_data(hdr->frame_control) ) {//rate override command
+		if (use_ht_rate && priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE_HT]>0) {
+			rate_hw_value = (priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE_HT]&0xF)-4;
+			use_short_gi  = ((priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE_HT]&0x10)==0x10);
+		} else if ((!use_ht_rate) && priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE]>0)
+			rate_hw_value = (priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE]&0xF);
+		// TODO: need to map rate_hw_value back to info->control.rates[0].idx!!!
+	}
+
+	// Workaround for a FPGA bug: if aggr happens on ht mcs 0, the tx core will never end, running eneless and stuck the low MAC!
+	if (use_ht_aggr && rate_hw_value==0)
+		rate_hw_value = 1;
 
 	if (use_rts_cts)
 		printk("%s openwifi_tx: WARNING sn %d use_rts_cts is not supported!\n", sdr_compatible_str, ring->bd_wr_idx);
@@ -854,7 +854,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		sc = hdr->seq_ctrl;
 	}
 
-	if ( ( (!addr_flag)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
+	if ( ( (!pkt_need_ack)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
 		printk("%s openwifi_tx: %4dbytes ht%d aggr%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
 			len_mpdu, (use_ht_rate == false ? 0 : 1), (use_ht_aggr == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
