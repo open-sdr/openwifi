@@ -561,6 +561,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 	u64 blk_ack_bitmap;
 	// u16 prio_rd_idx_store[64]={0};
 	bool tx_fail=false;
+	bool use_ht_aggr;
 
 	spin_lock(&priv->lock);
 
@@ -611,10 +612,11 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 						skb->len, DMA_MEM_TO_DEV);
 
 				info = IEEE80211_SKB_CB(skb);
+				use_ht_aggr = ((info->flags&IEEE80211_TX_CTL_AMPDU)!=0);
 				ieee80211_tx_info_clear_status(info);
 
 				// Aggregation packet
-				if(pkt_cnt > 1)
+				if (use_ht_aggr)
 				{
 					start_idx = (seq_no>=blk_ack_ssn) ? (seq_no-blk_ack_ssn) : (seq_no+((~blk_ack_ssn+1)&0x0FFF));
 					tx_fail = (((blk_ack_bitmap>>start_idx)&0x1)==0);
