@@ -433,7 +433,7 @@ static inline u32 hw_init(enum xpu_mode mode){
 	// xpu_api->XPU_REG_CSMA_CFG_write(268435459);  // Linux will do config for each queue via openwifi_conf_tx
 	// xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); // Linux will do config for each queue via openwifi_conf_tx
 
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((51)<<16)|0 );//now our tx send out I/Q immediately
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((16+23)<<16)|(0+23) );
 
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
