@@ -404,7 +404,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	u8 fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
 	u16 agc_status_and_pkt_exist_flag, rssi_half_db, addr1_high16, addr2_high16=0, addr3_high16=0, seq_no=0;
-	bool content_ok, len_overflow;
+	bool content_ok, len_overflow, is_unicast;
 
 #ifdef USE_NEW_RX_INTERRUPT
 	int i;
@@ -467,7 +467,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 		addr1_low32  = *((u32*)(hdr->addr1+2));
 		addr1_high16 = *((u16*)(hdr->addr1));
 
-		if ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&2) || ( (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) && fcs_ok==0 ) ) {
+		if ( priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_ANY ) {
 			if (len>=26) {
 				addr3_low32  = *((u32*)(hdr->addr3+2));
 				addr3_high16 = *((u16*)(hdr->addr3));
@@ -475,8 +475,12 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 			if (len>=28)
 				seq_no = ( (hdr->seq_ctrl&IEEE80211_SCTL_SEQ)>>4 );
 
-			if ( (addr1_low32!=0xffffffff || addr1_high16!=0xffff) || (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&4) )
-				printk("%s openwifi_rx:%4dbytes ht%d aggr%d/%d sgi%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
+			is_unicast = (addr1_low32!=0xffffffff || addr1_high16!=0xffff);
+
+			if ( (( is_unicast)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_UNICAST))   ||
+			     ((!is_unicast)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_BROADCAST)) ||
+				 ((  fcs_ok==0)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_ERROR)) )
+				printk("%s openwifi_rx: %dB ht%daggr%d/%d sgi%d %dM FC%04x DI%04x ADDR%04x%08x/%04x%08x/%04x%08x SC%d fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, ht_aggr, ht_aggr_last, short_gi, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 #ifdef USE_NEW_RX_INTERRUPT
@@ -536,7 +540,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 #endif
 	}
 
-	if ( loop_count!=1 && (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&1) )
+	if ( loop_count!=1 && (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_ERROR) )
 		printk("%s openwifi_rx: WARNING loop_count %d\n", sdr_compatible_str,loop_count);
 	
 // openwifi_rx_out:

@@ -112,6 +112,15 @@ enum sdrctl_reg_cat {
 #define RF_RX_REG_IDX_FO           5
 // ------end of software and RF reg definition ------------
 
+// -------------dmesg printk control flag------------------
+#define DMESG_LOG_ERROR (1<<0)
+#define DMESG_LOG_UNICAST (1<<1)
+#define DMESG_LOG_BROADCAST (1<<2)
+#define DMESG_LOG_NORMAL_QUEUE_STOP (1<<3)
+#define DMESG_LOG_ANY (0xF)
+
+// ------end of dmesg printk control flag------------------
+
 #define MAX_NUM_VIF 4
 
 //#define LEN_PHY_HEADER 16
