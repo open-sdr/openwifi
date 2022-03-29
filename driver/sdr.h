@@ -132,13 +132,13 @@ enum sdrctl_reg_cat {
 #define NUM_TX_BD (1<<NUM_BIT_NUM_TX_BD) // !!! should align to the fifo size in tx_bit_intf.v
 
 #ifdef USE_NEW_RX_INTERRUPT
-#define NUM_RX_BD 8
+#define NUM_RX_BD 64
 #else
 #define NUM_RX_BD 16
 #endif
 
 #define TX_BD_BUF_SIZE (8192)
-#define RX_BD_BUF_SIZE (8192)
+#define RX_BD_BUF_SIZE (2048)
 
 #define NUM_BIT_MAX_NUM_HW_QUEUE 2
 #define MAX_NUM_HW_QUEUE 4 // number of queue in FPGA
