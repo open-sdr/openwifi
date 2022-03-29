@@ -790,7 +790,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	u8 pkt_need_ack, retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
 	bool drv_seqno=false, use_rts_cts, use_cts_protect, ht_aggr_start=false, use_ht_rate, use_ht_aggr, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
-	u32 dma_fifo_no_room_flag, hw_queue_len;
+	u32 dma_fifo_no_room_flag, hw_queue_len, delay_count=0;
 	enum dma_status status;
 
 	static u32 addr1_low32_prev = -1;
@@ -1114,6 +1114,12 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	// --------end of check whether FPGA fifo (queue_idx) has enough room------------
 
 	status = dma_async_is_tx_complete(priv->tx_chan, priv->tx_cookie, NULL, NULL);
+	while(delay_count<100 && status!=DMA_COMPLETE) {
+		status = dma_async_is_tx_complete(priv->tx_chan, priv->tx_cookie, NULL, NULL);
+		delay_count++;
+		udelay(4);
+		// udelay(priv->stat.dbg_ch1);
+	}
 	if (status!=DMA_COMPLETE) {
 		printk("%s openwifi_tx: WARNING status!=DMA_COMPLETE\n", sdr_compatible_str);
 		goto openwifi_tx_early_out_after_lock;
