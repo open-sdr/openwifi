@@ -402,7 +402,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 	// u32 dma_driver_buf_idx_mod;
 	u8 *pdata_tmp, fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
 	s8 signal;
-	u16 agc_status_and_pkt_exist_flag, rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0;
+	u16 agc_status_and_pkt_exist_flag, rssi_val, addr1_high16=0, addr2_high16=0, addr3_high16=0, seq_no=0;
 	bool content_ok = false, len_overflow = false;
 
 #ifdef USE_NEW_RX_INTERRUPT
@@ -480,16 +480,16 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				addr3_high16 = *((u16*)(hdr->addr3));
 			}
 			if (len>=28)
-				sc = hdr->seq_ctrl;
+				seq_no = ( (hdr->seq_ctrl&IEEE80211_SCTL_SEQ)>>4 );
 
 			if ( (addr1_low32!=0xffffffff || addr1_high16!=0xffff) || (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&4) )
 				printk("%s openwifi_rx:%4dbytes ht%d aggr%d/%d sgi%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
 					len, ht_flag, ht_aggr, ht_aggr_last, short_gi, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
 					reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 #ifdef USE_NEW_RX_INTERRUPT
-					sc, fcs_ok, i, signal);
+					seq_no, fcs_ok, i, signal);
 #else
-					sc, fcs_ok, target_buf_idx_old, signal);
+					seq_no, fcs_ok, target_buf_idx_old, signal);
 #endif
 		}
 		
