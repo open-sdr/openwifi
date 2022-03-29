@@ -718,11 +718,10 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	struct openwifi_ring *ring = NULL;
 	dma_addr_t dma_mapping_addr;
 	unsigned int prio=0, i;
-	u32 num_dma_symbol, len_mpdu = 0, len_mpdu_delim_pad = 0, num_dma_byte, len_psdu, num_byte_pad;
-	u32 rate_signal_value,rate_hw_value=0;
-	u32 pkt_need_ack=0, addr1_low32=0, addr2_low32=0, addr3_low32=0, queue_idx=2, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
+	u16 rate_signal_value, rate_hw_value, len_mpdu, len_psdu, num_dma_symbol, len_mpdu_delim_pad=0, num_byte_pad;
+	u32 num_dma_byte, addr1_low32, addr2_low32=0, addr3_low32=0, queue_idx=2, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
 	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration;
-	u8 retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
+	u8 pkt_need_ack, retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
 	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_ht_aggr=false, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 dma_fifo_no_room_flag, hw_queue_len;
