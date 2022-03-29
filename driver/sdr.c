@@ -911,15 +911,20 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	{
 		// psdu = [ MPDU ]
 		len_psdu = len_mpdu;
-
-		addr1_low32_prev = -1;
-		addr1_high16_prev = -1;
-		duration_id_prev = -1;
-		use_short_gi_prev = -1;
-		rate_hw_value_prev = -1;
-		prio_prev = -1;
-		retry_limit_raw_prev = -1;
-		pkt_need_ack_prev = -1;
+		
+		// // Don't need to reset _prev variables every time when it is not ht aggr qos data. Reason:
+		// // 1. In 99.9999% cases, the ht always use qos data and goes to prio/queue_idx 2. By not resetting the variable to -1, we can have continuous aggregation packet operation in FPGA queue 2.
+		// // 2. In other words, the aggregation operation for queue 2 in FPGA won't be interrupted by other non aggregation packets (control/management/beacon/etc.) that go to queue 0 (or other queues than 2).
+		// // 3. From wired domain and upper level ( DSCP, AC (0~3), WMM management, 802.11D service classes and user priority (UP) ) to chip/FPGA queue index, thre should be some (complicated) mapping relationship.
+		// // 4. More decent design is setting these aggregation flags (ht_aggr_start) per queue/prio here in driver. But since now only queue 2 and 0 are used (data goes to queue 2, others go to queue 0) in normal (most) cases, let's not go to the decent (complicated) solution immediately.
+		// addr1_low32_prev = -1;
+		// addr1_high16_prev = -1;
+		// duration_id_prev = -1;
+		// use_short_gi_prev = -1;
+		// rate_hw_value_prev = -1;
+		// prio_prev = -1;
+		// retry_limit_raw_prev = -1;
+		// pkt_need_ack_prev = -1;
 	}
 	num_dma_symbol = (len_psdu>>TX_INTF_NUM_BYTE_PER_DMA_SYMBOL_IN_BITS) + ((len_psdu&(TX_INTF_NUM_BYTE_PER_DMA_SYMBOL-1))!=0);
 
