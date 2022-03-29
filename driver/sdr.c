@@ -720,7 +720,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	unsigned int prio=0, i;
 	u16 rate_signal_value, rate_hw_value, len_mpdu, len_psdu, num_dma_symbol, len_mpdu_delim_pad=0, num_byte_pad;
 	u32 num_dma_byte, addr1_low32, addr2_low32=0, addr3_low32=0, queue_idx=2, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
-	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration;
+	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration, n_dbps;
 	u8 pkt_need_ack, retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
 	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_ht_aggr=false, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
@@ -824,6 +824,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	if (use_ht_aggr && rate_hw_value==0)
 		rate_hw_value = 1;
 
+	sifs = (priv->actual_rx_lo<2500?10:16);
+
 	if (use_rts_cts)
 		printk("%s openwifi_tx: WARNING sn %d use_rts_cts is not supported!\n", sdr_compatible_str, ring->bd_wr_idx);
 
@@ -832,10 +834,11 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		cts_duration = le16_to_cpu(ieee80211_ctstoself_duration(dev,info->control.vif,len_mpdu,info));
 	} else if (force_use_cts_protect) { // could override mac80211 setting here.
 		cts_rate_hw_value = 4; //wifi_mcs_table_11b_force_up[] translate it to 1011(6M)
-		sifs = (priv->actual_rx_lo<2500?10:16);
 		if (pkt_need_ack)
 			ack_duration = 44;//assume the ack we wait use 6Mbps: 4*ceil((22+14*8)/24) + 20(preamble+SIGNAL)
-		traffic_pkt_duration = 20 + 4*(((22+len_mpdu*8)/wifi_n_dbps_table[rate_hw_value])+1);
+		
+		n_dbps = (use_ht_rate?wifi_n_dbps_ht_table[rate_hw_value+4]:wifi_n_dbps_table[rate_hw_value]);
+		traffic_pkt_duration = (use_ht_rate?36:20) + 4*calc_n_ofdm(len_mpdu, n_dbps);
 		cts_duration = traffic_pkt_duration + sifs + pkt_need_ack*(sifs+ack_duration);
 	}
 
