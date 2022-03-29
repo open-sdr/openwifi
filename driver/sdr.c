@@ -786,9 +786,9 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	unsigned int prio=0, i;
 	u16 rate_signal_value, rate_hw_value, len_mpdu, len_psdu, num_dma_symbol, len_mpdu_delim_pad=0, num_byte_pad;
 	u32 num_dma_byte, addr1_low32, addr2_low32=0, addr3_low32=0, queue_idx=2, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
-	u16 addr1_high16=0, addr2_high16=0, addr3_high16=0, sc=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration, n_dbps;
+	u16 addr1_high16, addr2_high16=0, addr3_high16=0, sc, seq_no=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration, n_dbps;
 	u8 pkt_need_ack, retry_limit_raw=0,use_short_gi=0,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr;
-	bool use_rts_cts, use_cts_protect=false, ht_aggr_start=false, use_ht_rate=false, use_ht_aggr=false, cts_use_traffic_rate=false, force_use_cts_protect=false;
+	bool drv_seqno=false, use_rts_cts, use_cts_protect, ht_aggr_start=false, use_ht_rate, use_ht_aggr, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 dma_fifo_no_room_flag, hw_queue_len;
 	enum dma_status status;
@@ -919,19 +919,22 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 	if (len_mpdu>=28) {
 		if (info->flags & IEEE80211_TX_CTL_ASSIGN_SEQ) {
-			if (info->flags & IEEE80211_TX_CTL_FIRST_FRAGMENT)
+			if (info->flags & IEEE80211_TX_CTL_FIRST_FRAGMENT) {
 				priv->seqno += 0x10;
+				drv_seqno = true;
+			}
 			hdr->seq_ctrl &= cpu_to_le16(IEEE80211_SCTL_FRAG);
 			hdr->seq_ctrl |= cpu_to_le16(priv->seqno);
 		}
 		sc = hdr->seq_ctrl;
+		seq_no = (sc&IEEE80211_SCTL_SEQ)>>4;
 	}
 
 	if ( ( (!pkt_need_ack)||(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&4) ) && (priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&2) ) 
 		printk("%s openwifi_tx: %4dbytes ht%d aggr%d %3dM FC%04x DI%04x addr1/2/3:%04x%08x/%04x%08x/%04x%08x SC%04x flag%08x retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
 			len_mpdu, (use_ht_rate == false ? 0 : 1), (use_ht_aggr == false ? 0 : 1), (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
 			reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
-			sc, info->flags, retry_limit_raw, pkt_need_ack, prio, queue_idx,
+			seq_no, info->flags, retry_limit_raw, pkt_need_ack, prio, queue_idx,
 			// use_rts_cts,use_cts_protect|force_use_cts_protect,wifi_rate_all[cts_rate_hw_value],cts_duration,
 			ring->bd_wr_idx,ring->bd_rd_idx);
 
@@ -1147,7 +1150,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	}
 
 	// seems everything is ok. let's mark this pkt in bd descriptor ring
-	ring->bds[ring->bd_wr_idx].seq_no = (sc&IEEE80211_SCTL_SEQ)>>4;
+	ring->bds[ring->bd_wr_idx].seq_no = seq_no;
 	ring->bds[ring->bd_wr_idx].skb_linked = skb;
 	ring->bds[ring->bd_wr_idx].dma_mapping_addr = dma_mapping_addr;
 
