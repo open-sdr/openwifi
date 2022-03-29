@@ -782,6 +782,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
 	struct openwifi_ring *ring = NULL;
+	struct sk_buff *skb_new; // temp skb for internal use
 	dma_addr_t dma_mapping_addr;
 	unsigned int i;
 	u16 rate_signal_value, rate_hw_value, len_mpdu, len_psdu, num_dma_symbol, len_mpdu_delim_pad=0, num_byte_pad;
@@ -1022,9 +1023,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	if(use_ht_aggr)
 	{
 		// when skb does not have enough headroom, skb_push will cause kernel panic. headroom needs to be extended if necessary
-		if (skb_headroom(skb)<LEN_MPDU_DELIM) {
-			struct sk_buff *skb_new; // in case original skb headroom is not enough to host MPDU delimiter
-			printk("%s openwifi_tx: WARNING sn %d skb_headroom(skb)<LEN_MPDU_DELIM\n", sdr_compatible_str, ring->bd_wr_idx);
+		if (skb_headroom(skb)<LEN_MPDU_DELIM) {// in case original skb headroom is not enough to host MPDU delimiter
+			printk("%s openwifi_tx: WARNING(AGGR) sn %d skb_headroom(skb) %d < LEN_MPDU_DELIM %d\n", sdr_compatible_str, ring->bd_wr_idx, skb_headroom(skb), LEN_MPDU_DELIM);
 			if ((skb_new = skb_realloc_headroom(skb, LEN_MPDU_DELIM)) == NULL) {
 				printk("%s openwifi_tx: WARNING sn %d skb_realloc_headroom failed!\n", sdr_compatible_str, ring->bd_wr_idx);
 				goto openwifi_tx_early_out;
@@ -1044,9 +1044,16 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 		// Extend sk_buff to hold CRC + MPDU padding + empty MPDU delimiter
 		num_byte_pad = num_dma_byte - (LEN_MPDU_DELIM + len_mpdu);
-		if (skb_tailroom(skb)<num_byte_pad) {
-			printk("%s openwifi_tx: WARNING sn %d skb_tailroom(skb)<num_byte_pad!\n", sdr_compatible_str, ring->bd_wr_idx);
-			goto openwifi_tx_early_out;
+		if (skb_tailroom(skb)<num_byte_pad) {// in case original skb tailroom is not enough to host num_byte_pad
+			printk("%s openwifi_tx: WARNING(AGGR) sn %d skb_tailroom(skb) %d < num_byte_pad %d!\n", sdr_compatible_str, ring->bd_wr_idx, skb_tailroom(skb), num_byte_pad);
+			if ((skb_new = skb_copy_expand(skb, skb_headroom(skb), num_byte_pad, GFP_KERNEL)) == NULL) {
+				printk("%s openwifi_tx: WARNING(AGGR) sn %d skb_copy_expand failed!\n", sdr_compatible_str, ring->bd_wr_idx);
+				goto openwifi_tx_early_out;
+			}
+			if (skb->sk != NULL)
+				skb_set_owner_w(skb_new, skb->sk);
+			dev_kfree_skb(skb);
+			skb = skb_new;
 		}
 		skb_put( skb, num_byte_pad );
 
@@ -1068,9 +1075,16 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	{
 		// Extend sk_buff to hold padding
 		num_byte_pad = num_dma_byte - len_mpdu;
-		if (skb_tailroom(skb)<num_byte_pad) {
-			printk("%s openwifi_tx: WARNING sn %d skb_tailroom(skb)<num_byte_pad!\n", sdr_compatible_str, ring->bd_wr_idx);
-			goto openwifi_tx_early_out;
+		if (skb_tailroom(skb)<num_byte_pad) {// in case original skb tailroom is not enough to host num_byte_pad
+			printk("%s openwifi_tx: WARNING sn %d skb_tailroom(skb) %d < num_byte_pad %d!\n", sdr_compatible_str, ring->bd_wr_idx, skb_tailroom(skb), num_byte_pad);
+			if ((skb_new = skb_copy_expand(skb, skb_headroom(skb), num_byte_pad, GFP_KERNEL)) == NULL) {
+				printk("%s openwifi_tx: WARNING sn %d skb_copy_expand failed!\n", sdr_compatible_str, ring->bd_wr_idx);
+				goto openwifi_tx_early_out;
+			}
+			if (skb->sk != NULL)
+				skb_set_owner_w(skb_new, skb->sk);
+			dev_kfree_skb(skb);
+			skb = skb_new;
 		}
 		skb_put( skb, num_byte_pad );
 
