@@ -336,10 +336,10 @@ static int openwifi_init_rx_ring(struct openwifi_priv *priv)
 	// Set tsft_low and tsft_high to 0. If they are not zero, it means there is a packet in the buffer by DMA
 	for (i=0; i<NUM_RX_BD; i++) {
 		pdata_tmp = priv->rx_cyclic_buf + i*RX_BD_BUF_SIZE; // our header insertion is at the beginning
-		(*((u32*)(pdata_tmp+0 ))) = 0;
-		(*((u32*)(pdata_tmp+4 ))) = 0;
+		(*((u16*)(pdata_tmp+10))) = 0;
 	}
-	printk("%s openwifi_init_rx_ring: tsft_low and tsft_high are cleared!\n", sdr_compatible_str);
+	printk("%s openwifi_init_rx_ring: NUM_RX_BD %d RX_BD_BUF_SIZE %d pkt existing flag are cleared!\n", sdr_compatible_str,
+	NUM_RX_BD, RX_BD_BUF_SIZE);
 
 	return 0;
 }
