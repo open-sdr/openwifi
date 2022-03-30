@@ -41,6 +41,8 @@ cp sdrctl ../
 cd ../side_ch_ctl_src/
 gcc -o side_ch_ctl side_ch_ctl.c
 cp side_ch_ctl ../
+cd ../inject_80211/
+make
 cd ..
 
 # install and setup dhcp server
