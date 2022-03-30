@@ -41,8 +41,6 @@ cp sdrctl ../
 cd ../side_ch_ctl_src/
 gcc -o side_ch_ctl side_ch_ctl.c
 cp side_ch_ctl ../
-cd ../inject_80211/
-make
 cd ..
 
 # install and setup dhcp server
@@ -57,6 +55,9 @@ sudo apt-get -y install webfs
 sudo apt-get -y install iperf
 sudo apt-get -y install libpcap-dev
 sudo apt-get -y install bridge-utils
+
+cd ./inject_80211/
+make
 
 # change the root password to openwifi
 cat /etc/passwd
