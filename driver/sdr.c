@@ -77,6 +77,8 @@ static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_a
 int rssi_half_db_to_rssi_dbm(int rssi_half_db, int rssi_correction);
 int rssi_dbm_to_rssi_half_db(int rssi_dbm, int rssi_correction);
 int rssi_correction_lookup_table(u32 freq_MHz);
+void ad9361_tx_calibration(struct openwifi_priv *priv, u32 actual_tx_lo);
+void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 actual_rx_lo);
 
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
@@ -170,75 +172,90 @@ inline int rssi_correction_lookup_table(u32 freq_MHz)
 	return rssi_correction;
 }
 
+inline void ad9361_tx_calibration(struct openwifi_priv *priv, u32 actual_tx_lo)
+{
+	struct timeval tv;
+	unsigned long time_before = 0; 
+	unsigned long time_after = 0;
+	u32 spi_disable; 
+
+	priv->last_tx_quad_cal_lo = actual_tx_lo; 
+	do_gettimeofday(&tv);
+	time_before = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
+	spi_disable = xpu_api->XPU_REG_SPI_DISABLE_read(); // backup current fpga spi disable state
+	xpu_api->XPU_REG_SPI_DISABLE_write(1); // disable FPGA SPI module
+	ad9361_do_calib_run(priv->ad9361_phy, TX_QUAD_CAL, (int)priv->ad9361_phy->state->last_tx_quad_cal_phase); 
+	xpu_api->XPU_REG_SPI_DISABLE_write(spi_disable); // restore original SPI disable state 
+	do_gettimeofday(&tv);
+	time_after = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
+
+	printk("%s ad9361_tx_calibration %dMHz tx_quad_cal duration %lu us\n", sdr_compatible_str, actual_tx_lo, time_after-time_before);
+}
+
+inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 actual_rx_lo)
+{
+	int static_lbt_th, auto_lbt_th, fpga_lbt_th, receiver_rssi_dbm_th, receiver_rssi_th;
+
+	// get rssi correction value from lookup table
+	priv->rssi_correction = rssi_correction_lookup_table(actual_rx_lo);
+
+	// set appropriate lbt threshold
+	// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
+	// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
+	// auto_lbt_th = ((priv->rssi_correction-62-16)<<1);
+	auto_lbt_th = rssi_dbm_to_rssi_half_db(-78, priv->rssi_correction); // -78dBm, the same as above ((priv->rssi_correction-62-16)<<1)
+	static_lbt_th = rssi_dbm_to_rssi_half_db(-(priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]), priv->rssi_correction);
+	fpga_lbt_th = (priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]==0?auto_lbt_th:static_lbt_th);
+	xpu_api->XPU_REG_LBT_TH_write(fpga_lbt_th);
+	priv->last_auto_fpga_lbt_th = auto_lbt_th;
+
+	// Set rssi_half_db threshold (-85dBm equivalent) to receiver. Receiver will not react to signal lower than this rssi. See test records (OPENOFDM_RX_POWER_THRES_INIT in hw_def.h)
+	receiver_rssi_dbm_th = (priv->drv_rx_reg_val[DRV_RX_REG_IDX_DEMOD_TH]==0?OPENOFDM_RX_RSSI_DBM_TH_DEFAULT:(-priv->drv_rx_reg_val[DRV_RX_REG_IDX_DEMOD_TH]));
+	receiver_rssi_th = rssi_dbm_to_rssi_half_db(receiver_rssi_dbm_th, priv->rssi_correction);
+	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write((OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT<<16)|receiver_rssi_th);
+
+	if (actual_rx_lo < 2500) {
+		if (priv->band != BAND_2_4GHZ) {
+			priv->band = BAND_2_4GHZ;
+			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
+		}
+	} else {
+		if (priv->band != BAND_5_8GHZ) {
+			priv->band = BAND_5_8GHZ;
+			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
+		}
+	}
+	printk("%s openwifi_rf_rx_update_after_tuning %dMHz rssi_correction %d fpga_lbt_th %d(%ddBm) auto %d static %d receiver th %d(%ddBm)\n", sdr_compatible_str,
+	actual_rx_lo, priv->rssi_correction, fpga_lbt_th, rssi_half_db_to_rssi_dbm(fpga_lbt_th, priv->rssi_correction), auto_lbt_th, static_lbt_th, receiver_rssi_th, receiver_rssi_dbm_th);
+}
+
 static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				  struct ieee80211_conf *conf)
 {
 	struct openwifi_priv *priv = dev->priv;
 	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz;
 	u32 actual_tx_lo;
-	u32 spi_disable; 
 	u32 diff_tx_lo; 
 	bool change_flag = (actual_rx_lo != priv->actual_rx_lo);
-	int static_lbt_th, auto_lbt_th, fpga_lbt_th, receiver_rssi_dbm_th;
-	struct timeval tv;
-	unsigned long time_before = 0; 
-	unsigned long time_after = 0;  
 
-	if (change_flag) {
+	if (change_flag && priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]==0 && priv->rf_reg_val[RF_RX_REG_IDX_FREQ_MHZ]==0) {
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
 		diff_tx_lo = priv->last_tx_quad_cal_lo > actual_tx_lo ? priv->last_tx_quad_cal_lo - actual_tx_lo : actual_tx_lo - priv->last_tx_quad_cal_lo;
 
 		// -------------------Tx Lo tuning-------------------
-		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ( ((u64)1000000ull)*((u64)actual_tx_lo ) + priv->rf_reg_val[RF_TX_REG_IDX_FO] )>>1) );
+		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo) )>>1);
 		priv->actual_tx_lo = actual_tx_lo;
 
 		// -------------------Rx Lo tuning-------------------
-		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ( ((u64)1000000ull)*((u64)actual_rx_lo ) + priv->rf_reg_val[RF_RX_REG_IDX_FO] )>>1) );
+		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo) )>>1);
 		priv->actual_rx_lo = actual_rx_lo;
 		
 		// call Tx Quadrature calibration if frequency change is more than 100MHz 
-		if (diff_tx_lo > 100) {
-			priv->last_tx_quad_cal_lo = actual_tx_lo; 
-			do_gettimeofday(&tv);
-			time_before = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
-			spi_disable = xpu_api->XPU_REG_SPI_DISABLE_read();  // disable FPGA SPI module
-			xpu_api->XPU_REG_SPI_DISABLE_write(1);  
-			ad9361_do_calib_run(priv->ad9361_phy, TX_QUAD_CAL, (int)priv->ad9361_phy->state->last_tx_quad_cal_phase); 
-			// restore original SPI disable state
-			xpu_api->XPU_REG_SPI_DISABLE_write(spi_disable);  
-			do_gettimeofday(&tv);
-			time_after = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
-		}
+		if (diff_tx_lo > 100)
+			ad9361_tx_calibration(priv, actual_tx_lo);
 
-		// get rssi correction value from lookup table
-		priv->rssi_correction = rssi_correction_lookup_table(actual_rx_lo);
-
-		// set appropriate lbt threshold
-		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
-		// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
-		// auto_lbt_th = ((priv->rssi_correction-62-16)<<1);
-		auto_lbt_th = rssi_dbm_to_rssi_half_db(-78, priv->rssi_correction); // -78dBm, the same as above ((priv->rssi_correction-62-16)<<1)
-		static_lbt_th = rssi_dbm_to_rssi_half_db(-(priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]), priv->rssi_correction);
-		fpga_lbt_th = (priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]==0?auto_lbt_th:static_lbt_th);
-		xpu_api->XPU_REG_LBT_TH_write(fpga_lbt_th);
-		priv->last_auto_fpga_lbt_th = auto_lbt_th;
-
-		// Set rssi_half_db threshold (-85dBm equivalent) to receiver. Receiver will not react to signal lower than this rssi. See test records (OPENOFDM_RX_POWER_THRES_INIT in hw_def.h)
-		receiver_rssi_dbm_th = (priv->drv_rx_reg_val[DRV_RX_REG_IDX_DEMOD_TH]==0?OPENOFDM_RX_RSSI_DBM_TH_DEFAULT:(-priv->drv_rx_reg_val[DRV_RX_REG_IDX_DEMOD_TH]));
-		openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write((OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT<<16)|rssi_dbm_to_rssi_half_db(receiver_rssi_dbm_th, priv->rssi_correction));
-
-		if (actual_rx_lo < 2500) {
-			if (priv->band != BAND_2_4GHZ) {
-				priv->band = BAND_2_4GHZ;
-				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
-			}
-		} else {
-			if (priv->band != BAND_5_8GHZ) {
-				priv->band = BAND_5_8GHZ;
-				xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
-			}
-		}
-		printk("%s ad9361_rf_set_channel %dM rssi_correction %d (change flag %d) fpga_lbt_th %d(%ddBm) (auto %d static %d) tx_quad_cal duration %lu us\n", sdr_compatible_str,conf->chandef.chan->center_freq,priv->rssi_correction,change_flag,fpga_lbt_th,rssi_half_db_to_rssi_dbm(fpga_lbt_th, priv->rssi_correction),auto_lbt_th,static_lbt_th, time_after-time_before);
+		openwifi_rf_rx_update_after_tuning(priv, actual_rx_lo);
+		printk("%s ad9361_rf_set_channel %dMHz done\n", sdr_compatible_str,conf->chandef.chan->center_freq);
 	}
 }
 

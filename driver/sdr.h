@@ -109,9 +109,9 @@ enum sdrctl_reg_cat {
 
 #define MAX_NUM_RF_REG             8
 #define RF_TX_REG_IDX_ATT          0
-#define RF_TX_REG_IDX_FO           1
+#define RF_TX_REG_IDX_FREQ_MHZ     1
 #define RF_RX_REG_IDX_GAIN         4
-#define RF_RX_REG_IDX_FO           5
+#define RF_RX_REG_IDX_FREQ_MHZ     5
 // ------end of software and RF reg definition ------------
 
 // -------------dmesg printk control flag------------------

@@ -263,12 +263,14 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 							printk("%s ad9361_set_tx_atten ant1 %d OK\n",sdr_compatible_str, AD9361_RADIO_ON_TX_ATT+reg_val);
 						}
 					}
-				} else if (reg_addr_idx==RF_TX_REG_IDX_FO) { // apply the tx fo
-					clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ( ((u64)1000000ull)*((u64)priv->actual_tx_lo ) + priv->rf_reg_val[RF_TX_REG_IDX_FO] )>>1) );
-					printk("%s clk_set_rate TX %llu\n",sdr_compatible_str, ((u64)1000000ull)*((u64)priv->actual_tx_lo ) + priv->rf_reg_val[RF_TX_REG_IDX_FO]);
-				} else if (reg_addr_idx==RF_RX_REG_IDX_FO) { // apply the rx fo
-					clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ( ((u64)1000000ull)*((u64)priv->actual_rx_lo ) + priv->rf_reg_val[RF_RX_REG_IDX_FO] )>>1) );
-					printk("%s clk_set_rate RX %llu\n",sdr_compatible_str, ((u64)1000000ull)*((u64)priv->actual_rx_lo ) + priv->rf_reg_val[RF_RX_REG_IDX_FO]);
+				} else if (reg_addr_idx==RF_TX_REG_IDX_FREQ_MHZ) { // apply the tx fo
+					clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]) )>>1 );
+					ad9361_tx_calibration(priv, priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]);
+					printk("%s clk_set_rate TX_RFPLL %dMHz done\n",sdr_compatible_str, priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]);
+				} else if (reg_addr_idx==RF_RX_REG_IDX_FREQ_MHZ) { // apply the rx fo
+					clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)priv->rf_reg_val[RF_RX_REG_IDX_FREQ_MHZ]) )>>1 );
+					openwifi_rf_rx_update_after_tuning(priv, priv->rf_reg_val[RF_RX_REG_IDX_FREQ_MHZ]);
+					printk("%s clk_set_rate RX_RFPLL %dMHz done\n",sdr_compatible_str, priv->rf_reg_val[RF_RX_REG_IDX_FREQ_MHZ]);
 				}
 			} else {
 				printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
