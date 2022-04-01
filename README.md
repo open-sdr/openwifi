@@ -23,18 +23,20 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 **Features:**
 
 - 802.11a/g/n [[IEEE 802.11n (Wi-Fi 4)](doc/app_notes/ieee80211n.md)]
-- 20MHz bandwidth; 70 MHz to 6 GHz frequency range
-- Mode tested: Ad-hoc; Station; AP, Monitor
-- DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)
+- 20MHz bandwidth; [70 MHz to 6 GHz frequency range](doc/README.md#let-openwifi-work-at-arbitrary-frequency)
+- Mode tested: [Ad-hoc](doc/app_notes/ad-hoc-two-sdr.md); [Station; AP](doc/app_notes/ap-client-two-sdr.md), Monitor
+- [DCF (CSMA/CA) low MAC layer in FPGA (10us SIFS is achieved)](doc/app_notes/frequent_trick.md)
 - [802.11 packet injection and fuzzing](doc/app_notes/inject_80211.md)
 - [CSI](doc/app_notes/csi.md): Channel State Information, freq offset, equalizer to computer
 - [CSI fuzzer](doc/app_notes/csi_fuzzer.md): Create artificial channel response in WiFi transmitter
+- [CSI radar](doc/app_notes/radar-self-csi.md)
 - [[IQ capture](doc/app_notes/iq.md)]: real-time AGC, RSSI, IQ sample to computer. [[Dual antenna version](doc/app_notes/iq_2ant.md)]
-- Configurable channel access priority parameters:
+- [Configurable channel access priority parameters](doc/app_notes/frequent_trick.md):
+  - CCA threshold, receiver sensitivity, etc
   - duration of RTS/CTS, CTS-to-self
   - SIFS/DIFS/xIFS/slot-time/CW/etc
-- Time slicing based on MAC address (time gated/scheduled FPGA queues)
-- Easy to change bandwidth and frequency: 
+- [Time slicing based on MAC address (time gated/scheduled FPGA queues)](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html#sdr-tx-time-slicing)
+- Easy to change bandwidth and [frequency](doc/README.md#let-openwifi-work-at-arbitrary-frequency): 
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
 - **802.11ax** under development
