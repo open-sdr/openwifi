@@ -29,7 +29,7 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 - [802.11 packet injection and fuzzing](doc/app_notes/inject_80211.md)
 - [CSI](doc/app_notes/csi.md): Channel State Information, freq offset, equalizer to computer
 - [CSI fuzzer](doc/app_notes/csi_fuzzer.md): Create artificial channel response in WiFi transmitter
-- [CSI radar](doc/app_notes/radar-self-csi.md)
+- [CSI radar](doc/app_notes/radar-self-csi.md): Moving detection. Joint radar and communication
 - [[IQ capture](doc/app_notes/iq.md)]: real-time AGC, RSSI, IQ sample to computer. [[Dual antenna version](doc/app_notes/iq_2ant.md)]
 - [Configurable channel access priority parameters](doc/app_notes/frequent_trick.md):
   - CCA threshold, receiver sensitivity, etc
