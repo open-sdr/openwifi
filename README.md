@@ -41,9 +41,9 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
   - 10MHz for 802.11p/vehicle in 5.9GHz
 - **802.11ax** under development
 
-**Performance (AP: openwifi at channel 44, client: TL-WDN4200 N900 USB Dongle):**
-- AP --> client: 30.6Mbps(TCP), 38.8Mbps(UDP)
-- client --> AP: 17.0Mbps(TCP), 21.5Mbps(UDP)
+**Performance (best case: aggregation/AMPDU on):**
+- iperf: TCP 40~50Mbps; UDP 50Mbps
+- EVM -39dB; MCS0 sensitivity -85dBm; MCS7 sensitivity -73dBm.
 
 **Supported SDR platforms:** (Check [Porting guide](#Porting-guide) for your new board if it isn't in the list)
 
