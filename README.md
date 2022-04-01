@@ -43,7 +43,7 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 
 **Performance (best case: aggregation/AMPDU on):**
 - iperf: TCP 40~50Mbps; UDP 50Mbps
-- EVM -39dB; MCS0 sensitivity -85dBm; MCS7 sensitivity -73dBm.
+- EVM -39dB; MCS0 sensitivity -85dBm; MCS7 sensitivity -73dBm. (Both conducted/cable and radiated/OTA test)
 
 **Supported SDR platforms:** (Check [Porting guide](#Porting-guide) for your new board if it isn't in the list)
 
