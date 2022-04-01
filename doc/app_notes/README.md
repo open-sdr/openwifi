@@ -19,5 +19,5 @@ Application notes collect many small topics about using openwifi in different sc
 - [CSI fuzzer](csi_fuzzer.md)
 - [Access counter/statistics in FPGA](perf_counter.md)
 - [Access counter/statistics in driver](driver_stat.md)
-- [Frequent trick on controlling Gain/Att/Frequency/CCA/LBT/CSMA/CW/etc](frequent_trick.md)
+- [Frequent/usual trick on controlling Gain/Att/Frequency/CCA/LBT/CSMA/CW/Sensitivity/etc](frequent_trick.md)
 - [owfuzz: a WiFi protocol fuzzing tool using openwifi.](https://github.com/alipay/WiFi-Protocol-Fuzzing-Tool) [[**Vulnerabilities**]](https://github.com/E7mer/Owfuzz)

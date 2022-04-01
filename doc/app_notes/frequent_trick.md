@@ -10,9 +10,10 @@ Some usual/frequent control trick over the openwifi FPGA. You need to do these c
 [[Tx Lo and port config](#Tx-Lo-and-port-config)]
 [[Antenna selection](#Antenna-selection)]
 [[Restrict the frequency](#Restrict-the-frequency)]
+[[Receiver sensitivity control](#Receiver-sensitivity-control)]
 
 [[Tx rate config](#Tx-rate-config)]
-[[Arbiturary Tx IQ sample](#Arbiturary-Tx-IQ-sample)]
+[[Arbitrary Tx IQ sample](#Arbitrary-Tx-IQ-sample)]
 
 ## CCA LBT threshold and disable
 
@@ -20,11 +21,11 @@ In normal operation, different threshold is set to FPGA according to the differe
 ```
 ./set_lbt_th.sh
 ```
-"reg  val: 00000086" means the current threshold is 134 (86 in Hex).
+"reg  val: 00000086" means the current threshold is 134 (86 in Hex). Its unit is rssi_half_db. Check rssi_half_db_to_rssi_dbm()/rssi_dbm_to_rssi_half_db() in sdr.c to see the relation to rssi dBm.
 
-Override a new threshold to FPGA, for example 4dB higher than 134, the new value should be 134 + 4*2 = 142 (1 means 0.5dB, so 4dB higher needs adding 8)
+Override a new threshold -NNdBm to FPGA, for example -70dBm:
 ```
-./set_lbt_th.sh 142
+./set_lbt_th.sh 70
 ```
 Above will disable the automatic CCA threshold setting from the openwifi driver.
 
@@ -32,11 +33,11 @@ Recover the driver automatic control on the threshold:
 ```
 ./set_lbt_th.sh 0
 ```
-Disable the CCA by setting a maximum threshold 2047:
+Disable the CCA by setting a very strong level as threshold, for example -1dBm:
 ```
-./set_lbt_th.sh 2047
+./set_lbt_th.sh 1
 ```
-After above command, the CCA engine will always believe the channel is idle.
+After above command, the CCA engine will always believe the channel is idle, because the rx signal strength not likely could exceed -1dBm.
   
 ## Retransmission and ACK tx control
 
@@ -50,7 +51,7 @@ The FPGA also has a register to override the re-transmission and ACK behavior. C
 ```
 ./sdrctl dev sdr0 get reg xpu 11
 ```
-When operate this register, make sure you only change the relevant bits and leave other bits untouched, because other bits have other purposes.
+When operate this register, make sure you only change the relevant bits and leave other bits untouched, because other bits have other purposes. Also check the xpu register 11 in the document: https://github.com/open-sdr/openwifi/blob/master/doc/README.md
 
 To override the maximum number of re-transmission, set bit3 to 1, and set the value (0 ~ 7) to bit2 ~ 0. Example, override the maximum number of re-transmission to 1
 ```
@@ -197,6 +198,15 @@ Above command will fix the AD9361 in 5220MHz and let driver ignore frequency tun
 ```
 ./set_restrict_freq.sh 0
 ```
+To let openwifi work at arbitrary frequency, please check "Let openwifi work at arbitrary frequency" in https://github.com/open-sdr/openwifi/blob/master/doc/README.md#Regulation-and-channel-config
+
+## Receiver sensitivity control
+
+Sometimes too good sensitivity could be a bad thing. WiFi receiver could be "attracted" by many weak signal/packet in the background, and has less "attention" to its real communication target (client/AP). Openwifi has offered a way to make the receiver less sensitive by setting a threshold. When the received signal is lower than this threshold, the receiver will not try to search the WiFi short preamble, i.e. ignore it. For example, if you want to set -70dBm as the threshold, use:
+```
+./sdrctl dev sdr0 set reg drv_rx 0 70
+```
+
 ## Tx rate config
   
 By default, the Linux rate adaptation algorithm **minstrel_ht** set the packet rate/MCS automatically via openwifi_tx() function.
@@ -215,6 +225,6 @@ To override the Linux automatic control for ht packet
 ```
 Value N: 0 for Linux auto control; 4 ~ 11 for 6.5M, 13M, 19.5M, 26M, 39M, 52M, 58.5M, 65M. By default, the normal GI is used. To use the short GI, you need to add 16 to the target value N.
   
-## Arbiturary Tx IQ sample
+## Arbitrary Tx IQ sample
   
-  To be written.
+Arbitrary IQ sample (maximum 512 samples) can be written to tx_intf and sent for test purpose.
