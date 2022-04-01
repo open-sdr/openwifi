@@ -826,44 +826,44 @@
 		// 	};
 		// };
 
-		axi-clkgen@79000000 {
-			compatible = "adi,axi-clkgen-2.00.a";
-			reg = <0x79000000 0x10000>;
-			#clock-cells = <0x0>;
-			clocks = <0x2 0x10>;
-			linux,phandle = <0xc>;
-			phandle = <0xc>;
-		};
+		// axi-clkgen@79000000 {
+		// 	compatible = "adi,axi-clkgen-2.00.a";
+		// 	reg = <0x79000000 0x10000>;
+		// 	#clock-cells = <0x0>;
+		// 	clocks = <0x2 0x10>;
+		// 	linux,phandle = <0xc>;
+		// 	phandle = <0xc>;
+		// };
 
-		axi_hdmi@70e00000 {
-			compatible = "adi,axi-hdmi-tx-1.00.a";
-			reg = <0x70e00000 0x10000>;
-			dmas = <0xb 0x0>;
-			dma-names = "video";
-			clocks = <0xc>;
-			adi,is-rgb;
+		// axi_hdmi@70e00000 {
+		// 	compatible = "adi,axi-hdmi-tx-1.00.a";
+		// 	reg = <0x70e00000 0x10000>;
+		// 	dmas = <0xb 0x0>;
+		// 	dma-names = "video";
+		// 	clocks = <0xc>;
+		// 	adi,is-rgb;
 
-			port {
+		// 	port {
 
-				endpoint {
-					remote-endpoint = <0xd>;
-					linux,phandle = <0xa>;
-					phandle = <0xa>;
-				};
-			};
-		};
+		// 		endpoint {
+		// 			remote-endpoint = <0xd>;
+		// 			linux,phandle = <0xa>;
+		// 			phandle = <0xa>;
+		// 		};
+		// 	};
+		// };
 
-		axi-spdif-tx@75c00000 {
-			compatible = "adi,axi-spdif-tx-1.00.a";
-			reg = <0x75c00000 0x1000>;
-			dmas = <0xe 0x0>;
-			dma-names = "tx";
-			clocks = <0x2 0xf 0xf>;
-			clock-names = "axi", "ref";
-			#sound-dai-cells = <0x0>;
-			linux,phandle = <0x13>;
-			phandle = <0x13>;
-		};
+		// axi-spdif-tx@75c00000 {
+		// 	compatible = "adi,axi-spdif-tx-1.00.a";
+		// 	reg = <0x75c00000 0x1000>;
+		// 	dmas = <0xe 0x0>;
+		// 	dma-names = "tx";
+		// 	clocks = <0x2 0xf 0xf>;
+		// 	clock-names = "axi", "ref";
+		// 	#sound-dai-cells = <0x0>;
+		// 	linux,phandle = <0x13>;
+		// 	phandle = <0x13>;
+		// };
 
 		/*axi-sysid-0@45000000 {
 			compatible = "adi,axi-sysid-1.00.a";
