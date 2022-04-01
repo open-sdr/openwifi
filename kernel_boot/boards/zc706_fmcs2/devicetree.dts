@@ -803,118 +803,118 @@
 			};
 		};
 
-		dma@43000000 {
-			compatible = "adi,axi-dmac-1.00.a";
-			reg = <0x43000000 0x10000>;
-			#dma-cells = <0x1>;
-			interrupts = <0x0 0x3b 0x0>;
-			clocks = <0x2 0x10>;
-			linux,phandle = <0xb>;
-			phandle = <0xb>;
+		// dma@43000000 {
+		// 	compatible = "adi,axi-dmac-1.00.a";
+		// 	reg = <0x43000000 0x10000>;
+		// 	#dma-cells = <0x1>;
+		// 	interrupts = <0x0 0x3b 0x0>;
+		// 	clocks = <0x2 0x10>;
+		// 	linux,phandle = <0xb>;
+		// 	phandle = <0xb>;
 
-			adi,channels {
-				#size-cells = <0x0>;
-				#address-cells = <0x1>;
+		// 	adi,channels {
+		// 		#size-cells = <0x0>;
+		// 		#address-cells = <0x1>;
 
-				dma-channel@0 {
-					reg = <0x0>;
-					adi,source-bus-width = <0x40>;
-					adi,source-bus-type = <0x0>;
-					adi,destination-bus-width = <0x40>;
-					adi,destination-bus-type = <0x1>;
-				};
-			};
-		};
+		// 		dma-channel@0 {
+		// 			reg = <0x0>;
+		// 			adi,source-bus-width = <0x40>;
+		// 			adi,source-bus-type = <0x0>;
+		// 			adi,destination-bus-width = <0x40>;
+		// 			adi,destination-bus-type = <0x1>;
+		// 		};
+		// 	};
+		// };
 
-		axi-clkgen@79000000 {
-			compatible = "adi,axi-clkgen-2.00.a";
-			reg = <0x79000000 0x10000>;
-			#clock-cells = <0x0>;
-			clocks = <0x2 0x10>;
-			linux,phandle = <0xc>;
-			phandle = <0xc>;
-		};
+		// axi-clkgen@79000000 {
+		// 	compatible = "adi,axi-clkgen-2.00.a";
+		// 	reg = <0x79000000 0x10000>;
+		// 	#clock-cells = <0x0>;
+		// 	clocks = <0x2 0x10>;
+		// 	linux,phandle = <0xc>;
+		// 	phandle = <0xc>;
+		// };
 
-		axi_hdmi@70e00000 {
-			compatible = "adi,axi-hdmi-tx-1.00.a";
-			reg = <0x70e00000 0x10000>;
-			dmas = <0xb 0x0>;
-			dma-names = "video";
-			clocks = <0xc>;
-			adi,is-rgb;
+		// axi_hdmi@70e00000 {
+		// 	compatible = "adi,axi-hdmi-tx-1.00.a";
+		// 	reg = <0x70e00000 0x10000>;
+		// 	dmas = <0xb 0x0>;
+		// 	dma-names = "video";
+		// 	clocks = <0xc>;
+		// 	adi,is-rgb;
 
-			port {
+		// 	port {
 
-				endpoint {
-					remote-endpoint = <0xd>;
-					linux,phandle = <0xa>;
-					phandle = <0xa>;
-				};
-			};
-		};
+		// 		endpoint {
+		// 			remote-endpoint = <0xd>;
+		// 			linux,phandle = <0xa>;
+		// 			phandle = <0xa>;
+		// 		};
+		// 	};
+		// };
 
-		axi-spdif-tx@75c00000 {
-			compatible = "adi,axi-spdif-tx-1.00.a";
-			reg = <0x75c00000 0x1000>;
-			dmas = <0xe 0x0>;
-			dma-names = "tx";
-			clocks = <0x2 0xf 0xf>;
-			clock-names = "axi", "ref";
-			#sound-dai-cells = <0x0>;
-			linux,phandle = <0x13>;
-			phandle = <0x13>;
-		};
+		// axi-spdif-tx@75c00000 {
+		// 	compatible = "adi,axi-spdif-tx-1.00.a";
+		// 	reg = <0x75c00000 0x1000>;
+		// 	dmas = <0xe 0x0>;
+		// 	dma-names = "tx";
+		// 	clocks = <0x2 0xf 0xf>;
+		// 	clock-names = "axi", "ref";
+		// 	#sound-dai-cells = <0x0>;
+		// 	linux,phandle = <0x13>;
+		// 	phandle = <0x13>;
+		// };
 
 		/*axi-sysid-0@45000000 {
 			compatible = "adi,axi-sysid-1.00.a";
 			reg = <0x45000000 0x10000>;
 		};*/
 
-		dma@7c400000 {
-			compatible = "adi,axi-dmac-1.00.a";
-			reg = <0x7c400000 0x10000>;
-			#dma-cells = <0x1>;
-			interrupts = <0x0 0x39 0x0>;
-			clocks = <0x2 0x10>;
-			linux,phandle = <0x10>;
-			phandle = <0x10>;
+		// dma@7c400000 {
+		// 	compatible = "adi,axi-dmac-1.00.a";
+		// 	reg = <0x7c400000 0x10000>;
+		// 	#dma-cells = <0x1>;
+		// 	interrupts = <0x0 0x39 0x0>;
+		// 	clocks = <0x2 0x10>;
+		// 	linux,phandle = <0x10>;
+		// 	phandle = <0x10>;
 
-			adi,channels {
-				#size-cells = <0x0>;
-				#address-cells = <0x1>;
+		// 	adi,channels {
+		// 		#size-cells = <0x0>;
+		// 		#address-cells = <0x1>;
 
-				dma-channel@0 {
-					reg = <0x0>;
-					adi,source-bus-width = <0x40>;
-					adi,source-bus-type = <0x2>;
-					adi,destination-bus-width = <0x40>;
-					adi,destination-bus-type = <0x0>;
-				};
-			};
-		};
+		// 		dma-channel@0 {
+		// 			reg = <0x0>;
+		// 			adi,source-bus-width = <0x40>;
+		// 			adi,source-bus-type = <0x2>;
+		// 			adi,destination-bus-width = <0x40>;
+		// 			adi,destination-bus-type = <0x0>;
+		// 		};
+		// 	};
+		// };
 
-		dma@7c420000 {
-			compatible = "adi,axi-dmac-1.00.a";
-			reg = <0x7c420000 0x10000>;
-			#dma-cells = <0x1>;
-			interrupts = <0x0 0x38 0x0>;
-			clocks = <0x2 0x10>;
-			linux,phandle = <0x12>;
-			phandle = <0x12>;
+		// dma@7c420000 {
+		// 	compatible = "adi,axi-dmac-1.00.a";
+		// 	reg = <0x7c420000 0x10000>;
+		// 	#dma-cells = <0x1>;
+		// 	interrupts = <0x0 0x38 0x0>;
+		// 	clocks = <0x2 0x10>;
+		// 	linux,phandle = <0x12>;
+		// 	phandle = <0x12>;
 
-			adi,channels {
-				#size-cells = <0x0>;
-				#address-cells = <0x1>;
+		// 	adi,channels {
+		// 		#size-cells = <0x0>;
+		// 		#address-cells = <0x1>;
 
-				dma-channel@0 {
-					reg = <0x0>;
-					adi,source-bus-width = <0x40>;
-					adi,source-bus-type = <0x0>;
-					adi,destination-bus-width = <0x40>;
-					adi,destination-bus-type = <0x2>;
-				};
-			};
-		};
+		// 		dma-channel@0 {
+		// 			reg = <0x0>;
+		// 			adi,source-bus-width = <0x40>;
+		// 			adi,source-bus-type = <0x0>;
+		// 			adi,destination-bus-width = <0x40>;
+		// 			adi,destination-bus-type = <0x2>;
+		// 		};
+		// 	};
+		// };
 
 		sdr: sdr {
 			compatible ="sdr,sdr";
@@ -1048,8 +1048,8 @@
 		cf-ad9361-lpc@79020000 {
 			compatible = "adi,axi-ad9361-6.00.a";
 			reg = <0x79020000 0x6000>;
-			dmas = <0x10 0x0>;
-			dma-names = "rx";
+			// dmas = <0x10 0x0>;
+			// dma-names = "rx";
 			spibus-connected = <0x11>;
 		};
 
@@ -1058,8 +1058,8 @@
 			reg = <0x79024000 0x1000>;
 			clocks = <0x11 0xd>;
 			clock-names = "sampl_clk";
-			dmas = <0x12 0x0>;
-			dma-names = "tx";
+			// dmas = <0x12 0x0>;
+			// dma-names = "tx";
 		};
 
 		mwipcore@43c00000 {

@@ -30,6 +30,8 @@ fi
 # add gateway (PC) for internet access
 route add default gw 192.168.10.1 || true
 
+chmod +x *.sh
+
 # build sdrctl
 sudo apt-get -y install libnl-3-dev
 sudo apt-get -y install libnl-genl-3-dev
@@ -52,6 +54,10 @@ sudo apt-get -y install tcpdump
 sudo apt-get -y install webfs
 sudo apt-get -y install iperf
 sudo apt-get -y install libpcap-dev
+sudo apt-get -y install bridge-utils
+
+cd ./inject_80211/
+make
 
 # change the root password to openwifi
 cat /etc/passwd

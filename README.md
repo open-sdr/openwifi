@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 **openwifi:** Linux mac80211 compatible full-stack IEEE802.11/Wi-Fi design based on SDR (Software Defined Radio).
 
-This repository includes Linux driver and software. [openwifi-hw](https://github.com/open-sdr/openwifi-hw) repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
+This repository includes Linux driver and software. **openwifi-hw** repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
 
 [[Quick start](#Quick-start)]
 [[Project document](doc/README.md)]
@@ -83,7 +83,9 @@ zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kit
   ```
 - On board, run openwifi AP and the on board webserver
   ```
-  ~/openwifi/fosdem-11ag.sh
+  ~/openwifi/fosdem.sh
+  (Use "./fosdem.sh 1" to enable experimental AMPDU aggregation on top of 11n)
+  (Use "./fosdem-11ag.sh" to force 11a/g mode)
   ```
   **NOTE** adrv9361z7035 has ultra low TX power in 5GHz. Move **CLOSER** when you use that board in 5GHz!!!
 - After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your device, you should see the webpage hosted by the webserver on board.
@@ -104,8 +106,8 @@ zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kit
 The board actually is an Linux/Ubuntu computer which is running **hostapd** to offer Wi-Fi AP functionality over the Wi-Fi Network Interface (NIC). The NIC is implemented by openwifi-hw FPGA design. We use the term **"On board"** to indicate that the commands should be executed after ssh login to the board. **"On PC"** means the commands should run on PC.
 - Bring up the openwifi NIC sdr0:
   ```
-  service network-manager stop
   cd ~/openwifi && ./wgd.sh
+  (Use "./wgd.sh 1" to enable experimental AMPDU aggregation)
   ```
 - Use openwifi as client to connect other AP (Change wpa-connect.conf on board firstly):
   ```
@@ -146,6 +148,9 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   mount /dev/mmcblk0p1 /mnt
   cp ~/BOOT.BIN /mnt
+  cd /mnt
+  sync
+  cd ~
   umount /mnt
   ```
   **Power cycle** the board to load new FPGA bitstream.
@@ -196,7 +201,9 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
    - Input password "openwifi"
 
 ## Build openwifi Linux img from scratch
-- Download [2019_R1-2020_02_04.img.xz](https://swdownloads.analog.com/cse/2019_R1-2020_02_04.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
+- Install the devicetree compiler -- dtc. (For Ubuntu: sudo apt install device-tree-compiler)
+- Install the mkimage tool. (For Ubuntu: sudo apt install u-boot-tools)
+- Download [2019_R1-2020_06_22.img.xz](http://swdownloads.analog.com/cse/2019_R1-2020_06_22.img.xz) from [Analog Devices Wiki](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images). Burn it to a SD card.
 - Insert the SD card to your Linux PC. Find out the mount point (that has two sub directories BOOT and rootfs), and setup environment variables (use absolute path):
   ```
   export SDCARD_DIR=sdcard_mount_point

@@ -35,6 +35,9 @@ struct openwifi_buffer_descriptor {
     // u32 hw_queue_idx;
     // u32 retry_limit;
     // u32 need_ack;
+	u8 prio;
+	u16 len_mpdu;
+    u16 seq_no;
     struct sk_buff *skb_linked;
     dma_addr_t dma_mapping_addr;
     // u32 reserved;
@@ -44,7 +47,7 @@ struct openwifi_ring {
 	struct openwifi_buffer_descriptor *bds;
     u32 bd_wr_idx;
 	u32 bd_rd_idx;
-    u32 stop_flag; // track the stop/wake status between tx interrupt and openwifi_tx
+    int stop_flag; // -1: normal run; X>=0: stop due to queueX full
 	// u32 num_dma_symbol_request;
 	// u32 reserved;
 } __packed;
@@ -71,37 +74,73 @@ union u16_byte2 {
 #define MAX_NUM_LED 4
 #define OPENWIFI_LED_MAX_NAME_LEN 32
 
-// ------------ software reg definition ------------
+#define NUM_TX_ANT_MASK 3
+#define NUM_RX_ANT_MASK 3
+
+// -------------sdrctl reg category-----------------
+enum sdrctl_reg_cat {
+	SDRCTL_REG_CAT_NO_USE = 0,
+	SDRCTL_REG_CAT_RF,
+	SDRCTL_REG_CAT_RX_INTF,
+	SDRCTL_REG_CAT_TX_INTF,
+	SDRCTL_REG_CAT_RX,
+	SDRCTL_REG_CAT_TX,
+	SDRCTL_REG_CAT_XPU,
+	SDRCTL_REG_CAT_DRV_RX,
+	SDRCTL_REG_CAT_DRV_TX,
+	SDRCTL_REG_CAT_DRV_XPU,
+};
+
+// ------------ software and RF reg definition ------------
 #define MAX_NUM_DRV_REG            8
 #define DRV_TX_REG_IDX_RATE        0
-#define DRV_TX_REG_IDX_FREQ_BW_CFG 1
+#define DRV_TX_REG_IDX_RATE_HT     1
+#define DRV_TX_REG_IDX_RATE_VHT    2
+#define DRV_TX_REG_IDX_RATE_HE     3
+#define DRV_TX_REG_IDX_ANT_CFG     4
 #define DRV_TX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
-#define DRV_RX_REG_IDX_FREQ_BW_CFG 1
-#define DRV_RX_REG_IDX_EXTRA_FO    2
+#define DRV_RX_REG_IDX_DEMOD_TH    0
+#define DRV_RX_REG_IDX_ANT_CFG     4
 #define DRV_RX_REG_IDX_PRINT_CFG   (MAX_NUM_DRV_REG-1)
 
 #define DRV_XPU_REG_IDX_LBT_TH     0
 #define DRV_XPU_REG_IDX_GIT_REV    (MAX_NUM_DRV_REG-1)
 
-// ------end of software reg definition ------------
+#define MAX_NUM_RF_REG             8
+#define RF_TX_REG_IDX_ATT          0
+#define RF_TX_REG_IDX_FREQ_MHZ     1
+#define RF_RX_REG_IDX_GAIN         4
+#define RF_RX_REG_IDX_FREQ_MHZ     5
+// ------end of software and RF reg definition ------------
+
+// -------------dmesg printk control flag------------------
+#define DMESG_LOG_ERROR (1<<0)
+#define DMESG_LOG_UNICAST (1<<1)
+#define DMESG_LOG_BROADCAST (1<<2)
+#define DMESG_LOG_NORMAL_QUEUE_STOP (1<<3)
+#define DMESG_LOG_ANY (0xF)
+
+// ------end of dmesg printk control flag------------------
 
 #define MAX_NUM_VIF 4
 
-#define LEN_PHY_HEADER 16
+//#define LEN_PHY_HEADER 16
 #define LEN_PHY_CRC 4
+#define LEN_MPDU_DELIM 4
 
-#define RING_ROOM_THRESHOLD 4
-#define NUM_TX_BD 64 // !!! should align to the fifo size in tx_bit_intf.v
+#define RING_ROOM_THRESHOLD 2
+#define NUM_BIT_NUM_TX_BD 6
+#define NUM_TX_BD (1<<NUM_BIT_NUM_TX_BD) // !!! should align to the fifo size in tx_bit_intf.v
 
 #ifdef USE_NEW_RX_INTERRUPT
-#define NUM_RX_BD 8
+#define NUM_RX_BD 64
 #else
 #define NUM_RX_BD 16
 #endif
 
 #define TX_BD_BUF_SIZE (8192)
-#define RX_BD_BUF_SIZE (8192)
+#define RX_BD_BUF_SIZE (2048)
 
 #define NUM_BIT_MAX_NUM_HW_QUEUE 2
 #define MAX_NUM_HW_QUEUE 4 // number of queue in FPGA
@@ -111,6 +150,9 @@ union u16_byte2 {
 
 #define AD9361_RADIO_OFF_TX_ATT 89750 //please align with ad9361.c
 #define AD9361_RADIO_ON_TX_ATT 000    //please align with rf_init.sh
+#define AD9361_CTRL_OUT_EN_MASK (0xFF) 
+#define AD9361_CTRL_OUT_INDEX_ANT0 (0x16) 
+#define AD9361_CTRL_OUT_INDEX_ANT1 (0x17) 
 
 #define SDR_SUPPORTED_FILTERS	\
 	(FIF_ALLMULTI |				\
@@ -124,11 +166,11 @@ union u16_byte2 {
 //#define HIGH_PRIORITY_DISCARD_FLAG ((~0x140)<<16) // don't force drop OTHER_BSS and PROB_REQ by high priority discard
 
 /* 5G chan 36 - chan 64*/
-#define SDR_5GHZ_CH36_64	\
-	REG_RULE(5150-10, 5350+10, 80, 0, 20, 0)
+#define SDR_5GHZ_CH36_64 REG_RULE(5150-10, 5350+10, 80, 0, 20, 0)
+/* 5G chan 32 - chan 173*/
+#define SDR_5GHZ_CH32_173 REG_RULE(5160-10, 5865+10, 80, 0, 20, 0)
 /* 5G chan 36 - chan 48*/
-#define SDR_5GHZ_CH36_48	\
-	REG_RULE(5150-10, 5270+10, 80, 0, 20, 0)
+#define SDR_5GHZ_CH36_48 REG_RULE(5150-10, 5270+10, 80, 0, 20, 0)
 
 /*
  *Only these channels all allow active
@@ -150,7 +192,8 @@ static const struct ieee80211_regdomain sdr_regd = { // for wiphy_apply_custom_r
 		//SDR_2GHZ_CH01_13,
 		//SDR_5GHZ_CH36_48, //Avoid radar!
 		SDR_2GHZ_CH01_14,
-		SDR_5GHZ_CH36_64,
+		// SDR_5GHZ_CH36_64,
+		SDR_5GHZ_CH32_173,
 		}
 };
 
@@ -220,6 +263,8 @@ static const struct ieee80211_channel openwifi_2GHz_channels[] = {
 };
 
 static const struct ieee80211_channel openwifi_5GHz_channels[] = {
+	CHAN5G(32, 5160, 0),
+	CHAN5G(34, 5170, 0),
 	CHAN5G(36, 5180, 0),
 	CHAN5G(38, 5190, 0),
 	CHAN5G(40, 5200, 0),
@@ -227,43 +272,66 @@ static const struct ieee80211_channel openwifi_5GHz_channels[] = {
 	CHAN5G(44, 5220, 0),
 	CHAN5G(46, 5230, 0),
 	CHAN5G(48, 5240, 0),
-	CHAN5G(52, 5260, IEEE80211_CHAN_RADAR),
-	CHAN5G(56, 5280, IEEE80211_CHAN_RADAR),
-	CHAN5G(60, 5300, IEEE80211_CHAN_RADAR),
-	CHAN5G(64, 5320, IEEE80211_CHAN_RADAR),
-	// CHAN5G(100, 5500, 0),
-	// CHAN5G(104, 5520, 0),
-	// CHAN5G(108, 5540, 0),
-	// CHAN5G(112, 5560, 0),
-	// CHAN5G(116, 5580, 0),
-	// CHAN5G(120, 5600, 0),
-	// CHAN5G(124, 5620, 0),
-	// CHAN5G(128, 5640, 0),
-	// CHAN5G(132, 5660, 0),
-	// CHAN5G(136, 5680, 0),
-	// CHAN5G(140, 5700, 0),
-	// CHAN5G(144, 5720, 0),
-	// CHAN5G(149, 5745, 0),
-	// CHAN5G(153, 5765, 0),
-	// CHAN5G(157, 5785, 0),
-	// CHAN5G(161, 5805, 0),
-	// CHAN5G(165, 5825, 0),
-	// CHAN5G(169, 5845, 0),
+	CHAN5G( 50, 5250, IEEE80211_CHAN_RADAR),
+	CHAN5G( 52, 5260, IEEE80211_CHAN_RADAR),
+	CHAN5G( 54, 5270, IEEE80211_CHAN_RADAR),
+	CHAN5G( 56, 5280, IEEE80211_CHAN_RADAR),
+	CHAN5G( 58, 5290, IEEE80211_CHAN_RADAR),
+	CHAN5G( 60, 5300, IEEE80211_CHAN_RADAR),
+	CHAN5G( 62, 5310, IEEE80211_CHAN_RADAR),
+	CHAN5G( 64, 5320, IEEE80211_CHAN_RADAR),
+	CHAN5G( 68, 5340, IEEE80211_CHAN_RADAR),
+	CHAN5G( 96, 5480, IEEE80211_CHAN_RADAR),
+	CHAN5G(100, 5500, IEEE80211_CHAN_RADAR),
+	CHAN5G(102, 5510, IEEE80211_CHAN_RADAR),
+	CHAN5G(104, 5520, IEEE80211_CHAN_RADAR),
+	CHAN5G(106, 5530, IEEE80211_CHAN_RADAR),
+	CHAN5G(108, 5540, IEEE80211_CHAN_RADAR),
+	CHAN5G(110, 5550, IEEE80211_CHAN_RADAR),
+	CHAN5G(112, 5560, IEEE80211_CHAN_RADAR),
+	CHAN5G(114, 5570, IEEE80211_CHAN_RADAR),
+	CHAN5G(116, 5580, IEEE80211_CHAN_RADAR),
+	CHAN5G(118, 5590, IEEE80211_CHAN_RADAR),
+	CHAN5G(120, 5600, IEEE80211_CHAN_RADAR),
+	CHAN5G(122, 5610, IEEE80211_CHAN_RADAR),
+	CHAN5G(124, 5620, IEEE80211_CHAN_RADAR),
+	CHAN5G(126, 5630, IEEE80211_CHAN_RADAR),
+	CHAN5G(128, 5640, IEEE80211_CHAN_RADAR),
+	CHAN5G(132, 5660, IEEE80211_CHAN_RADAR),
+	CHAN5G(134, 5670, IEEE80211_CHAN_RADAR),
+	CHAN5G(136, 5680, IEEE80211_CHAN_RADAR),
+	CHAN5G(138, 5690, IEEE80211_CHAN_RADAR),
+	CHAN5G(140, 5700, IEEE80211_CHAN_RADAR),
+	CHAN5G(142, 5710, IEEE80211_CHAN_RADAR),
+	CHAN5G(144, 5720, IEEE80211_CHAN_RADAR),
+	CHAN5G(149, 5745, IEEE80211_CHAN_RADAR),
+	CHAN5G(151, 5755, IEEE80211_CHAN_RADAR),
+	CHAN5G(153, 5765, IEEE80211_CHAN_RADAR),
+	CHAN5G(155, 5775, IEEE80211_CHAN_RADAR),
+	CHAN5G(157, 5785, IEEE80211_CHAN_RADAR),
+	CHAN5G(159, 5795, IEEE80211_CHAN_RADAR),
+	CHAN5G(161, 5805, IEEE80211_CHAN_RADAR),
+	// CHAN5G(163, 5815, IEEE80211_CHAN_RADAR),
+	CHAN5G(165, 5825, IEEE80211_CHAN_RADAR),
+	CHAN5G(167, 5835, IEEE80211_CHAN_RADAR),
+	CHAN5G(169, 5845, IEEE80211_CHAN_RADAR),
+	CHAN5G(171, 5855, IEEE80211_CHAN_RADAR),
+	CHAN5G(173, 5865, IEEE80211_CHAN_RADAR),
 };
 
 static const struct ieee80211_iface_limit openwifi_if_limits[] = {
-	{ .max = 2048,	.types = BIT(NL80211_IFTYPE_STATION) },
-	{ .max = 4,	.types =
+	{ .max = MAX_NUM_VIF,	.types = BIT(NL80211_IFTYPE_STATION) },
+	{ .max = MAX_NUM_VIF,	.types =
 #ifdef CONFIG_MAC80211_MESH
 				 BIT(NL80211_IFTYPE_MESH_POINT) |
 #endif
-				 BIT(NL80211_IFTYPE_AP) },
+				 BIT(NL80211_IFTYPE_AP)},
 };
 
 static const struct ieee80211_iface_combination openwifi_if_comb = {
 	.limits = openwifi_if_limits,
 	.n_limits = ARRAY_SIZE(openwifi_if_limits),
-	.max_interfaces = 2048,
+	.max_interfaces = MAX_NUM_VIF,
 	.num_different_channels = 1,
 	.radar_detect_widths =	BIT(NL80211_CHAN_WIDTH_20_NOHT) |
 					BIT(NL80211_CHAN_WIDTH_20) |
@@ -309,6 +377,72 @@ struct cf_axi_dds_state {
 };
 // ===== end of copy from adi-linux/drivers/iio/frequency/cf_axi_dds.c =====
 
+struct openwifi_stat {
+	u32 stat_enable;
+
+	u32 tx_prio_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_interrupt_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_stop0_fake_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_stop0_real_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_stop1_num[MAX_NUM_SW_QUEUE];
+	u32 tx_prio_wakeup_num[MAX_NUM_SW_QUEUE];
+
+	u32 tx_queue_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_interrupt_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_stop0_fake_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_stop0_real_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_stop1_num[MAX_NUM_HW_QUEUE];
+	u32 tx_queue_wakeup_num[MAX_NUM_HW_QUEUE];
+	
+	u32 tx_data_pkt_need_ack_num_total;
+	u32 tx_data_pkt_need_ack_num_total_fail;
+
+	u32 tx_data_pkt_need_ack_num_retx[6];
+	u32 tx_data_pkt_need_ack_num_retx_fail[6];
+
+	u32 tx_data_pkt_mcs_realtime;
+	u32 tx_data_pkt_fail_mcs_realtime;
+
+	u32 tx_mgmt_pkt_need_ack_num_total;
+	u32 tx_mgmt_pkt_need_ack_num_total_fail;
+	
+	u32 tx_mgmt_pkt_need_ack_num_retx[3];
+	u32 tx_mgmt_pkt_need_ack_num_retx_fail[3];
+
+	u32 tx_mgmt_pkt_mcs_realtime;
+	u32 tx_mgmt_pkt_fail_mcs_realtime;
+
+	u32 rx_target_sender_mac_addr;
+	u32 rx_data_ok_agc_gain_value_realtime;
+	u32 rx_data_fail_agc_gain_value_realtime;
+	u32 rx_mgmt_ok_agc_gain_value_realtime;
+	u32 rx_mgmt_fail_agc_gain_value_realtime;
+	u32 rx_ack_ok_agc_gain_value_realtime;
+
+	u32 rx_monitor_all;
+	u32 rx_data_pkt_num_total;
+	u32 rx_data_pkt_num_fail;
+	u32 rx_mgmt_pkt_num_total;
+	u32 rx_mgmt_pkt_num_fail;
+	u32 rx_ack_pkt_num_total;
+	u32 rx_ack_pkt_num_fail;
+
+	u32 rx_data_pkt_mcs_realtime;
+	u32 rx_data_pkt_fail_mcs_realtime;
+	u32 rx_mgmt_pkt_mcs_realtime;
+	u32 rx_mgmt_pkt_fail_mcs_realtime;
+	u32 rx_ack_pkt_mcs_realtime;
+
+	u32 restrict_freq_mhz;
+
+	u32 csma_cfg0;
+	u32 cw_max_min_cfg;
+
+	u32 dbg_ch0;
+	u32 dbg_ch1;
+	u32 dbg_ch2;
+};
+
 #define RX_DMA_CYCLIC_MODE
 struct openwifi_priv {
 	struct platform_device *pdev;
@@ -326,14 +460,18 @@ struct openwifi_priv {
 	int tx_freq_offset_to_lo_MHz;
 	u32 rf_bw;
 	u32 actual_rx_lo;
+	u32 actual_tx_lo;
+	u32 last_tx_quad_cal_lo;
 
 	struct ieee80211_rate rates_2GHz[12];
 	struct ieee80211_rate rates_5GHz[12];
 	struct ieee80211_channel channels_2GHz[14];
-	struct ieee80211_channel channels_5GHz[11];
+	struct ieee80211_channel channels_5GHz[53];
 	struct ieee80211_supported_band band_2GHz;
 	struct ieee80211_supported_band band_5GHz;
 	bool rfkill_off;
+	u8 runtime_tx_ant_cfg;
+	u8 runtime_rx_ant_cfg;
 
 	int rssi_correction; // dynamic RSSI correction according to current channel in _rf_set_channel()
 	
@@ -371,10 +509,20 @@ struct openwifi_priv {
 	u8 band;
 	u16 channel;
 
+	u32 ampdu_reference;
+
 	u32 drv_rx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_tx_reg_val[MAX_NUM_DRV_REG];
 	u32 drv_xpu_reg_val[MAX_NUM_DRV_REG];
+	int rf_reg_val[MAX_NUM_RF_REG];
 	int last_auto_fpga_lbt_th;
+
+	struct bin_attribute bin_iq;
+	u32 tx_intf_arbitrary_iq[512];
+	u16 tx_intf_arbitrary_iq_num;
+	u8  tx_intf_iq_ctl;
+
+	struct openwifi_stat stat;
 	// u8 num_led;
 	// struct led_classdev *led[MAX_NUM_LED];//zc706 has 4 user leds. please find openwifi_dev_probe to see how we get them.
 	// char led_name[MAX_NUM_LED][OPENWIFI_LED_MAX_NAME_LEN];

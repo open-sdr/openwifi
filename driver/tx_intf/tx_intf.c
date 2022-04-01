@@ -40,16 +40,12 @@ static inline u32 TX_INTF_REG_MULTI_RST_read(void){
 	return reg_read(TX_INTF_REG_MULTI_RST_ADDR);
 }
 
-static inline u32 TX_INTF_REG_MIXER_CFG_read(void){
-	return reg_read(TX_INTF_REG_MIXER_CFG_ADDR);
+static inline u32 TX_INTF_REG_ARBITRARY_IQ_read(void){
+	return reg_read(TX_INTF_REG_ARBITRARY_IQ_ADDR);
 }
 
 static inline u32 TX_INTF_REG_WIFI_TX_MODE_read(void){
 	return reg_read(TX_INTF_REG_WIFI_TX_MODE_ADDR);
-}
-
-static inline u32 TX_INTF_REG_IQ_SRC_SEL_read(void){
-	return reg_read(TX_INTF_REG_IQ_SRC_SEL_ADDR);
 }
 
 static inline u32 TX_INTF_REG_CTS_TOSELF_CONFIG_read(void){
@@ -64,12 +60,12 @@ static inline u32 TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read(void){
 	return reg_read(TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_ADDR);
 }
 
-static inline u32 TX_INTF_REG_MISC_SEL_read(void){
-	return reg_read(TX_INTF_REG_MISC_SEL_ADDR);
+static inline u32 TX_INTF_REG_ARBITRARY_IQ_CTL_read(void){
+	return reg_read(TX_INTF_REG_ARBITRARY_IQ_CTL_ADDR);
 }
 
-static inline u32 TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read(void){
-	return reg_read(TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_ADDR);
+static inline u32 TX_INTF_REG_TX_CONFIG_read(void){
+	return reg_read(TX_INTF_REG_TX_CONFIG_ADDR);
 }
 
 static inline u32 TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read(void){
@@ -92,6 +88,10 @@ static inline u32 TX_INTF_REG_INTERRUPT_SEL_read(void){
 	return reg_read(TX_INTF_REG_INTERRUPT_SEL_ADDR);
 }
 
+static inline u32 TX_INTF_REG_AMPDU_ACTION_CONFIG_read(void){
+	return reg_read(TX_INTF_REG_AMPDU_ACTION_CONFIG_ADDR);
+}
+
 static inline u32 TX_INTF_REG_BB_GAIN_read(void){
 	return reg_read(TX_INTF_REG_BB_GAIN_ADDR);
 }
@@ -100,12 +100,28 @@ static inline u32 TX_INTF_REG_ANT_SEL_read(void){
 	return reg_read(TX_INTF_REG_ANT_SEL_ADDR);
 }
 
+static inline u32 TX_INTF_REG_PHY_HDR_CONFIG_read(void){
+	return reg_read(TX_INTF_REG_PHY_HDR_CONFIG_ADDR);
+}
+
 static inline u32 TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read(void){
 	return reg_read(TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR);
 }
 
-static inline u32 TX_INTF_REG_PKT_INFO_read(void){
-	return reg_read(TX_INTF_REG_PKT_INFO_ADDR);
+static inline u32 TX_INTF_REG_PKT_INFO1_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO1_ADDR);
+}
+
+static inline u32 TX_INTF_REG_PKT_INFO2_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO2_ADDR);
+}
+
+static inline u32 TX_INTF_REG_PKT_INFO3_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO3_ADDR);
+}
+
+static inline u32 TX_INTF_REG_PKT_INFO4_read(void){
+	return reg_read(TX_INTF_REG_PKT_INFO4_ADDR);
 }
 
 static inline u32 TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read(void){
@@ -118,16 +134,12 @@ static inline void TX_INTF_REG_MULTI_RST_write(u32 value){
 	reg_write(TX_INTF_REG_MULTI_RST_ADDR, value);
 }
 
-static inline void TX_INTF_REG_MIXER_CFG_write(u32 value){
-	reg_write(TX_INTF_REG_MIXER_CFG_ADDR, value);
+static inline void TX_INTF_REG_ARBITRARY_IQ_write(u32 value){
+	reg_write(TX_INTF_REG_ARBITRARY_IQ_ADDR, value);
 }
 
 static inline void TX_INTF_REG_WIFI_TX_MODE_write(u32 value){
 	reg_write(TX_INTF_REG_WIFI_TX_MODE_ADDR, value);
-}
-
-static inline void TX_INTF_REG_IQ_SRC_SEL_write(u32 value){
-	reg_write(TX_INTF_REG_IQ_SRC_SEL_ADDR, value);
 }
 
 static inline void TX_INTF_REG_CTS_TOSELF_CONFIG_write(u32 value){
@@ -142,12 +154,12 @@ static inline void TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write(u32 value){
 	reg_write(TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_ADDR, value);
 }
 
-static inline void TX_INTF_REG_MISC_SEL_write(u32 value){
-	reg_write(TX_INTF_REG_MISC_SEL_ADDR, value);
+static inline void TX_INTF_REG_ARBITRARY_IQ_CTL_write(u32 value){
+	reg_write(TX_INTF_REG_ARBITRARY_IQ_CTL_ADDR, value);
 }
 
-static inline void TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write(u32 value){
-	reg_write(TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_ADDR, value);
+static inline void TX_INTF_REG_TX_CONFIG_write(u32 value){
+	reg_write(TX_INTF_REG_TX_CONFIG_ADDR, value);
 }
 
 static inline void TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(u32 value){
@@ -170,6 +182,10 @@ static inline void TX_INTF_REG_INTERRUPT_SEL_write(u32 value){
 	reg_write(TX_INTF_REG_INTERRUPT_SEL_ADDR, value);
 }
 
+static inline void TX_INTF_REG_AMPDU_ACTION_CONFIG_write(u32 value){
+	reg_write(TX_INTF_REG_AMPDU_ACTION_CONFIG_ADDR, value);
+}
+
 static inline void TX_INTF_REG_BB_GAIN_write(u32 value){
 	reg_write(TX_INTF_REG_BB_GAIN_ADDR, value);
 }
@@ -178,12 +194,28 @@ static inline void TX_INTF_REG_ANT_SEL_write(u32 value){
 	reg_write(TX_INTF_REG_ANT_SEL_ADDR, value);
 }
 
+static inline void TX_INTF_REG_PHY_HDR_CONFIG_write(u32 value){
+	reg_write(TX_INTF_REG_PHY_HDR_CONFIG_ADDR, value);
+}
+
 static inline void TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write(u32 value){
 	reg_write(TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_ADDR, value);
 }
 
-static inline void TX_INTF_REG_PKT_INFO_write(u32 value){
-	reg_write(TX_INTF_REG_PKT_INFO_ADDR,value);
+static inline void TX_INTF_REG_PKT_INFO1_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO1_ADDR,value);
+}
+
+static inline void TX_INTF_REG_PKT_INFO2_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO2_ADDR,value);
+}
+
+static inline void TX_INTF_REG_PKT_INFO3_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO3_ADDR,value);
+}
+
+static inline void TX_INTF_REG_PKT_INFO4_write(u32 value){
+	reg_write(TX_INTF_REG_PKT_INFO4_ADDR,value);
 }
 
 static const struct of_device_id dev_of_ids[] = {
@@ -196,9 +228,9 @@ static struct tx_intf_driver_api tx_intf_driver_api_inst;
 static struct tx_intf_driver_api *tx_intf_api = &tx_intf_driver_api_inst;
 EXPORT_SYMBOL(tx_intf_api);
 
-static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps, enum openwifi_fpga_type fpga_type){
+static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_symbol_to_ps, enum openwifi_fpga_type fpga_type){
 	int err=0, i;
-	u32 mixer_cfg=0, duc_input_ch_sel = 0, ant_sel=0;
+	u32 mixer_cfg=0, ant_sel=0;
 
 	printk("%s hw_init mode %d\n", tx_intf_compatible_str, mode);
 
@@ -210,65 +242,64 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 	for (i=0;i<8;i++)
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 
-
 	if(fpga_type == LARGE_FPGA)	// LARGE FPGA: MAX_NUM_DMA_SYMBOL = 8192
-		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+		// tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-(210*5)); // threshold is for room to hold the last 4 packets from 4 queue before stop
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(8192-(210*2));
 	else if(fpga_type == SMALL_FPGA)	// SMALL FPGA: MAX_NUM_DMA_SYMBOL = 4096
-		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-200); // when only 200 DMA symbol room left in fifo, stop Linux queue
+		// tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-(210*5)); // threshold is for room to hold the last 4 packets from 4 queue before stop
+		tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write(4096-(210*2));
 
 	switch(mode)
 	{
 		case TX_INTF_AXIS_LOOP_BACK:
-			tx_intf_api->TX_INTF_REG_MISC_SEL_write(0<<1);// bit1: 0-connect dac to ADI dma; 1-connect dac to our intf
 			printk("%s hw_init mode TX_INTF_AXIS_LOOP_BACK\n", tx_intf_compatible_str);
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_0MHZ_ANT0:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT0\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F400;
-			duc_input_ch_sel = 0;
 			ant_sel=1;
+			break;
+
+		case TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH:
+			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT0\n", tx_intf_compatible_str);
+			mixer_cfg = 0x2001F400;
+			ant_sel=0x11;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F602;
-			duc_input_ch_sel = 0;
 			ant_sel=1;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT0:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT0\n", tx_intf_compatible_str);
 			mixer_cfg = 0x200202F6;
-			duc_input_ch_sel = 0;
 			ant_sel=1;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_0MHZ_ANT1:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT1\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F400;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT1\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F602;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1:
 			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_P_10MHZ_ANT1\n", tx_intf_compatible_str);
 			mixer_cfg = 0x200202F6;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 
 		case TX_INTF_BYPASS:
 			printk("%s hw_init mode TX_INTF_BYPASS\n", tx_intf_compatible_str);
 			mixer_cfg = 0x200202F6;
-			duc_input_ch_sel = 0;
 			ant_sel=2;
 			break;
 		
@@ -278,21 +309,41 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 	}
 
 	if (mode!=TX_INTF_AXIS_LOOP_BACK) {
-		tx_intf_api->TX_INTF_REG_MISC_SEL_write(1<<1);// bit1: 0-connect dac to ADI dma; 1-connect dac to our intf
-
-		tx_intf_api->TX_INTF_REG_MIXER_CFG_write(mixer_cfg);
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
-		tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write(duc_input_ch_sel);
 		tx_intf_api->TX_INTF_REG_CSI_FUZZER_write(0);
 		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
-
-		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write(num_dma_symbol_to_pl);
+	
+		tx_intf_api->TX_INTF_REG_TX_CONFIG_write(tx_config);
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0);
 		tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write(420);
 		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x4); //.src_sel(slv_reg14[2:0]), 0-s00_axis_tlast,1-ap_start,2-tx_start_from_acc,3-tx_end_from_acc,4-tx_try_complete from xpu
 		tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write(0x30004); //disable interrupt
-		tx_intf_api->TX_INTF_REG_BB_GAIN_write(100);
+
+		// tx_intf_api->TX_INTF_REG_BB_GAIN_write(100); // value for old design with DUC (FIR + MIXER) -- obsolete due to DUC removal
+		// New test on new design (unified RF BB clock; No DUC)
+		// 5220MHz bb_gain power   EVM
+        //         400     -6dBm   -34/35
+        //         350     -7.2dBm -34/35/36
+        //         300     -8.5dBm -35/36/37 EVM
+
+        // 2437MHz bb_gain power    EVM
+        //         400     -3.2dBm -36/37
+        //         350     -4.4dBm -37/38/39
+        //         300     -5.7dBm -39/40
+        //         less    less    -40/41/42!
+
+		// According to above and more detailed test:
+		// Need to be 290. Otherwise some ofdm symbol's EVM jump high, when there are lots of ofdm symbols in one WiFi packet
+
+		// 2022-03-04 detailed test result:
+		// bb_gain 290 work for 11a/g all mcs
+		// bb_gain 290 work for 11n mcs 1~7 (aggr and non aggr)
+		// bb_gain 290 destroy  11n mcs 0 long (MTU 1500) tx pkt due to high PAPR (Peak to Average Power Ratio)!
+		// bb_gain 250 work for 11n mcs 0
+		// So, a conservative bb_gain 250 should be used
+		tx_intf_api->TX_INTF_REG_BB_GAIN_write(250);
+
 		tx_intf_api->TX_INTF_REG_ANT_SEL_write(ant_sel);
 		tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write((1<<3)|(2<<4));
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0x434);
@@ -334,43 +385,51 @@ static int dev_probe(struct platform_device *pdev)
 	tx_intf_api->reg_write=reg_write;
 
 	tx_intf_api->TX_INTF_REG_MULTI_RST_read=TX_INTF_REG_MULTI_RST_read;
-	tx_intf_api->TX_INTF_REG_MIXER_CFG_read=TX_INTF_REG_MIXER_CFG_read;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_read=TX_INTF_REG_ARBITRARY_IQ_read;
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_read=TX_INTF_REG_WIFI_TX_MODE_read;
-	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_read=TX_INTF_REG_IQ_SRC_SEL_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_read=TX_INTF_REG_CTS_TOSELF_CONFIG_read;
 	tx_intf_api->TX_INTF_REG_CSI_FUZZER_read=TX_INTF_REG_CSI_FUZZER_read;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_read;
-	tx_intf_api->TX_INTF_REG_MISC_SEL_read=TX_INTF_REG_MISC_SEL_read;
-	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_read;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_CTL_read=TX_INTF_REG_ARBITRARY_IQ_CTL_read;
+	tx_intf_api->TX_INTF_REG_TX_CONFIG_read=TX_INTF_REG_TX_CONFIG_read;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_read;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_read=TX_INTF_REG_CFG_DATA_TO_ANT_read;
 	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_read=TX_INTF_REG_S_AXIS_FIFO_TH_read;
 	tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_read=TX_INTF_REG_TX_HOLD_THRESHOLD_read;
 	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_read=TX_INTF_REG_INTERRUPT_SEL_read;
+	tx_intf_api->TX_INTF_REG_AMPDU_ACTION_CONFIG_read=TX_INTF_REG_AMPDU_ACTION_CONFIG_read;
 	tx_intf_api->TX_INTF_REG_BB_GAIN_read=TX_INTF_REG_BB_GAIN_read;
 	tx_intf_api->TX_INTF_REG_ANT_SEL_read=TX_INTF_REG_ANT_SEL_read;
+	tx_intf_api->TX_INTF_REG_PHY_HDR_CONFIG_read=TX_INTF_REG_PHY_HDR_CONFIG_read;
 	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read=TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read;
-	tx_intf_api->TX_INTF_REG_PKT_INFO_read=TX_INTF_REG_PKT_INFO_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO1_read=TX_INTF_REG_PKT_INFO1_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO2_read=TX_INTF_REG_PKT_INFO2_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO3_read=TX_INTF_REG_PKT_INFO3_read;
+	tx_intf_api->TX_INTF_REG_PKT_INFO4_read=TX_INTF_REG_PKT_INFO4_read;
 	tx_intf_api->TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read=TX_INTF_REG_QUEUE_FIFO_DATA_COUNT_read;
 
 	tx_intf_api->TX_INTF_REG_MULTI_RST_write=TX_INTF_REG_MULTI_RST_write;
-	tx_intf_api->TX_INTF_REG_MIXER_CFG_write=TX_INTF_REG_MIXER_CFG_write;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_write=TX_INTF_REG_ARBITRARY_IQ_write;
 	tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write=TX_INTF_REG_WIFI_TX_MODE_write;
-	tx_intf_api->TX_INTF_REG_IQ_SRC_SEL_write=TX_INTF_REG_IQ_SRC_SEL_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_write=TX_INTF_REG_CTS_TOSELF_CONFIG_write;
 	tx_intf_api->TX_INTF_REG_CSI_FUZZER_write=TX_INTF_REG_CSI_FUZZER_write;
 	tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write=TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write;
-	tx_intf_api->TX_INTF_REG_MISC_SEL_write=TX_INTF_REG_MISC_SEL_write;
-	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PL_write;
+	tx_intf_api->TX_INTF_REG_ARBITRARY_IQ_CTL_write=TX_INTF_REG_ARBITRARY_IQ_CTL_write;
+	tx_intf_api->TX_INTF_REG_TX_CONFIG_write=TX_INTF_REG_TX_CONFIG_write;
 	tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write=TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write;
 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write=TX_INTF_REG_CFG_DATA_TO_ANT_write;
 	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_TH_write=TX_INTF_REG_S_AXIS_FIFO_TH_write;
 	tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write=TX_INTF_REG_TX_HOLD_THRESHOLD_write;
 	tx_intf_api->TX_INTF_REG_INTERRUPT_SEL_write=TX_INTF_REG_INTERRUPT_SEL_write;
+	tx_intf_api->TX_INTF_REG_AMPDU_ACTION_CONFIG_write=TX_INTF_REG_AMPDU_ACTION_CONFIG_write;
 	tx_intf_api->TX_INTF_REG_BB_GAIN_write=TX_INTF_REG_BB_GAIN_write;
 	tx_intf_api->TX_INTF_REG_ANT_SEL_write=TX_INTF_REG_ANT_SEL_write;
+	tx_intf_api->TX_INTF_REG_PHY_HDR_CONFIG_write=TX_INTF_REG_PHY_HDR_CONFIG_write;
 	tx_intf_api->TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write=TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_write;
-	tx_intf_api->TX_INTF_REG_PKT_INFO_write=TX_INTF_REG_PKT_INFO_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO1_write=TX_INTF_REG_PKT_INFO1_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO2_write=TX_INTF_REG_PKT_INFO2_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO3_write=TX_INTF_REG_PKT_INFO3_write;
+	tx_intf_api->TX_INTF_REG_PKT_INFO4_write=TX_INTF_REG_PKT_INFO4_write;
 
 	/* Request and map I/O memory */
 	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -378,7 +437,7 @@ static int dev_probe(struct platform_device *pdev)
 	if (IS_ERR(base_addr))
 		return PTR_ERR(base_addr);
 
-	printk("%s dev_probe io start 0x%08x end 0x%08x name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
+	printk("%s dev_probe io start 0x%08llx end 0x%08llx name %s flags 0x%08x desc 0x%08x\n", tx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
 	printk("%s dev_probe base_addr 0x%p\n", tx_intf_compatible_str,(void*)base_addr);
 	printk("%s dev_probe tx_intf_driver_api_inst 0x%p\n", tx_intf_compatible_str, (void*)(&tx_intf_driver_api_inst) );
 	printk("%s dev_probe             tx_intf_api 0x%p\n", tx_intf_compatible_str, (void*)tx_intf_api);

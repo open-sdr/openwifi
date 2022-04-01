@@ -27,8 +27,7 @@ def display_iq(iq0_capture, iq1_capture):
     plt.plot(iq1_capture.real, 'b')
     plt.plot(iq1_capture.imag, 'r')
     plt.ylim(-32767, 32767)
-    fig_iq_capture.show()
-    plt.pause(0.0001)
+    fig_iq_capture.canvas.flush_events()
 
 def parse_iq(iq, iq_len):
     # print(len(iq), iq_len)
@@ -77,6 +76,8 @@ if os.path.exists("iq_2ant.txt"):
     os.remove("iq_2ant.txt")
 iq_fd=open('iq_2ant.txt','a')
 
+plt.ion()
+
 while True:
     try:
         data, addr = sock.recvfrom(MAX_NUM_DMA_SYMBOL*8) # buffer size
@@ -98,5 +99,5 @@ while True:
         break
 
 print('close()')
-side_info_fd.close()
+iq_fd.close()
 sock.close()

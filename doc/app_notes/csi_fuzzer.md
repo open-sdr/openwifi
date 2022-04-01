@@ -20,33 +20,9 @@ CSI fuzzer implementation principle.
 
 ## Demo instructions
 
-Thanks to the full-duplex capability and CSI extraction feature of openwifi, you can monitor the artificial channel response via [side channel](./csi.md) by Tx-Rx over the air coupling without affecting the normal operation/traffic of openwifi. Before the self-monitoring, the auto-mute during Tx needs to be disabled.
+Thanks to the full-duplex capability and CSI extraction feature of openwifi, you can monitor the artificial channel response via [side channel](./csi.md) by Tx-Rx over the air coupling without affecting the normal operation/traffic of openwifi. Before fuzzing the CSI, please follow [WiFi CSI radar via self CSI capturing](radar-self-csi.md) app note to setup normal self CSI monitoring.
 
-The full demo steps are:
-
-```
-ssh root@192.168.10.122
-(password: openwifi)
-
-cd openwifi
-
-./fosdem-11ag.sh
-(setup openwifi AP)
-
-./sdrctl dev sdr0 set reg xpu 1 1
-(Disable auto-muting to listen self-TX)
-
-insmod side_ch.ko num_eq_init=0
-
-./side_ch_ctl wh1h2001
-./side_ch_ctl wh6hffffffff
-(Let's only monitor self-beacon-TX CSI over-the-air loopback)
-
-./side_ch_ctl g1
-```
-Go to openwifi/user_space/side_ch_ctl_src, and run `python3 side_info_display.py 0`. You should see the over-the-air loopback CSI when CSI fuzzer is not enabled. Then stop the python3 side_info_display.py script to ease the next step.
-
-Start another ssh session to the openwifi board:
+Then, start another ssh session to the openwifi board:
 ```
 ssh root@192.168.10.122
 (password: openwifi)
@@ -58,7 +34,7 @@ cd openwifi
 (csi_fuzzer.sh is called. Please read both scripts to understand these commands)
 ```
 
-Go to openwifi/user_space/side_ch_ctl_src, and run `python3 side_info_display.py 0`. Now you should see that CSI keeps changing like in this [video](https://youtu.be/aOPYwT77Qdw).
+Now you should see that CSI keeps changing like in this [video](https://youtu.be/aOPYwT77Qdw).
 
 # Further explanation on parameters
 
@@ -72,7 +48,7 @@ CSI self-monitoring before fuzzing.
 
 ![](./csi-fuzzer-beacon-ant-back-0.jpg)
 
-CSI self-monitoring after  fuzzing command: `csi_fuzzer.sh 1 45 0 13`
+CSI self-monitoring after  fuzzing command: `./csi_fuzzer.sh 1 45 0 13`
 
 ![](./csi-fuzzer-beacon-ant-back-1-45-0-13.jpg)
 

@@ -60,7 +60,11 @@ set -x
 home_dir=$(pwd)
 
 cd $OPENWIFI_DIR/driver/
-echo "#define GIT_REV 0x"$(git log -1 --pretty=%h) > git_rev.h
+if git log -1; then
+    echo "#define GIT_REV 0x"$(git log -1 --pretty=%h) > git_rev.h
+else
+    echo "#define GIT_REV 0xFFFFFFFF" > git_rev.h
+fi
 make KDIR=$LINUX_KERNEL_SRC_DIR ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
 cd $OPENWIFI_DIR/driver/openofdm_tx
 make KDIR=$LINUX_KERNEL_SRC_DIR ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE

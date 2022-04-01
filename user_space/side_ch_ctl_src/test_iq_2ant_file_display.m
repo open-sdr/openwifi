@@ -2,16 +2,18 @@
 
 % clear all;
 % close all;
-function test_iq_2ant_file_display(varargin)
+function test_iq_2ant_file_display(iq_len, iq_cap_filename)
 
-if nargin == 0
+if exist('iq_len', 'var')==0 || isempty(iq_len)
     iq_len = 8187; % default for big fpga
     % iq_len = 4095; % for small fpga
-else
-    iq_len = varargin{1};
 end
 
-a = load('iq_2ant.txt');
+if exist('iq_cap_filename', 'var')==0 || isempty(iq_cap_filename)
+    iq_cap_filename = 'iq_2ant.txt';
+end
+
+a = load(iq_cap_filename);
 len_a = floor(length(a)/4)*4;
 a = a(1:len_a);
 
@@ -27,10 +29,12 @@ for i=1:num_iq_capture
     sp = (i-1)*num_data_in_each_iq_capture + 1;
     ep = i*num_data_in_each_iq_capture;
     timestamp(i) = b(sp,1) + (2^16)*b(sp,2) + (2^32)*b(sp,3) + (2^48)*b(sp,4);
-    iq0_capture(:,i) = 1i.*b((sp+1):ep,1) + b((sp+1):ep,2);
-    iq1_capture(:,i) = 1i.*b((sp+1):ep,3) + b((sp+1):ep,4);
+    iq0_capture(:,i) = b((sp+1):ep,1) + 1i.*b((sp+1):ep,2);
+    iq1_capture(:,i) = b((sp+1):ep,3) + 1i.*b((sp+1):ep,4);
 end
-save(['iq_2ant_' num2str(iq_len) '.mat'], 'iq0_capture', 'iq1_capture');
+
+mat_filename = [iq_cap_filename(1:end-4) '_' num2str(iq_len) '.mat'];
+save(mat_filename, 'iq0_capture', 'iq1_capture');
 
 iq0_capture = iq0_capture(:);
 iq1_capture = iq1_capture(:);
@@ -50,3 +54,19 @@ b = abs(iq1_capture);
 plot(a); hold on;
 plot(b,'r'); title('rx0 and rx1 abs'); xlabel('sample'); ylabel('abs'); grid on;
 legend('rx0','rx1');
+
+save_iq_complex_to_txt(iq0_capture, [mat_filename(1:end-4) '_iq0.txt']);
+save_iq_complex_to_txt(iq1_capture, [mat_filename(1:end-4) '_iq1.txt']);
+
+function save_iq_complex_to_txt(iq, filename)
+fid = fopen(filename,'w');
+if fid == -1
+    disp('fopen failed');
+    return;
+end
+
+for i=1:length(iq)
+    fprintf(fid, '%d %d\n', round(real(iq(i))), round(imag(iq(i))));
+end
+
+fclose(fid);

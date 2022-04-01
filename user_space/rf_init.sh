@@ -6,10 +6,29 @@
 
 home_dir=$(pwd)
 
-if test -f "openwifi_ad9361_fir.ftr"; then
-  echo "Found openwifi_ad9361_fir.ftr"
+if [ -z "$1" ]
+then
+  tx_offset_tuning_enable=1
 else
-  echo "Can not find openwifi_ad9361_fir.ftr!"
+  tx_offset_tuning_enable=0
+fi
+echo tx_offset_tuning_enable $tx_offset_tuning_enable
+
+if [ $tx_offset_tuning_enable = "1" ]
+then
+  fir_filename="openwifi_ad9361_fir.ftr"
+  tx_fir_enable=0
+else
+  fir_filename="openwifi_ad9361_fir_tx_0MHz.ftr"
+  tx_fir_enable=1
+fi
+
+echo $fir_filename "tx_fir_enable" $tx_fir_enable
+
+if test -f $fir_filename; then
+  echo "Found" $fir_filename
+else
+  echo "Can not find" $fir_filename
   exit 1
 fi
 
@@ -45,16 +64,16 @@ echo 40000000 >  out_voltage_sampling_frequency
 sync
 sleep 1
 
-echo 5240000000 >  out_altvoltage0_RX_LO_frequency
+echo 1000000000 >  out_altvoltage0_RX_LO_frequency
 sync
-echo 5250000000 >  out_altvoltage1_TX_LO_frequency
+echo 1000000000 >  out_altvoltage1_TX_LO_frequency
 sync
 
-cat $home_dir/openwifi_ad9361_fir.ftr > filter_fir_config
+cat $home_dir/$fir_filename > filter_fir_config
 sync
 sleep 0.5
 echo 1 > in_voltage_filter_fir_en
-echo 0 > out_voltage_filter_fir_en
+echo $tx_fir_enable > out_voltage_filter_fir_en
 cat filter_fir_config
 cat in_voltage_filter_fir_en
 cat out_voltage_filter_fir_en

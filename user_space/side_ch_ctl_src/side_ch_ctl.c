@@ -288,17 +288,22 @@ int main(const int argc, char * const argv[])
     unsigned int reg_val, *cmd_buf;
     unsigned short port;
     struct sockaddr_in server;
+    int value_only_flag = 0;
     int ret = 0;
 
-    if (argc!=2) {
-        printf("Wrong input!\n");
+    if (argc<2) {
+        printf("1 argument is needed!\n");
         print_usage();
         return(ret);
     }
 
+    value_only_flag = (argc>2?1:0);
+
     ret = parse_para_string(argv[1], &action_flag, &reg_type, &reg_idx, &reg_val, &interval_ms);
-    printf("parse: ret %d\n", ret);
-    printf("   tx: action_flag %d reg_type %d reg_idx %d reg_val %u interval_ms %d\n", action_flag, reg_type, reg_idx, reg_val, interval_ms);
+    if (value_only_flag==0) {
+        printf("parse: ret %d\n", ret);
+        printf("   tx: action_flag %d reg_type %d reg_idx %d reg_val %u interval_ms %d\n", action_flag, reg_type, reg_idx, reg_val, interval_ms);
+    }
     if (ret<0) {
         printf("Wrong input!\n");
         print_usage();
@@ -383,7 +388,10 @@ int main(const int argc, char * const argv[])
         // printf("num_dma_symbol %d\n", side_info_size/8);
 
         if (action_flag!=ACTION_SIDE_INFO_GET) {
-            printf("   rx: size %d val %d 0x%08x\n", side_info_size, cmd_buf[0], cmd_buf[0]);
+            if (value_only_flag==0)
+                printf("   rx: size %d val %d 0x%08x\n", side_info_size, cmd_buf[0], cmd_buf[0]);
+            else
+                printf("%u\n", cmd_buf[0]);
             break;
         }
         
