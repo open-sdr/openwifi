@@ -162,7 +162,20 @@ insmod sdr.ko init_tx_att=20000
 You can change above driver loading action at the end of **wgd.sh**.
 
 The initial Tx attenuation might be useful when you connect two SDR boards directly by cable. Even though, you shouldn't not connect them during the setup phase (bring up the AP or client), because the initialization/tuning of AD9361 might generate big Tx power and kill the other AD9361's Rx. Only connect two SDR boards by cable after both sides have been setup and the attenuation setting takes effect.
-  
+
+To increase the Tx power, you can consider add external PA like [this](https://github.com/open-sdr/openwifi/issues/53#issuecomment-767621478). Or increase the value of register 13 of tx_intf (check [README](../README.md)).
+
+Read the register value:
+```
+./sdrctl dev sdr0 get reg tx_intf 13
+```
+
+Set the register value to N (a number larger than the value read back above):
+```
+./sdrctl dev sdr0 set reg tx_intf 13 N
+```
+Bigger value in that register could hurt the Tx EVM and long packet signal. You need to fine tune it for your case.
+
 ## Tx Lo and port config
 
 In normal operation, the Tx Lo and RF port are controled by FPGA automatically during signal Tx. To check the current Tx Lo and RF port switch status
