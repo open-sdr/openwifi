@@ -211,7 +211,7 @@ Above command will fix the AD9361 in 5220MHz and let driver ignore frequency tun
 ```
 ./set_restrict_freq.sh 0
 ```
-To let openwifi work at arbitrary frequency, please check "Let openwifi work at arbitrary frequency" in https://github.com/open-sdr/openwifi/blob/master/doc/README.md#Regulation-and-channel-config
+To let openwifi work at arbitrary frequency, please check [Let openwifi work at arbitrary frequency](../README.md#let-openwifi-work-at-arbitrary-frequency)
 
 ## Receiver sensitivity control
 
