@@ -51,7 +51,7 @@ The FPGA also has a register to override the re-transmission and ACK behavior. C
 ```
 ./sdrctl dev sdr0 get reg xpu 11
 ```
-When operate this register, make sure you only change the relevant bits and leave other bits untouched, because other bits have other purposes. Also check the xpu register 11 in the document: https://github.com/open-sdr/openwifi/blob/master/doc/README.md
+When operate this register, make sure you only change the relevant bits and leave other bits untouched, because other bits have other purposes. Also check the xpu register 11 in the [document](../README.md).
 
 To override the maximum number of re-transmission, set bit3 to 1, and set the value (0 ~ 7) to bit2 ~ 0. Example, override the maximum number of re-transmission to 1
 ```
