@@ -292,10 +292,6 @@ static inline u32 hw_init(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		//0x000-normal; 0x100-sig and fcs valid are controlled by bit4 and bit0;
 		//0x111-sig and fcs high; 0x110-sig high fcs low; 0x101-sig low fcs high; 0x100-sig and fcs low
 
-		rx_intf_api->RX_INTF_REG_IQ_SRC_SEL_write(0);
-		// 0-bw20-ch0; 1-bw2-ch0;  2-bw2-ch2;  3-bw2-ch4;  4-bw2-ch6;  5-s_axis-ch0
-		// 8-bw20-ch1; 9-bw2-ch1; 10-bw2-ch3; 11-bw2-ch5; 12-bw2-ch7; 13-s_axis-ch1
-
 		rx_intf_api->RX_INTF_REG_S2MM_INTR_DELAY_COUNT_write(30*10); // delayed interrupt, counter clock 10MHz is assumed
 		
 		rx_intf_api->RX_INTF_REG_IQ_CTRL_write(0);
