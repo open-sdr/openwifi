@@ -4,14 +4,25 @@
 # SPDX-FileCopyrightText: 2019 UGent
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-if [ "$#" -ne 2 ]; then
-    echo "You must enter exactly 2 arguments: \$XILINX_DIR ARCH_BIT(32 or 64)"
+print_usage () {
+    echo "You must enter at least 2 arguments: \$XILINX_DIR ARCH_BIT(32 or 64)"
+    echo "Further arguments (maximum 5) will be converted to #define argument in pre_def.h"
+    echo " "
+}
+
+print_usage
+
+if [ "$#" -lt 2 ]; then
     exit 1
 fi
 
 OPENWIFI_DIR=$(pwd)/../
 XILINX_DIR=$1
 ARCH_OPTION=$2
+
+echo OPENWIFI_DIR $OPENWIFI_DIR
+echo XILINX_DIR $XILINX_DIR
+echo ARCH_OPTION $ARCH_OPTION
 
 if [ -f "$OPENWIFI_DIR/LICENSE" ]; then
     echo "\$OPENWIFI_DIR is found!"
@@ -34,17 +45,42 @@ else
     echo "\$ARCH_OPTION is valid!"
 fi
 
+echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
+if [[ -n $3 ]]; then
+    DEFINE1=$3
+    echo DEFINE1 $DEFINE1
+    echo "#define $DEFINE1" >> pre_def.h
+fi
+if [[ -n $4 ]]; then
+    DEFINE2=$4
+    echo DEFINE2 $DEFINE2
+    echo "#define $DEFINE2" >> pre_def.h
+fi
+if [[ -n $5 ]]; then
+    DEFINE3=$5
+    echo DEFINE3 $DEFINE3
+    echo "#define $DEFINE3" >> pre_def.h
+fi
+if [[ -n $6 ]]; then
+    DEFINE4=$6
+    echo DEFINE4 $DEFINE4
+    echo "#define $DEFINE4" >> pre_def.h
+fi
+if [[ -n $7 ]]; then
+    DEFINE5=$7
+    echo DEFINE5 $DEFINE5
+    echo "#define $DEFINE5" >> pre_def.h
+fi
+
 source $XILINX_DIR/SDK/2018.3/settings64.sh
 if [ "$ARCH_OPTION" == "64" ]; then
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux-64/
     ARCH="arm64"
     CROSS_COMPILE="aarch64-linux-gnu-"
-    echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
 else
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux/
     ARCH="arm"
     CROSS_COMPILE="arm-linux-gnueabihf-"
-    echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
 fi
 
 # check if user entered the right path to analog device linux
