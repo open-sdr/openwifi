@@ -164,9 +164,9 @@ inline int rssi_correction_lookup_table(u32 freq_MHz)
 	} else if (freq_MHz<=5240) {
 		rssi_correction = 145;
 	} else if (freq_MHz<=5320) {
-		rssi_correction = 148;
+		rssi_correction = 145;
 	} else {
-		rssi_correction = 148;
+		rssi_correction = 145;
 	}
 
 	return rssi_correction;
