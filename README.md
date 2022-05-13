@@ -83,10 +83,12 @@ zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kit
   ```
   ssh root@192.168.10.122
   ```
-- On board, run openwifi AP and the on board webserver
+- Then, run openwifi AP and the on board webserver
   ```
-  ~/openwifi/fosdem.sh
-  (Use "./fosdem.sh 1" to enable experimental AMPDU aggregation on top of 11n)
+  cd openwifi
+  ./wgd.sh
+  ./fosdem.sh
+  (Use "./wgd.sh 1" to enable experimental AMPDU aggregation on top of 11n)
   (Use "./fosdem-11ag.sh" to force 11a/g mode)
   ```
   **NOTE** adrv9361z7035 has ultra low TX power in 5GHz. Move **CLOSER** when you use that board in 5GHz!!!
@@ -156,6 +158,8 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   umount /mnt
   ```
   **Power cycle** the board to load new FPGA bitstream.
+  
+  To load FPGA dynamically without rebooting/power-cycle, check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md).
 
 ## Update Driver
 
@@ -176,7 +180,9 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   cd openwifi/driver; scp `find ./ -name \*.ko` root@192.168.10.122:openwifi/
   ```
-  Now you can use **wgd.sh** on board to load the new openwifi driver.
+  Now you can use **wgd.sh** on board to load the new openwifi driver. **wgd.sh** also tries to reload FPGA img if system_top.bit.bin presents in the same directory. 
+  Find more information in [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md).
+  
   **Note**: If you have symbol or version error while loadng the driver, it could be because the kernel in the SD card image is too old. In this case, you need to follow [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to generate your new SD card image.
 
 ## Update sdrctl
