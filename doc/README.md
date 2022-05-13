@@ -386,8 +386,8 @@ sdr,sdr openwifi_tx_interrupt: tx_result [nof_retx 1 pass 1] SC20 prio0 q0 wr20 
 - prio, q, wr, rd: these fields can be interpreted the same way as the print in openwifi_tx function
 - num_slot: tells how many slots the CSMA/CA state machine waited until the packet is sent in the last tx attempt
 - cw: the exponent of the Contention Window for this packet. 6 means the CW size 64. If the contention phase is never entered, CW is 0
-- hwq len: the current FPGA queue length (number of pkt left in the queue).8bit per queue. see tx_intf register 26 (https://github.com/open-sdr/openwifi/blob/master/doc/README.md)
-- no_room_flag: the DMA room of FPGA queue is almost run out. 1bit per queue. see tx_intf register 21 (https://github.com/open-sdr/openwifi/blob/master/doc/README.md)
+- hwq len: the current FPGA queue length (number of pkt left in the queue).8bit per queue. see tx_intf register 26 in the register table section.
+- no_room_flag: the DMA room of FPGA queue is almost run out. 1bit per queue. see tx_intf register 21 in the register table section.
 
 ### rx printing example
 ```
