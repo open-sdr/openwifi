@@ -53,6 +53,12 @@ set -ex
 # check if user entered the right path to SDK
 source $XILINX_DIR/SDK/2018.3/settings64.sh
 
+# uncompress the system.hdf and system_top.bit for use
+mkdir -p hdf_and_bit
+tar -zxvf $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/hdf_and_bit.tar.gz -C ./hdf_and_bit
+cp ./hdf_and_bit/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
+cp ./hdf_and_bit/$BOARD_NAME/sdk/system_top_hw_platform_0/system_top.bit $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
+
 cd $OPENWIFI_DIR/kernel_boot
 
 ./build_zynqmp_boot_bin.sh $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf boards/$BOARD_NAME/u-boot-zcu.elf boards/$BOARD_NAME/bl31.elf

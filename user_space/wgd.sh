@@ -1,59 +1,113 @@
 #!/bin/bash
 
 # Author: Xianjun Jiao
-# SPDX-FileCopyrightText: 2019 UGent
+# SPDX-FileCopyrightText: 2022 UGent
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+print_usage () {
+  echo "usage:"
+  echo "  Script for load (or download+load) different driver and FPGA img without rebooting"
+  echo "  no  argument: Load .ko driver files and FPGA img (if system_top.bit.bin exist) in current dir with test_mode=0."
+  echo "  1st argument: If it is a NUMBER, it will be assigned to test_mode. Then load everything from current dir."
+  echo "  1st argument: If it is a string called \"remote\", it will download driver/FPGA and load everything."
+  echo "  - 2nd argument (if exist) is the target directory name for downloading and reloading"
+  echo "  - 3rd argument (if exist) is the value for test_mode"
+  echo "  1st argument: neither NUMBER nor \"remote\" nor a .tar.gz file, it is regarded as a directory and load everything from it."
+  echo "  - 2nd argument (if exist) is the value for test_mode"
+  echo "  1st argument: a .tar.gz file, it will be unpacked then load from that unpacked directory"
+  echo "  - 2nd argument (if exist) is the value for test_mode"
+  echo " "
+}
+
 checkModule () {
-  MODULE="$1"
-  if lsmod | grep "$MODULE" &> /dev/null ; then
-    echo "$MODULE is loaded!"
+  MODULE_input="$1"
+  if lsmod | grep "$MODULE_input" &> /dev/null ; then
+    echo "$MODULE_input is loaded!"
     return 0
   else
-    echo "$MODULE is not loaded!"
+    echo "$MODULE_input is not loaded!"
     return 1
   fi
 }
 
-num_arg=$#
-echo "num_arg " $num_arg
-
-for input_var in "$@"
-do
-    last_input=$input_var
-#    echo $last_input
-done
-
-if [ -z $last_input ]
-then
-	last_input="unset"
-  test_mode=0
-else
-  if [ $1 -eq 1 ]
-  then
-    test_mode=1
-  elif [ $1 -eq 2 ]
-  then
-    test_mode=2
-  elif [ $1 -eq 3 ]
-  then
-    test_mode=3
-  elif [ $1 -eq 4 ]
-  then
-    test_mode=4
-  elif [ $1 -eq 5 ]
-  then
-    test_mode=5
-  elif [ $1 -eq 6 ]
-  then
-    test_mode=6
-  elif [ $1 -eq 7 ]
-  then
-    test_mode=7
+download_module () {
+  MODULE_input="$1"
+  TARGET_DIR_input="$2"
+  mkdir -p $TARGET_DIR_input
+  if [ "$MODULE_input" == "fpga" ]; then
+    wget -O $TARGET_DIR_input/system_top.bit.bin ftp://192.168.10.1/user_space/system_top.bit.bin
   else
-    test_mode=0
+    if [ "$MODULE_input" == "sdr" ]; then
+      wget -O $TARGET_DIR_input/$MODULE_input.ko ftp://192.168.10.1/driver/$MODULE_input.ko
+    else
+      wget -O $TARGET_DIR_input/$MODULE_input.ko ftp://192.168.10.1/driver/$MODULE_input/$MODULE_input.ko
+    fi
+  fi
+  sync
+}
+
+insert_check_module () {
+  TARGET_DIR_input="$1"
+  MODULE_input="$2"
+  rmmod $MODULE_input
+  if [[ -n $3 ]]; then
+    (set -x; insmod $TARGET_DIR_input/$MODULE_input.ko test_mode=$3)
+  else
+    (set -x; insmod $TARGET_DIR_input/$MODULE_input.ko)
+  fi
+
+  checkModule $MODULE_input
+  if [ $? -eq 1 ]; then
+    exit 1
+  fi
+}
+
+print_usage
+sync
+
+TARGET_DIR=./
+DOWNLOAD_FLAG=0
+test_mode=0
+
+if [[ -n $1 ]]; then
+  re='^[0-9]+$'
+  if ! [[ $1 =~ $re ]] ; then # not a number
+    if [ "$1" == "remote" ]; then
+      DOWNLOAD_FLAG=1
+      if [[ -n $2 ]]; then
+        TARGET_DIR=$2
+      fi
+      if [[ -n $3 ]]; then
+        test_mode=$3
+      fi
+    else
+      if [[ "$1" == *".tar.gz"* ]]; then
+	set -x
+        tar_gz_filename=$1
+        TARGET_DIR=${tar_gz_filename%".tar.gz"}
+        mkdir -p $TARGET_DIR
+        rm -rf $TARGET_DIR/*
+        tar -zxvf $1 -C $TARGET_DIR
+        find $TARGET_DIR/ -name \*.ko -exec cp {} $TARGET_DIR/ \;
+        find $TARGET_DIR/ -name \*.bit.bin -exec cp {} $TARGET_DIR/ \;
+	set +x
+      else
+        TARGET_DIR=$1
+      fi
+      if [[ -n $2 ]]; then
+        test_mode=$2
+      fi
+    fi
+  else # is a number
+    test_mode=$1
   fi
 fi
+
+echo TARGET_DIR $TARGET_DIR
+echo DOWNLOAD_FLAG $DOWNLOAD_FLAG
+echo test_mode $test_mode
+
+sync
 
 #if ((($test_mode & 0x2) != 0)); then
   tx_offset_tuning_enable=0
@@ -61,191 +115,53 @@ fi
 #  tx_offset_tuning_enable=1
 #fi
 
-echo last_input $last_input
-echo test_mode $test_mode
 echo tx_offset_tuning_enable $tx_offset_tuning_enable
 
+if [ -d "$TARGET_DIR" ]; then
+  echo "\$TARGET_DIR is found!"
+else
+  if [ $DOWNLOAD_FLAG -eq 0 ]; then
+    echo "\$TARGET_DIR is not correct. Please check!"
+    exit 1
+  fi
+fi
+
+echo " "
+
 service network-manager stop
+
+rmmod sdr
+insert_check_module ./ ad9361_drv
+
+if [ $DOWNLOAD_FLAG -eq 1 ]; then
+  download_module fpga $TARGET_DIR
+fi
+
+if [ -f "$TARGET_DIR/system_top.bit.bin" ]; then
+  ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
+else
+  echo $TARGET_DIR/system_top.bit.bin not found. Skip reloading FPGA.
+fi
+
+./rf_init_11n.sh
+insert_check_module ./ xilinx_dma
 
 depmod
 modprobe mac80211
 lsmod
-# dmesg -c
 
-PROG=sdr
-rmmod $PROG
-
-
-# mv ad9361 driver to local folder, to prevent booting issue
-if [ -f /lib/modules/$(uname -r)/ad9361_drv.ko ]; then
-   mv /lib/modules/$(uname -r)/ad9361_drv.ko .
-fi
-SUBMODULE=ad9361_drv
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-sleep 1
-lsmod
-
-# mv xilinx dma driver to local folder, to prevent booting issue
-if [ -f /lib/modules/$(uname -r)/xilinx_dma.ko ]; then
-   mv /lib/modules/$(uname -r)/xilinx_dma.ko .
-fi
-SUBMODULE=xilinx_dma
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-#sleep 1
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-sleep 1
-lsmod
-
-# before drive ad9361, let's bring up duc and make sure dac is connected to ad9361 dma
-SUBMODULE=tx_intf
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-sleep 0.5
-
-
-
-echo "set RF frontend"
-# if [ $last_input == "remote" ]
-#   then
-#     rm rf_init.sh
-#     sync
-#     wget ftp://192.168.10.1/user_space/rf_init.sh
-#     sync
-#     chmod +x rf_init.sh
-#     sync
-# fi
-
-# if [ $tx_offset_tuning_enable = "1" ]
-# then
-  ./rf_init_11n.sh
-# else
-#   ./rf_init.sh tx_offset_tuning_disable
-# fi
-
-#sleep 1
-
-SUBMODULE=rx_intf
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-
-SUBMODULE=openofdm_tx
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-
-SUBMODULE=openofdm_rx
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-
-SUBMODULE=xpu
-if [ $last_input == "remote" ]
-  then
-    rm $SUBMODULE.ko
-    sync
-    wget ftp://192.168.10.1/driver/$SUBMODULE/$SUBMODULE.ko
-    sync
-fi
-rmmod $SUBMODULE
-insmod $SUBMODULE.ko
-
-echo check $SUBMODULE module is loaded or not
-checkModule $SUBMODULE
-if [ $? -eq 1 ]
-then
-  return
-fi
-sleep 0.5
-
-PROG=sdr
-if [ $last_input == "remote" ]
-  then
-    rm $PROG.ko
-    sync
-    wget ftp://192.168.10.1/driver/$PROG.ko
-    sync
-fi
-
-rmmod $PROG
-echo insert $PROG.ko test_mode=$test_mode
-insmod $PROG.ko test_mode=$test_mode
-
-echo check $PROG module is loaded or not
-checkModule $PROG
-if [ $? -eq 1 ]
-then
-  return
-fi
+MODULE_ALL="tx_intf rx_intf openofdm_tx openofdm_rx xpu sdr"
+for MODULE in $MODULE_ALL
+do
+  if [ $DOWNLOAD_FLAG -eq 1 ]; then
+      download_module $MODULE $TARGET_DIR
+  fi
+  if [ "$MODULE" == "sdr" ]; then
+    insert_check_module $TARGET_DIR $MODULE $test_mode
+  else
+    insert_check_module $TARGET_DIR $MODULE
+  fi
+done
 
 if ps -p $(</tmp/check_calib_inf.pid) > /dev/null
 then
@@ -254,8 +170,5 @@ fi
 ./check_calib_inf.sh
 
 echo the end
-dmesg
-
-# dmesg -c
-# sleep 0.1
-# ifconfig sdr0 up
+# dmesg
+# lsmod
