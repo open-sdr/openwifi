@@ -119,14 +119,16 @@ The board actually is an Linux/Ubuntu computer which is running **hostapd** to o
   wpa_supplicant -i sdr0 -c wpa-connect.conf &
   dhclient sdr0
   ```
-- Use openwifi in ad-hoc mode: Please check **sdr-ad-hoc-up.sh** and **sdr-ad-hoc-join.sh**.
-- Use openwifi in monitor mode: Please check **monitor_ch.sh**.
+- Use openwifi in ad-hoc mode: Please check **sdr-ad-hoc-up.sh**, **sdr-ad-hoc-join.sh** and [this app note](./doc/app_notes/ad-hoc-two-sdr.md).
+- Use openwifi in monitor mode: Please check **monitor_ch.sh** and [this app note](./doc/app_notes/inject_80211.md).
 - The Linux native Wi-Fi tools/Apps (iwconfig/ifconfig/iwlist/iw/hostapd/wpa_supplicant/etc) can run over openwifi NIC in the same way as commercial Wi-Fi chip. 
-- **sdrctl** is a dedicated tool to access openwifi driver/FPGA, please check doc directory for more information. 
+- **sdrctl** is a dedicated tool to access openwifi driver/FPGA, please check [project document](./doc/README.md) for more information. 
 
 ## Update FPGA
 
-Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to update the fpga bitstream on board.
+(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files)
+
+Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the fpga bitstream and driver (see next section) on to the board.
 
 - Install Vivado/SDK 2018.3 (Vivado Design Suite - HLx Editions - 2018.3 Full Product Installation. If you don't need to generate new FPGA bitstream, WebPack version without license is enough)
 - Setup environment variables (use absolute path):
@@ -163,7 +165,10 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 
 ## Update Driver
 
-Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to update the driver on board.
+(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files)
+
+Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the fpga bitstream (see previous section) and driver on to the board.
+
 - Prepare Analog Devices Linux kernel source code (only need to run once):
   ```
   cd openwifi/user_space; ./prepare_kernel.sh $XILINX_DIR ARCH_BIT build
@@ -196,6 +201,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
 ## Easy Access and etc
 
+- Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files.
 - FPGA and driver on board update scripts
   - Setup [ftp server](https://ubuntu.com/server/docs/service-ftp) on PC, allow anonymous and change ftp root directory to the openwifi directory.
   - On board:

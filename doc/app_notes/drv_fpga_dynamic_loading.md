@@ -1,10 +1,12 @@
-The **wgd.sh** (running on board) supports reloading driver and/or FPGA image dynamically without rebooting/power-cycle. It can work in different modes in a 
-flexible way.
+The **wgd.sh** (running on board) supports reloading driver and/or FPGA image dynamically without rebooting/power-cycle. It can work in a 
+flexible way. 
+
+The purpose of this feature is to help you easily reload driver and FPGA built from your branch/version/variant/modification, and switch/run different driver and FPGA of different branch/version/variant/modification without rebooting. To enjoy this feature, always ensure your onboard openwifi/files are the latest files in [user_space](../../user_space)).
 
 - [[Reload driver only](#Reload-driver-only)]
 - [[Reload driver and FPGA](#Reload-driver-and-FPGA)]
 - [[Reload driver and FPGA in target directory](#Reload-driver-and-FPGA-in-target-directory)]
-- [[Reload driver and FPGA from a single package file](#Reload-driver-and-FPGA-from-a-single-package-file)]
+- [[Reload driver and FPGA from a single package file](#Reload-driver-and-FPGA-from-a-single-package-file)] -- **RECOMMENDED!**
 - [[Detailed full usage info](#Detailed-full-usage-info)]
 
 ## Reload driver only
@@ -17,7 +19,8 @@ present in the directory. If wgd.sh can not find the FPGA image, it will skip re
   cd openwifi/user_space
   ./drv_and_fpga_package_gen.sh $OPENWIFI_HW_DIR $XILINX_DIR $BOARD_NAME
   ```
-  Then **system_top.bit.bin** will be generated in openwifi/user_space
+  Then **system_top.bit.bin** will be generated in openwifi/user_space.
+  (**Attention:** above command will call **make_all.sh** to build the driver. If you have conditional compiling option, do not forget to put them into **drv_and_fpga_package_gen.sh** for the **make_all.sh** in it.
 - Put **system_top.bit.bin** on board in the same directory as wgd.sh and other driver files (.ko)
 - Run **wgd.sh** on board as usual
 
@@ -31,13 +34,13 @@ between them without rebooting/power-cycle.
 
 ## Reload driver and FPGA from a single package file
 The openwifi/user_space/**drv_and_fpga_package_gen.sh** also generates a single package file **drv_and_fpga.tar.gz**, which includes driver files (.ko), 
-FPGA image and many other rich source files/infos that are related. You can rename it with a more meaningful name (such as add version or variant info), and put 
-the renamed **drv_and_fpga_MEANINGFUL_POSTFIX.tar.gz** on board in the same directory as **wgd.sh**, and let **wgd.sh** load it:
+FPGA image and many other source files with rich infos that are related.
+
+You can switch to your own branch/version/variant, build the single package file via **drv_and_fpga_package_gen.sh**, rename it with a more meaningful name (such as add version or variant info as postfix), put the renamed **drv_and_fpga_MEANINGFUL_POSTFIX.tar.gz** on board in the same directory as **wgd.sh**, and let **wgd.sh** load it:
 ```
 ./wgd.sh ./drv_and_fpga_MEANINGFUL_POSTFIX.tar.gz
 ```
-In this way, different version/variants of driver/FPGA can be packaged as different files. Then **wgd.sh** can be used to switch 
-between them without rebooting/power-cycle.
+In this way, different version/variants of driver/FPGA can be switched by **wgd.sh** without rebooting/power-cycle.
 
 ## Detailed full usage info
 Run the "./wgd.sh -h" on board or open wgd.sh to see full usage info:
