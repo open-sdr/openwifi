@@ -179,7 +179,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   cd openwifi/driver; ./make_all.sh $XILINX_DIR ARCH_BIT
   (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
-  (More arguments (max 5) beyond above two will be converted to #define argument in pre_def.h for conditional compiling)
+  (More arguments (max 5) beyond above two will be converted to "#define argument" in pre_def.h for conditional compiling)
   ```
 - Copy the driver files to the board via ssh channel
   ```
