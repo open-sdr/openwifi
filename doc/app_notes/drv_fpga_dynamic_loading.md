@@ -7,6 +7,7 @@ The purpose of this feature is to help you easily reload driver and FPGA built f
 - [[Reload driver and FPGA](#Reload-driver-and-FPGA)]
 - [[Reload driver and FPGA in target directory](#Reload-driver-and-FPGA-in-target-directory)]
 - [[Reload driver and FPGA from a single package file](#Reload-driver-and-FPGA-from-a-single-package-file)] -- **RECOMMENDED!**
+- [[Suggested practice to generate driver FPGA variants](#Suggested-practice-to-generate-driver-FPGA-variants)]
 - [[Detailed full usage info](#Detailed-full-usage-info)]
 
 ## Reload driver only
@@ -20,7 +21,7 @@ present in the directory. If wgd.sh can not find the FPGA image, it will skip re
   ./drv_and_fpga_package_gen.sh $OPENWIFI_HW_DIR $XILINX_DIR $BOARD_NAME
   ```
   Then **system_top.bit.bin** will be generated in openwifi/user_space.
-  (**Attention:** above command will call **make_all.sh** to build the driver. If you have conditional compiling option, do not forget to put them into **drv_and_fpga_package_gen.sh** for the **make_all.sh** in it.
+
 - Put **system_top.bit.bin** on board in the same directory as wgd.sh and other driver files (.ko)
 - Run **wgd.sh** on board as usual
 
@@ -41,6 +42,14 @@ You can switch to your own branch/version/variant, build the single package file
 ./wgd.sh ./drv_and_fpga_MEANINGFUL_POSTFIX.tar.gz
 ```
 In this way, different version/variants of driver/FPGA can be switched by **wgd.sh** without rebooting/power-cycle.
+
+## Suggested practice to generate driver FPGA variants
+There are several ways to generate variants of the single driver-FPGA package file. For example:
+
+- Switch/create another branch for openwifi and openwifi-hw, work/modify there, then generate the single package file via **drv_and_fpga_package_gen.sh**. This package is the branch specific, so renaming the package name to a more meaningful one would be good practice.
+- In the same branch, set different arguments (finally macro definitions in .h and .v files) via conditional compiling to enable/disable different driver and FPGA code blocks/functionalities, then generate the single package file via **drv_and_fpga_package_gen.sh**. Rename the package to remind you which conditions are ON/OFF.
+    - Check "Conditional compile by verilog macro" in openwifi-hw README for FPGA design
+    - Input more arguments (max 5) to driver building script "make_all.sh $XILINX_DIR ARCH_BIT". Those arguments will be converted to "#define argument" in pre_def.h for driver conditional compiling. **Attention:** **drv_and_fpga_package_gen.sh** currently only call **make_all.sh** without extra arguments. If you have conditional compiling arguments, do not forget to put them into **drv_and_fpga_package_gen.sh** as extra arguments of **make_all.sh**.
 
 ## Detailed full usage info
 Run the "./wgd.sh -h" on board or open wgd.sh to see full usage info:
