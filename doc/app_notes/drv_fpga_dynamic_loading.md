@@ -11,7 +11,7 @@ The purpose of this feature is to help you easily reload driver and FPGA built f
 - [[Detailed full usage info](#Detailed-full-usage-info)]
 
 ## Reload driver only
-This is the original way. To let **wgd.sh** only loads the driver without touching FPGA, please ensure FPGA image file **system_top.bit.bin** does **NOT** 
+This is the original way. To let **wgd.sh** only loads the driver without touching FPGA, please ensure FPGA image file **system_top.bit.bin** is **NOT** 
 present in the directory. If wgd.sh can not find the FPGA image, it will skip reloading it.
 
 ## Reload driver and FPGA
