@@ -161,10 +161,7 @@ do
   fi
 done
 
-if ps -p $(</tmp/check_calib_inf.pid) > /dev/null
-then
-   kill $(</tmp/check_calib_inf.pid)
-fi
+[ -e /tmp/check_calib_inf.pid ] && kill -0 $(</tmp/check_calib_inf.pid)
 ./check_calib_inf.sh
 
 echo the end
