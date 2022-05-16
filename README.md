@@ -244,6 +244,12 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   **ethX** is the PC NIC name connecting the board ethernet. **NICY** is the PC NIC name connecting internet (WiFi or another ethernet).
   
   If you want, uncommenting "net.ipv4.ip_forward=1" in /etc/sysctl.conf to make IP forwarding persistent on PC.
+- Test the connectivity. Run on board (in the ssh session):
+  ```
+  route add default gw 192.168.10.1
+  ping IP_YOU_KNOW_ON_YOUR_NETWORK
+  ```
+  If there is issue with the connectivity (ping can not reach the target), it needs to be solved before going to the next step.
 - Run **one time** script on board to complete post installation/config (After this, password becomes **openwifi**)
   ```
   cd ~/openwifi && ./post_config.sh
