@@ -27,5 +27,6 @@ Other openwifi related publications:
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
 - [Zelin Yun, et al. RT-WiFi on Software-Defined Radio: Design and Implementation. accepted RTAS2022 paper and demo](https://arxiv.org/abs/2203.10390)
 - [Thijs Havinga, et al. WIP: Achieving Self-Interference-Free Operation on SDR Platform with Critical TDD Turnaround Time. accepted WoWMoM2022 paper](https://arxiv.org/abs/2204.07354)
+- [Pablo Avila-Campos, et al. Impactless Beacon-Based Wireless TSN Association Procedure. 2022 IEEE 18th International Conference on Factory Communication Systems (WFCS)](https://ieeexplore.ieee.org/abstract/document/9779186)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
