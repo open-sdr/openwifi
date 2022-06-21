@@ -27,8 +27,8 @@ want to understand openwifi side channel (for IQ and CSI) deeper.
   ./monitor_ch.sh sdr0 44
   (Setup monitor mode in WiFi channel 44. You should find a channel as clean as possible in your location)
   insmod side_ch.ko iq_len_init=8187
-  ./side_ch_ctl wh11d0
-  (Set 0 to register 11. It means the pre trigger length is 0, so we only capture IQ after trigger condition is met)
+  ./side_ch_ctl wh11d100
+  (Set 100 to register 11. It means the pre trigger length is 100, so we mainly capture IQ after trigger condition is met)
   ./side_ch_ctl wh8d16
   (Set 16 to register 8 -- set trigger condition to phy_tx_started signal from openofdm tx core)
   ./sdrctl dev sdr0 set reg xpu 1 1
