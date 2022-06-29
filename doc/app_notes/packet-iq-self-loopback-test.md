@@ -19,24 +19,33 @@ want to understand openwifi side channel (for IQ and CSI) deeper.
 - Put the Tx and Rx antenna as close as possible.
 - Connect a computer to the SDR board via Ethernet cable. The computer should have static IP 192.168.10.1. Open a terminal on the computer, and then in the terminal:
   ```
+  # ssh into the SDR board, password: openwifi
   ssh root@192.168.10.122
-  (password: openwifi)
   cd openwifi
+  # Bring up the openwifi NIC sdr0
   ./wgd.sh
-  (Bring up the openwifi NIC sdr0)
+
+  # Setup monitor mode in WiFi channel 44. You should find a channel as clean as possible in your location. Note that some channels don't work, so stick to 44 or 48 for now.
   ./monitor_ch.sh sdr0 44
-  (Setup monitor mode in WiFi channel 44. You should find a channel as clean as possible in your location)
+
+  # Turn off CCA by setting a very high threshold that make the CSMA engine always think the channel is idle (no incoming signal is higher than this threshold)
+  ./sdrctl dev sdr0 set reg xpu 8 1000
+  # Put the receiver into reset state, so it won't affect our system in case it runs into dead state
+  ./sdrctl dev sdr0 set reg rx 0 1
+  
+  # Load side channel kernel module with buffer lenght of 8187 (replace this with 4095 when using low end FPGA board)
   insmod side_ch.ko iq_len_init=8187
+  
+  # Set 100 to register 11. It means the pre trigger length is 100, so we mainly capture IQ after trigger condition is met
   ./side_ch_ctl wh11d100
-  (Set 100 to register 11. It means the pre trigger length is 100, so we mainly capture IQ after trigger condition is met)
+  # Set 16 to register 8 -- set trigger condition to phy_tx_started signal from openofdm tx core
   ./side_ch_ctl wh8d16
-  (Set 16 to register 8 -- set trigger condition to phy_tx_started signal from openofdm tx core)
+  # Unmute the baseband self-receiving to receive openwifi own TX signal/packet -- important for self loopback!
   ./sdrctl dev sdr0 set reg xpu 1 1
-  (Unmute the baseband self-receiving to receive openwifi own TX signal/packet -- important for self loopback!)
+  # Set the loopback mode to over-the-air
   ./side_ch_ctl wh5h0
-  (Set the loopback mode to over-the-air)
+  # Relay the FPGA IQ capture to the host computer that will show the captured IQ later on)
   ./side_ch_ctl g0
-  (Relay the FPGA IQ capture to the host computer that will show the captured IQ later on)
   ```
   You should see on outputs like:
   ```
@@ -50,9 +59,9 @@ want to understand openwifi side channel (for IQ and CSI) deeper.
   ```
   cd openwifi/inject_80211/
   make
-  (Build our example packet injection program)
+  # Build our example packet injection program
   ./inject_80211 -m n -r 5 -n 1 sdr0
-  (Inject one packet to openwifi sdr0 NIC)
+  # Inject one packet to openwifi sdr0 NIC
   ```
   Normally in the previous ssh session, the count becomes 1. It means one packet (of IQ sample) is sent and captured via loopback over the air.
 
@@ -88,7 +97,7 @@ to do further offline analysis, or feed the IQ sample to the openwifi receiver s
   cd openwifi
   ./sdrctl dev sdr0 set reg drv_rx 7 7
   ./sdrctl dev sdr0 set reg drv_tx 7 7
-  (Turn on the openwifi Tx/Rx printk logging)
+  # Turn on the openwifi Tx/Rx printk logging
   ```
   Stop the "./side_ch_ctl g0" in the very first ssh session. Run the packet injection, then check the printk message:
   ```
