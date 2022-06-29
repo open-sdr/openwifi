@@ -30,8 +30,6 @@ want to understand openwifi side channel (for IQ and CSI) deeper.
 
   # Turn off CCA by setting a very high threshold that make the CSMA engine always think the channel is idle (no incoming signal is higher than this threshold)
   ./sdrctl dev sdr0 set reg xpu 8 1000
-  # Put the receiver into reset state, so it won't affect our system in case it runs into dead state
-  ./sdrctl dev sdr0 set reg rx 0 1
   
   # Load side channel kernel module with buffer lenght of 8187 (replace this with 4095 when using low end FPGA board)
   insmod side_ch.ko iq_len_init=8187
@@ -64,6 +62,11 @@ want to understand openwifi side channel (for IQ and CSI) deeper.
   # Inject one packet to openwifi sdr0 NIC
   ```
   Normally in the previous ssh session, the count becomes 1. It means one packet (of IQ sample) is sent and captured via loopback over the air.
+  
+  If 1 is not seen, you can try to put the receiver into reset state, so it won't block the system in case it runs into dead state
+  ```
+  ./sdrctl dev sdr0 set reg rx 0 1
+  ```
 
 - On your computer (NOT ssh onboard!), run:
   ```
@@ -89,7 +92,10 @@ to do further offline analysis, or feed the IQ sample to the openwifi receiver s
   ```
   tcpdump -i sdr0
   ```
-  Run the packet injection "./inject_80211 -m n -r 5 -n 1 sdr0" in another session, you should see the packet information printed by tcpdump from self over-the-air loopback.
+  Run the packet injection "./inject_80211 -m n -r 5 -n 1 sdr0" in another session, you should see the packet information printed by tcpdump from self over-the-air loopback. In case you put the receiver into reset state in the previous IQ loopback, you should put the receiver back to normal for packet loopback (otherwise the receiver won't decode the IQ signal back to packet):
+  ```
+  ./sdrctl dev sdr0 set reg rx 0 0
+  ```
   
 - You can also see the openwifi printk message of Rx packet (self Tx looped back) while the packet comes to the openwifi Rx interrupt.
   A new ssh session to the board should be opened to do this before running the packet injection:
