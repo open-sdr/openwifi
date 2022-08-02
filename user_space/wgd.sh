@@ -63,7 +63,6 @@ insert_check_module () {
 }
 
 print_usage
-sync
 
 TARGET_DIR=./
 DOWNLOAD_FLAG=0
@@ -107,8 +106,6 @@ echo TARGET_DIR $TARGET_DIR
 echo DOWNLOAD_FLAG $DOWNLOAD_FLAG
 echo test_mode $test_mode
 
-sync
-
 #if ((($test_mode & 0x2) != 0)); then
   tx_offset_tuning_enable=0
 #else
@@ -141,6 +138,7 @@ if [ -f "$TARGET_DIR/system_top.bit.bin" ]; then
   ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
 else
   echo $TARGET_DIR/system_top.bit.bin not found. Skip reloading FPGA.
+  ./load_fpga_img.sh fjdo349ujtrueugjhj
 fi
 
 ./rf_init_11n.sh
@@ -163,10 +161,7 @@ do
   fi
 done
 
-if ps -p $(</tmp/check_calib_inf.pid) > /dev/null
-then
-   kill $(</tmp/check_calib_inf.pid)
-fi
+[ -e /tmp/check_calib_inf.pid ] && kill -0 $(</tmp/check_calib_inf.pid)
 ./check_calib_inf.sh
 
 echo the end

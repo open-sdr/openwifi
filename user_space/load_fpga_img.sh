@@ -33,10 +33,12 @@ rmmod xpu
 
 sleep 1
 
-echo 0 > /sys/class/fpga_manager/fpga0/flags
-mkdir -p /lib/firmware
-cp $fpga_img_filename /lib/firmware/
-echo $fpga_img_filename_core > /sys/class/fpga_manager/fpga0/firmware
+if [ -f "$fpga_img_filename" ]; then
+  echo 0 > /sys/class/fpga_manager/fpga0/flags
+  mkdir -p /lib/firmware
+  cp $fpga_img_filename /lib/firmware/ -rf
+  echo $fpga_img_filename_core > /sys/class/fpga_manager/fpga0/firmware
+fi
 
 # insmod ad9361_drv.ko
 # sleep 1

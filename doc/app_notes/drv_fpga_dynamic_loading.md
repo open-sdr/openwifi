@@ -10,6 +10,8 @@ The purpose of this feature is to help you easily reload driver and FPGA built f
 - [[Suggested practice to generate driver FPGA variants](#Suggested-practice-to-generate-driver-FPGA-variants)]
 - [[Detailed full usage info](#Detailed-full-usage-info)]
 
+Note: Make sure you have compiled driver before. Check [Update Driver](../../README.md#update-driver).
+
 ## Reload driver only
 This is the original way. To let **wgd.sh** only loads the driver without touching FPGA, please ensure FPGA image file **system_top.bit.bin** is **NOT** 
 present in the directory. If wgd.sh can not find the FPGA image, it will skip reloading it.

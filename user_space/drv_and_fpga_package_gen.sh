@@ -71,6 +71,7 @@ bootgen -image system_top.bif -arch $ARCH -process_bitstream bin -w
 # cp system_top_reload.bit.bin ./$FINAL_BIT_FILENAME
 
 cd ../driver
+make clean
 ./make_all.sh $XILINX_DIR $ARCH_BIT
 cd ../user_space
 mkdir -p drv_and_fpga

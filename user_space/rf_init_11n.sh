@@ -58,23 +58,14 @@ fi
 set +x
 
 echo 25215513 >  in_voltage_rf_bandwidth
-sync
 echo 25215414 >  out_voltage_rf_bandwidth
-sync
 echo 40000000 >  in_voltage_sampling_frequency
-sync
 echo 40000000 >  out_voltage_sampling_frequency
-sync
-sleep 1
 
 echo 1000000000 >  out_altvoltage0_RX_LO_frequency
-sync
 echo 1000000000 >  out_altvoltage1_TX_LO_frequency
-sync
 
 cat $home_dir/$fir_filename > filter_fir_config
-sync
-sleep 0.5
 echo 1 > in_voltage_filter_fir_en
 echo $tx_fir_enable > out_voltage_filter_fir_en
 cat filter_fir_config
@@ -87,7 +78,6 @@ cat in_voltage0_gain_control_mode
 echo fast_attack > in_voltage0_gain_control_mode
 #echo manual > in_voltage0_gain_control_mode
 cat in_voltage0_gain_control_mode
-sync
 
 echo "rx1 agc fast_attack"
 #echo "rx1 agc manual"
@@ -95,8 +85,6 @@ cat in_voltage1_gain_control_mode
 echo fast_attack > in_voltage1_gain_control_mode
 #echo manual > in_voltage1_gain_control_mode
 cat in_voltage1_gain_control_mode
-sync
-sleep 1
 
 cat in_voltage_sampling_frequency
 cat in_voltage_rf_bandwidth
@@ -112,25 +100,21 @@ echo "rx0 gain to 70" # this set gain is gpio gain - 5dB (test with agc and read
 cat in_voltage0_hardwaregain
 echo 70 > in_voltage0_hardwaregain
 cat in_voltage0_hardwaregain
-sync
 
 echo "rx1 gain to 70"
 cat in_voltage1_hardwaregain
 echo 70 > in_voltage1_hardwaregain
 cat in_voltage1_hardwaregain
-sync
 
 echo "tx0 gain -89dB"
 cat out_voltage0_hardwaregain
 echo -89 > out_voltage0_hardwaregain
 cat out_voltage0_hardwaregain
-sync
 
 echo "tx1 gain 0dB"
 cat out_voltage1_hardwaregain
 echo 0 > out_voltage1_hardwaregain
 cat out_voltage1_hardwaregain
-sync
 # #  --------not needed maybe-------- # #
 
 cd $home_dir
