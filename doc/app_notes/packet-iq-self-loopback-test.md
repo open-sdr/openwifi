@@ -14,7 +14,7 @@ want to understand openwifi side channel (for IQ and CSI) deeper.
 [[Self loopback config](#Self-loopback-config)]
 
 ## IQ self loopback quick start
-(Please replace the IQ length **8187** by **4095** if you use low end FPGA board: zedboard/adrv9464z7020/antsdr/zc702)
+(Please replace the IQ length **8187** by **4095** if you use low end FPGA board: zedboard/adrv9464z7020/antsdr/zc702/sdrpi)
 - Power on the SDR board.
 - Put the Tx and Rx antenna as close as possible.
 - Connect a computer to the SDR board via Ethernet cable. The computer should have static IP 192.168.10.1. Open a terminal on the computer, and then in the terminal:
