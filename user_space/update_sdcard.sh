@@ -35,7 +35,7 @@ else
     exit 1
 fi
 
-if [ "$BOARD_NAME" != "antsdr" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
+if [ "$BOARD_NAME" != "antsdr" ] &&[ "$BOARD_NAME" != "sdrpi" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
     echo "\$BOARD_NAME is not correct. Please check!"
     exit 1
 else
@@ -91,7 +91,7 @@ sudo true
 ./prepare_kernel.sh $XILINX_DIR 64 build
 sudo true
 
-BOARD_NAME_ALL="antsdr zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 zcu102_9371"
+BOARD_NAME_ALL="sdrpi antsdr zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 zcu102_9371"
 # BOARD_NAME_ALL="zcu102_fmcs2"
 # BOARD_NAME_ALL="adrv9361z7035"
 for BOARD_NAME_TMP in $BOARD_NAME_ALL
