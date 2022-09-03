@@ -136,6 +136,7 @@ else
 fi
 
 sudo cp $OPENWIFI_DIR/user_space/* $SDCARD_DIR/rootfs/root/openwifi/ -rf
+sudo mv $SDCARD_DIR/rootfs/root/openwifi/system_top.bit.bin $SDCARD_DIR/rootfs/root/openwifi/system_top.bit.bin.bak
 sudo wget -P $SDCARD_DIR/rootfs/root/openwifi/webserver/ https://users.ugent.be/~xjiao/openwifi-low-aac.mp4
 
 # build openwifi driver
