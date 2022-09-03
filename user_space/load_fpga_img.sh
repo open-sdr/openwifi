@@ -62,14 +62,14 @@ cd /sys/bus/spi/drivers/ad9361/
 echo $SPI_DEVNAME > unbind
 echo $SPI_DEVNAME > bind
 
-while [ ! -d "/sys/bus/platform/drivers/cf_axi_dds/$DDS_DEVNAME" ]
-do
-   echo "Waiting for /sys/bus/platform/drivers/cf_axi_dds/$DDS_DEVNAME"
-   sleep 0.2
-done
-cd /sys/bus/platform/drivers/cf_axi_dds/
-echo $DDS_DEVNAME  > unbind
-echo $DDS_DEVNAME  > bind
+#while [ ! -d "/sys/bus/platform/drivers/cf_axi_dds/$DDS_DEVNAME" ]
+#do
+#   echo "Waiting for /sys/bus/platform/drivers/cf_axi_dds/$DDS_DEVNAME"
+#   sleep 0.2
+#done
+#cd /sys/bus/platform/drivers/cf_axi_dds/
+#echo $DDS_DEVNAME  > unbind
+#echo $DDS_DEVNAME  > bind
 
 while [ ! -d "/sys/bus/platform/drivers/cf_axi_adc/$ADC_DEVNAME" ]
 do
