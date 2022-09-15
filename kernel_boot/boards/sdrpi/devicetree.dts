@@ -432,16 +432,6 @@
 				reg = <0>; 
 			};	
 		};
-		ethernet@e000c000 {
-			compatible = "cdns,zynq-gem", "cdns,gem";
-			reg = <0xe000c000 0x1000>;
-			status = "disabled";
-			interrupts = <0x0 0x2d 0x4>;
-			clocks = <0x2 0x1f 0x2 0x1f 0x2 0xe>;
-			clock-names = "pclk", "hclk", "tx_clk";
-			#address-cells = <0x1>;
-			#size-cells = <0x0>;
-		};
 
 		mmc@e0100000 {
 			compatible = "arasan,sdhci-8.9a";
