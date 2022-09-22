@@ -38,5 +38,8 @@ Publications in category:
 - [Xianjun Jiao, et al. Openwifi CSI fuzzer for authorized sensing and covert channels. ACM WiSec 2021](https://dl.acm.org/doi/pdf/10.1145/3448300.3468255)
 - [Hongjian Cao, et al. OWFuzz: WiFi Protocol Fuzzing Tool Based on OpenWiFi. Blackhat asia 2021](https://www.blackhat.com/asia-21/arsenal/schedule/#owfuzz-wifi-protocol-fuzzing-tool-based-on-openwifi-22569), [[**code**]](https://github.com/alipay/Owfuzz)
 - [Steven Heijse, IEEE 802.11 Physical Layer Fuzzing Using OpenWifi. UGent master thesis 2021](https://users.ugent.be/~xjiao/Steven_Heijse_masterproef.pdf)
+- [Jasper Devreker, Developing IEEE 802.11 PHY fuzzing capabilities using the open source Openwifi project. UGent master thesis 2022](https://users.ugent.be/~xjiao/Jasper_Devreker_masterproef.pdf)
+- [Thomas Schuddinck, Cybersecurity: Breaking IEEE 802.11 Devices at the Physical Layer. UGent master thesis 2022](https://users.ugent.be/~xjiao/Thomas_Schuddinck_masterproef.pdf)
+- [Seppe Dejonckheere, The design of a CSI sensing authorisation mechanism using the open source Openwifi project. UGnet master thesis 2022](https://users.ugent.be/~xjiao/Seppe_Dejonckheere_masterproef.pdf)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
