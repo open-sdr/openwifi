@@ -30,6 +30,7 @@ Publications in category:
 - [Jetmir Haxhibeqiri, et al. Bringing Time-Sensitive Networking to Wireless Professional Private Networks. Wireless Personal Communications 2021](https://link.springer.com/article/10.1007/s11277-021-09056-0)
 - [Muhammad Aslam, et al. Hardware Efficient Clock Synchronization across Wi-Fi and Ethernet Based Network Using PTP. IEEE Transactions on Industrial Informatics 2021](https://ieeexplore.ieee.org/document/9573364)
 - [Zelin Yun, et al. RT-WiFi on Software-Defined Radio: Design and Implementation. accepted RTAS2022 paper and demo](https://arxiv.org/abs/2203.10390)
+- [Pablo Avila-Campos, et al. Beacon-Based Wireless TSN Association. 2022 IEEE INFOCOM](https://imec-publications.be/bitstream/handle/20.500.12860/40111/8126_acc.pdf?sequence=2)
 - [Pablo Avila-Campos, et al. Impactless Beacon-Based Wireless TSN Association Procedure. 2022 IEEE 18th International Conference on Factory Communication Systems (WFCS)](https://ieeexplore.ieee.org/abstract/document/9779186)
 
 ## CSI Channel State Information and Security
