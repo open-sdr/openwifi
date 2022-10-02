@@ -417,17 +417,25 @@
 			};
 		};
 
+ 
 		ethernet@e000c000 {
 			compatible = "cdns,zynq-gem", "cdns,gem";
 			reg = <0xe000c000 0x1000>;
-			status = "disabled";
+			status = "okay";
 			interrupts = <0x0 0x2d 0x4>;
 			clocks = <0x2 0x1f 0x2 0x1f 0x2 0xe>;
 			clock-names = "pclk", "hclk", "tx_clk";
 			#address-cells = <0x1>;
 			#size-cells = <0x0>;
-		};
+			phy-mode = "gmii";
+			phy-handle = <&phy1>;
 
+			phy1: phy@0{
+				reg = <0>; 
+			};	
+		};
+ 
+ 
 		mmc@e0100000 {
 			compatible = "arasan,sdhci-8.9a";
 			status = "okay";
