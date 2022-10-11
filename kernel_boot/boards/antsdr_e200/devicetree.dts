@@ -596,7 +596,7 @@
 	};
 
 	chosen {
-		linux,stdout-path = "/amba@0/uart@E0001000";
+		linux,stdout-path = "/amba@0/uart@E0000000";
 	};
 
 	clocks {
