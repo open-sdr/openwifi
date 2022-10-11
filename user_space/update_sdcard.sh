@@ -86,9 +86,9 @@ LINUX_KERNEL_SRC_DIR_NAME32=adi-linux
 LINUX_KERNEL_SRC_DIR_NAME64=adi-linux-64
 
 cd $OPENWIFI_DIR/user_space/
-./prepare_kernel.sh $XILINX_DIR 32 build
+./prepare_kernel.sh $XILINX_DIR 32 $BOARD_NAME build
 sudo true
-./prepare_kernel.sh $XILINX_DIR 64 build
+./prepare_kernel.sh $XILINX_DIR 64 $BOARD_NAME build
 sudo true
 
 BOARD_NAME_ALL="sdrpi antsdr antsdr_e200 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 zcu102_9371"

@@ -13,6 +13,7 @@ fi
 OPENWIFI_DIR=$(pwd)/../
 XILINX_DIR=$1
 ARCH_OPTION=$2
+BOARD_NAME=$3
 
 if [ -f "$OPENWIFI_DIR/LICENSE" ]; then
     echo "\$OPENWIFI_DIR is found!"
@@ -41,6 +42,12 @@ if [ "$ARCH_OPTION" == "64" ]; then
     ARCH_NAME="arm64"
     CROSS_COMPILE_NAME="aarch64-linux-gnu-"
     IMAGE_TYPE=Image
+elif [ "$ARCH_OPTION" == "32" ] && [ "$BOARD_NAME" == "antsdr_e200" ]; then
+    LINUX_KERNEL_SRC_DIR_NAME=adi-linux
+    LINUX_KERNEL_CONFIG_FILE=$OPENWIFI_DIR/kernel_boot/kernel_config_uart0
+    ARCH_NAME="arm"
+    CROSS_COMPILE_NAME="arm-linux-gnueabihf-"
+    IMAGE_TYPE=uImage
 else
     LINUX_KERNEL_SRC_DIR_NAME=adi-linux
     LINUX_KERNEL_CONFIG_FILE=$OPENWIFI_DIR/kernel_boot/kernel_config
