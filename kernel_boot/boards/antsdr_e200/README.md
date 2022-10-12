@@ -2,7 +2,7 @@
 
 ANTSDR-E200 is similar to MicroPhase ANTSDR-E310 device. 
 
-ANTSDR-E200 has a smaller size and some differences in hardware structure. The ethernet is placed at the PL side, because we found that due to 
+ANTSDR-E200 has a smaller size and some differences in hardware structure. The ethernet is placed at the PL side.
 
 ![e200_struct](README.assets/e200_struct.svg)
 
