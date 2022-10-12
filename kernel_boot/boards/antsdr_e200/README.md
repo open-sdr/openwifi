@@ -6,7 +6,7 @@ ANTSDR-E200 has a smaller size and some differences in hardware structure. The e
 
 ![e200_struct](README.assets/e200_struct.svg)
 
-Since the performance of the zynq processor is not very strong, the Ethernet cannot run at a very high bandwidth. For some SDR applications, the Ethernet may be required to transmit baseband signals above 15MSPS sample rate. In this case, the bandwidth of the Ethernet will be It will reach 60MB. If the Ethernet on the PS side wants to run at this bandwidth, it will take up a lot of CPU resources and the bandwidth is still difficult to meet. For this reason, we moved the network port to the PL side.
+Since the performance of the zynq processor is not very strong, the Ethernet cannot run at a very high bandwidth. For some SDR applications, the Ethernet may be required to transmit baseband signals above 15MSPS sample rate. In this case, the bandwidth of the Ethernet  will reach 60MB/s. If the Ethernet on the PS side wants to run at this bandwidth, it will take up a lot of CPU resources and the bandwidth is still difficult to meet. For this reason, we moved the network port to the PL side.
 
 But this has no effect on IIO-based SDR drivers, because we still use ZYNQ's GEM controller. O(∩_∩)O
 
