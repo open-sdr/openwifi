@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: 2021 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-If your work uses openwifi, please cite the first VTC2020 openwifi paper: [LaTex example](cite-openwifi-vtc-paper.md)
+If openwifi is one of your references, please cite the VTC2020 paper: [LaTex example](cite-openwifi-vtc-paper.md)
 
 You can also cite openwifi github code: [LaTex example](cite-openwifi-github-code.md).
 
