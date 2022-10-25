@@ -32,6 +32,7 @@ Publications in category:
 - [Zelin Yun, et al. RT-WiFi on Software-Defined Radio: Design and Implementation. accepted RTAS2022 paper and demo](https://arxiv.org/abs/2203.10390)
 - [Pablo Avila-Campos, et al. Beacon-Based Wireless TSN Association. 2022 IEEE INFOCOM](https://imec-publications.be/bitstream/handle/20.500.12860/40111/8126_acc.pdf?sequence=2)
 - [Pablo Avila-Campos, et al. Impactless Beacon-Based Wireless TSN Association Procedure. 2022 IEEE 18th International Conference on Factory Communication Systems (WFCS)](https://ieeexplore.ieee.org/abstract/document/9779186)
+- [Jetmir Haxhibeqiri, et al. Safety-related Applications over Wireless Time-Sensitive Networks. IEEE ETFA 2022](https://biblio.ugent.be/publication/8770625/file/8770627.pdf)
 
 ## CSI Channel State Information and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
