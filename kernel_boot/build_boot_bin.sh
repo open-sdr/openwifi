@@ -14,7 +14,7 @@ fi
 OPENWIFI_HW_DIR=$1
 BOARD_NAME=$2
 
-if [ "$BOARD_NAME" != "antsdr" ] && [ "$BOARD_NAME" != "sdrpi" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
+if [ "$BOARD_NAME" != "antsdr" ] && [ "$BOARD_NAME" != "antsdr_e200" ] && [ "$BOARD_NAME" != "sdrpi" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
     echo "\$BOARD_NAME is not correct. Please check!"
     exit 1
 else
