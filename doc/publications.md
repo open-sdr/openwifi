@@ -33,6 +33,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Beacon-Based Wireless TSN Association. 2022 IEEE INFOCOM](https://imec-publications.be/bitstream/handle/20.500.12860/40111/8126_acc.pdf?sequence=2)
 - [Pablo Avila-Campos, et al. Impactless Beacon-Based Wireless TSN Association Procedure. 2022 IEEE 18th International Conference on Factory Communication Systems (WFCS)](https://ieeexplore.ieee.org/abstract/document/9779186)
 - [Jetmir Haxhibeqiri, et al. Safety-related Applications over Wireless Time-Sensitive Networks. IEEE ETFA 2022](https://biblio.ugent.be/publication/8770625/file/8770627.pdf)
+- [Pablo Avila-Campos, et al. Removing the Wires in Time-Sensitive Networks. 2022 61st FITCE International Congress Future Telecommunications: Infrastructure and Sustainability (FITCE)](https://ieeexplore.ieee.org/abstract/document/9934268)
 
 ## CSI Channel State Information and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
