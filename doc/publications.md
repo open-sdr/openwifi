@@ -20,6 +20,7 @@ Publications in category:
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
 - [Thijs Havinga, et al. WIP: Achieving Self-Interference-Free Operation on SDR Platform with Critical TDD Turnaround Time. accepted WoWMoM2022 paper](https://arxiv.org/abs/2204.07354)
 - [Yingshuo Xi, Baiming Zhang. High-Throughput Open Source Viterbi Decoder for OpenWiFi. 2022 KU Leuven master thesis](https://github.com/BaimingZhang26213/viterbi_decoder)
+- [Merkebu Girmay, et al. Technology recognition and traffic characterization for wireless technologies in ITS band. Vehicular Communications Volume 39, February 2023, 100563](https://doi.org/10.1016/j.vehcom.2022.100563)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
