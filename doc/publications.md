@@ -27,7 +27,7 @@ Publications in category:
 - [Ingrid Moerman, et al. Wireless Time-Sensitive Networks: When Every Microsecond Counts. Microwaves&RF, 2021](https://www.mwrf.com/technologies/systems/article/21164984/wireless-timesensitive-networks-when-every-microsecond-counts)
 - [Muhammad Aslam, et al. High precision time synchronization on Wi-Fi based multi-hop network. CNERT2021](https://biblio.ugent.be/publication/8709058/file/8709060.pdf)
 - [Ingrid Moerman, et al. Interoperable Time-Sensitive Networking Towards 6G (invited presentation)](https://biblio.ugent.be/publication/8719532/file/8719533.pdf)
-- [Lihao Zhang, et al. A Just-In-Time Networking Framework for Minimizing Request-Response Latency of Wireless Time-Sensitive Applications. Arxiv 2021](https://arxiv.org/abs/2109.03032)
+- [Lihao Zhang, et al. A Just-In-Time Networking Framework for Minimizing Request-Response Latency of Wireless Time-Sensitive Applications. Arxiv 2021. Accepted by IEEE IoT journal 2022.](https://arxiv.org/abs/2109.03032)
 - [Jetmir Haxhibeqiri, et al. Bringing Time-Sensitive Networking to Wireless Professional Private Networks. Wireless Personal Communications 2021](https://link.springer.com/article/10.1007/s11277-021-09056-0)
 - [Muhammad Aslam, et al. Hardware Efficient Clock Synchronization across Wi-Fi and Ethernet Based Network Using PTP. IEEE Transactions on Industrial Informatics 2021](https://ieeexplore.ieee.org/document/9573364)
 - [Zelin Yun, et al. RT-WiFi on Software-Defined Radio: Design and Implementation. accepted RTAS2022 paper and demo](https://arxiv.org/abs/2203.10390)
