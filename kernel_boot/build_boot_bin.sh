@@ -7,7 +7,7 @@
 
 if [ "$#" -ne 2 ]; then
     echo "You must enter the \$OPENWIFI_HW_DIR \$BOARD_NAME as argument"
-    echo "BOARD_NAME Like: sdrpi antsdr adrv9364z7020 adrv9361z7035 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 zcu102_fmcs2 zcu102_9371"
+    echo "BOARD_NAME Like: sdrpi antsdr_e200 antsdr adrv9364z7020 adrv9361z7035 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 zcu102_fmcs2 zcu102_9371"
     exit 1
 fi
 
