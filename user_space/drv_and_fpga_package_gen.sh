@@ -15,7 +15,7 @@ OPENWIFI_HW_DIR=$1
 XILINX_DIR=$2
 BOARD_NAME=$3
 
-if [ -d "$XILINX_DIR/SDK" ]; then
+if [ -d "$XILINX_DIR/Vitis" ]; then
     echo "\$XILINX_DIR is found!"
 else
     echo "\$XILINX_DIR is not correct. Please check!"
@@ -38,11 +38,13 @@ fi
 
 # uncompress the system.hdf and system_top.bit for use
 mkdir -p hdf_and_bit
-tar -zxvf $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/hdf_and_bit.tar.gz -C ./hdf_and_bit
-cp ./hdf_and_bit/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
-cp ./hdf_and_bit/$BOARD_NAME/sdk/system_top_hw_platform_0/system_top.bit $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
+rm hdf_and_bit/* -rf
+unzip $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top.xsa -d ./hdf_and_bit
+# cp ./hdf_and_bit/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
+# cp ./hdf_and_bit/system_top.bit $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
 
-BIT_FILENAME=$OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system_top.bit
+# BIT_FILENAME=$OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system_top.bit
+BIT_FILENAME=./hdf_and_bit/system_top.bit
 
 if [ -f "$BIT_FILENAME" ]; then
     echo "\$BIT_FILENAME is found!"
@@ -61,7 +63,7 @@ fi
 
 # FINAL_BIT_FILENAME=$BOARD_NAME\_system_top_reload.bit.bin
 
-source $XILINX_DIR/SDK/2018.3/settings64.sh
+source $XILINX_DIR/Vitis/2021.1/settings64.sh
 
 set -x
 
