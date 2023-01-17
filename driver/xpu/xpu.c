@@ -334,31 +334,12 @@ static inline u32 hw_init(enum xpu_mode mode){
 	// From CMW measurement: lo up 1us before the packet; lo down 0.4us after the packet/RF port switches 1.2us before and 0.2us after
 	xpu_api->XPU_REG_BB_RF_DELAY_write((16<<24)|(0<<16)|(26<<8)|9); // calibrated by ila and spectrum analyzer (trigger mode)
 
-	// setup time schedule of 4 slices
-	// slice 0
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write(50000-1); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write(0); //start 0ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write(50000-1); //end 50ms
-
-	// slice 1
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((1<<20)|(50000-1)); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((1<<20)|(0)); //start 0ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(20000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(50000-1)); //end 20ms
-
-	// slice 2
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((2<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(20000)); //start 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(0)); //start 20ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(40000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(50000-1)); //end 20ms
-
-	// slice 3
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((3<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(40000)); //start 40ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(0)); //start 40ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
+	// setup time schedule of all queues. all time open.
+	for (i=0; i<4; i++) {
+		xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((i<<20)|16);//total 16us
+		xpu_api->XPU_REG_SLICE_COUNT_START_write((i<<20)|0); //start 0us
+		xpu_api->XPU_REG_SLICE_COUNT_END_write((i<<20)|16);  //end   16us
+	}
 
 	// all slice sync rest
 	xpu_api->XPU_REG_MULTI_RST_write(1<<7); //bit7 reset the counter for all queues at the same time
@@ -407,36 +388,6 @@ static inline u32 hw_init(enum xpu_mode mode){
 	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
 	xpu_api->XPU_REG_DIFS_ADVANCE_write((OPENWIFI_MAX_SIGNAL_LEN_TH<<16)|2); //us. bit31~16 max pkt length threshold
-
-	// setup time schedule of 4 slices
-	// slice 0
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write(50000-1); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write(0); //start 0ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write(50000-1); //end 50ms
-
-	// slice 1
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((1<<20)|(50000-1)); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((1<<20)|(0)); //start 0ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(20000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(50000-1)); //end 20ms
-
-	// slice 2
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((2<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(20000)); //start 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(0)); //start 20ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(40000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(50000-1)); //end 20ms
-
-	// slice 3
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((3<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(40000)); //start 40ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(0)); //start 40ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-
-	// all slice sync rest
-	xpu_api->XPU_REG_MULTI_RST_write(1<<7); //bit7 reset the counter for all queues at the same time
-	xpu_api->XPU_REG_MULTI_RST_write(0<<7); 
 
 	printk("%s hw_init err %d\n", xpu_compatible_str, err);
 	return(err);
