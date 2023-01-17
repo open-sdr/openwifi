@@ -599,11 +599,13 @@ static int dev_probe(struct platform_device *pdev) {
 	// 	goto free_chan_to_pl;
 	// }
 
-	chan_to_ps = dma_request_slave_channel(&(pdev->dev), "tx_dma_s2mm");
-	if (IS_ERR(chan_to_ps)) {
+	chan_to_ps = dma_request_chan(&(pdev->dev), "tx_dma_s2mm");
+	if (IS_ERR(chan_to_ps) || chan_to_ps==NULL) {
 		err = PTR_ERR(chan_to_ps);
-		pr_err("%s dev_probe: No channel to PS. %d\n",side_ch_compatible_str,err);
-		goto free_chan_to_ps;
+		if (err != -EPROBE_DEFER) {
+			pr_err("%s dev_probe: No chan_to_ps ret %d chan_to_ps 0x%p\n",side_ch_compatible_str, err, chan_to_ps);
+			goto free_chan_to_ps;
+		}
 	}
 
 	printk("%s dev_probe: DMA channel setup successfully. chan_to_pl 0x%p chan_to_ps 0x%p\n",side_ch_compatible_str, chan_to_pl, chan_to_ps);
