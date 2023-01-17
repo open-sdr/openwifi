@@ -70,7 +70,7 @@ git reset --hard
 cd $OPENWIFI_DIR/
 git submodule update $LINUX_KERNEL_SRC_DIR_NAME
 cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
-git fetch origin 2021_r1
+git fetch
 git checkout 2021_r1
 git pull origin 2021_r1
 git reset --hard 2021_r1
