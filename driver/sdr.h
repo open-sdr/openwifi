@@ -129,7 +129,10 @@ enum sdrctl_reg_cat {
 #define LEN_PHY_CRC 4
 #define LEN_MPDU_DELIM 4
 
-#define RING_ROOM_THRESHOLD 2
+#define MAX_NUM_HW_QUEUE 4 // number of queue in FPGA
+#define MAX_NUM_SW_QUEUE 4 // number of queue in Linux, depends on the number we report by dev->queues in openwifi_dev_probe
+
+#define RING_ROOM_THRESHOLD (2+MAX_NUM_SW_QUEUE) // MAX_NUM_SW_QUEUE is for the room of MAX_NUM_SW_QUEUE last packets from MAX_NUM_SW_QUEUE queue before stop
 #define NUM_BIT_NUM_TX_BD 6
 #define NUM_TX_BD (1<<NUM_BIT_NUM_TX_BD) // !!! should align to the fifo size in tx_bit_intf.v
 
@@ -143,8 +146,6 @@ enum sdrctl_reg_cat {
 #define RX_BD_BUF_SIZE (2048)
 
 #define NUM_BIT_MAX_NUM_HW_QUEUE 2
-#define MAX_NUM_HW_QUEUE 4 // number of queue in FPGA
-#define MAX_NUM_SW_QUEUE 4 // number of queue in Linux, depends on the number we report by dev->queues in openwifi_dev_probe
 #define NUM_BIT_MAX_PHY_TX_SN 10 // decrease 12 to 10 to reserve 2 bits storing related linux prio idx
 #define MAX_PHY_TX_SN ((1<<NUM_BIT_MAX_PHY_TX_SN)-1)
 
