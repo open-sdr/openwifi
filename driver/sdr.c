@@ -44,6 +44,8 @@
 #include <linux/gpio.h>
 #include <linux/leds.h>
 
+// #include <linux/time.h>
+
 #define IIO_AD9361_USE_PRIVATE_H_
 #include <../../drivers/iio/adc/ad9361_regs.h>
 #include <../../drivers/iio/adc/ad9361.h>
@@ -174,22 +176,23 @@ inline int rssi_correction_lookup_table(u32 freq_MHz)
 
 inline void ad9361_tx_calibration(struct openwifi_priv *priv, u32 actual_tx_lo)
 {
-	struct timeval tv;
-	unsigned long time_before = 0; 
-	unsigned long time_after = 0;
+	// struct timespec64 tv;
+	// unsigned long time_before = 0; 
+	// unsigned long time_after = 0;
 	u32 spi_disable; 
 
 	priv->last_tx_quad_cal_lo = actual_tx_lo; 
-	do_gettimeofday(&tv);
-	time_before = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
+	// do_gettimeofday(&tv);
+	// time_before = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
 	spi_disable = xpu_api->XPU_REG_SPI_DISABLE_read(); // backup current fpga spi disable state
 	xpu_api->XPU_REG_SPI_DISABLE_write(1); // disable FPGA SPI module
 	ad9361_do_calib_run(priv->ad9361_phy, TX_QUAD_CAL, (int)priv->ad9361_phy->state->last_tx_quad_cal_phase); 
 	xpu_api->XPU_REG_SPI_DISABLE_write(spi_disable); // restore original SPI disable state 
-	do_gettimeofday(&tv);
-	time_after = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
+	// do_gettimeofday(&tv);
+	// time_after = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
 
-	printk("%s ad9361_tx_calibration %dMHz tx_quad_cal duration %lu us\n", sdr_compatible_str, actual_tx_lo, time_after-time_before);
+	// printk("%s ad9361_tx_calibration %dMHz tx_quad_cal duration %lu us\n", sdr_compatible_str, actual_tx_lo, time_after-time_before);
+	printk("%s ad9361_tx_calibration %dMHz tx_quad_cal duration unknown us\n", sdr_compatible_str, actual_tx_lo);
 }
 
 inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 actual_rx_lo)
@@ -1567,18 +1570,24 @@ static int openwifi_start(struct ieee80211_hw *dev)
 	rx_intf_api->RX_INTF_REG_INTERRUPT_TEST_write(0x100); // disable rx interrupt by interrupt test mode
 	rx_intf_api->RX_INTF_REG_M_AXIS_RST_write(1); // hold M AXIS in reset status
 
-	priv->rx_chan = dma_request_slave_channel(&(priv->pdev->dev), "rx_dma_s2mm");
+	// priv->rx_chan = dma_request_slave_channel(&(priv->pdev->dev), "rx_dma_s2mm");
+	priv->rx_chan = dma_request_chan(&(priv->pdev->dev), "rx_dma_s2mm");
 	if (IS_ERR(priv->rx_chan) || priv->rx_chan==NULL) {
 		ret = PTR_ERR(priv->rx_chan);
-		pr_err("%s openwifi_start: No Rx channel ret %d priv->rx_chan 0x%p\n",sdr_compatible_str, ret, priv->rx_chan);
-		goto err_dma;
+		if (ret != -EPROBE_DEFER) {
+			pr_err("%s openwifi_start: No Rx channel ret %d priv->rx_chan 0x%p\n",sdr_compatible_str, ret, priv->rx_chan);
+			goto err_dma;
+		}
 	}
 
-	priv->tx_chan = dma_request_slave_channel(&(priv->pdev->dev), "tx_dma_mm2s");
+	// priv->tx_chan = dma_request_slave_channel(&(priv->pdev->dev), "tx_dma_mm2s");
+	priv->tx_chan = dma_request_chan(&(priv->pdev->dev), "tx_dma_mm2s");
 	if (IS_ERR(priv->tx_chan) || priv->tx_chan==NULL) {
 		ret = PTR_ERR(priv->tx_chan);
-		pr_err("%s openwifi_start: No Tx channel ret %d priv->tx_chan 0x%p\n",sdr_compatible_str, ret, priv->tx_chan);
-		goto err_dma;
+		if (ret != -EPROBE_DEFER) {
+			pr_err("%s openwifi_start: No Tx channel ret %d priv->tx_chan 0x%p\n",sdr_compatible_str, ret, priv->tx_chan);
+			goto err_dma;
+		}
 	}
 	printk("%s openwifi_start: DMA channel setup successfully. priv->rx_chan 0x%p priv->tx_chan 0x%p\n",sdr_compatible_str, priv->rx_chan, priv->tx_chan);
 
@@ -2083,16 +2092,16 @@ static const struct of_device_id openwifi_dev_of_ids[] = {
 };
 MODULE_DEVICE_TABLE(of, openwifi_dev_of_ids);
 
-static int custom_match_spi_dev(struct device *dev, void *data)
+static int custom_match_spi_dev(struct device *dev, const void *data)
 {
-    const char *name = data;
+  const char *name = data;
 
 	bool ret = sysfs_streq(name, dev->of_node->name);
 	printk("%s custom_match_spi_dev %s %s %d\n", sdr_compatible_str,name, dev->of_node->name, ret);
 	return ret;
 }
 
-static int custom_match_platform_dev(struct device *dev, void *data)
+static int custom_match_platform_dev(struct device *dev, const void *data)
 {
 	struct platform_device *plat_dev = to_platform_device(dev);
 	const char *name = data;
