@@ -236,7 +236,7 @@ enum openofdm_rx_mode {
 // 11a/g BPSK 6m, Rx sensitivity level dmesg report -86dBm
 // priv->rssi_correction = 148; rssi_half_db/2 = 148-86=62; rssi_half_db = 124
 
-#define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-84)
+#define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-95) //the best openwifi reported sensitivity is like -90/-92
 #define OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT 64
 #define OPENOFDM_RX_MIN_PLATEAU_INIT 100
 
