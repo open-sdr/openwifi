@@ -350,9 +350,9 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 	}
 
-	if (mode == TX_INTF_BYPASS) {
-		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0x100); //slv_reg10[8]
-	}
+	// if (mode == TX_INTF_BYPASS) {
+	// 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0x100); //slv_reg10[8] -- bit 8 not used anymore. only bit0/1 are still reserved. 
+	// }
 
 	printk("%s hw_init err %d\n", tx_intf_compatible_str, err);
 	return(err);
