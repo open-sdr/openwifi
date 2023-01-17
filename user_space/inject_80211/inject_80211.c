@@ -142,7 +142,7 @@ void usage(void)
 	    "-h   this menu\n\n"
 
 	    "Example:\n"
-	    "  iw dev wlan0 interface add mon0 type monitor && ifconfig mon0 up\n"
+	    "  iw dev sdr0 interface add mon0 type monitor && ifconfig mon0 up\n"
 	    "  inject_80211 mon0\n"
 	    "\n");
 	exit(1);
