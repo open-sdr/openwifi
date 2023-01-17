@@ -3,10 +3,10 @@
 # Reads RSSI in dB from RX1, let's call it "r".  
 # Linear fit offset "o" depends on frequency (2.4GHz or 5GHz and FMCOMMS2/3).
 # RSSI(dBm) = -r + o
-# 2.4GHz FMCOMMS2: o = 16.74
-# 2.4GHz FMCOMMS3: o = 17.44
-# 5GHz   FMCOMMS2: o = 25.41
-# 5GHz   FMCOMMS3: o = 24.58
+# 2.4GHz(ch 6) FMCOMMS2: o = 16.74
+# 2.4GHz(ch 6) FMCOMMS3: o = 17.44
+# 5GHz (ch 44) FMCOMMS2: o = 25.41
+# 5GHz (ch 44) FMCOMMS3: o = 24.58
 
 home_dir=$(pwd)
 
