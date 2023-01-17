@@ -58,6 +58,7 @@ antsdr|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO [Notes]
 antsdr_e200|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO [Notes](kernel_boot/boards/antsdr_e200/README.md)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
 sdrpi|[HexSDR](https://github.com/HexSDR/) Powerful SDR in Raspberry Pi size [Notes](kernel_boot/boards/sdrpi/notes.md)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
 zcu102_fmcs2|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-64bit.img.xz)|Need
+neptunesdr|Low cost Zynq 7020 + AD9361 board|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
 zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [ADRV9371](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-adrv9371.html)|Future|Future|Need
 
 - board_name is used to identify FPGA design in openwifi-hw/boards/
