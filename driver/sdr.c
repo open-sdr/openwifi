@@ -200,10 +200,7 @@ inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 a
 	priv->rssi_correction = rssi_correction_lookup_table(actual_rx_lo);
 
 	// set appropriate lbt threshold
-	// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62)<<1); // -62dBm
-	// xpu_api->XPU_REG_LBT_TH_write((priv->rssi_correction-62-16)<<1); // wei's magic value is 135, here is 134 @ ch 44
-	// auto_lbt_th = ((priv->rssi_correction-62-16)<<1);
-	auto_lbt_th = rssi_dbm_to_rssi_half_db(-78, priv->rssi_correction); // -78dBm, the same as above ((priv->rssi_correction-62-16)<<1)
+	auto_lbt_th = rssi_dbm_to_rssi_half_db(-62, priv->rssi_correction); // -62dBm
 	static_lbt_th = rssi_dbm_to_rssi_half_db(-(priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]), priv->rssi_correction);
 	fpga_lbt_th = (priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_LBT_TH]==0?auto_lbt_th:static_lbt_th);
 	xpu_api->XPU_REG_LBT_TH_write(fpga_lbt_th);
