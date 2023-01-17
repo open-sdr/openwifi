@@ -205,6 +205,7 @@ const char *openofdm_rx_compatible_str = "sdr,openofdm_rx";
 #define OPENOFDM_RX_REG_POWER_THRES_ADDR   (2*4)
 #define OPENOFDM_RX_REG_MIN_PLATEAU_ADDR   (3*4)
 #define OPENOFDM_RX_REG_SOFT_DECODING_ADDR (4*4)
+#define OPENOFDM_RX_REG_FFT_WIN_SHIFT_ADDR (5*4)
 #define OPENOFDM_RX_REG_STATE_HISTORY_ADDR (20*4)
 
 enum openofdm_rx_mode {
@@ -239,6 +240,7 @@ enum openofdm_rx_mode {
 #define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-95) //the best openwifi reported sensitivity is like -90/-92
 #define OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT 64
 #define OPENOFDM_RX_MIN_PLATEAU_INIT 100
+#define OPENOFDM_RX_FFT_WIN_SHIFT_INIT 1
 
 #define OPENWIFI_MAX_SIGNAL_LEN_TH 1700 //Packet longer  than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
 
@@ -258,6 +260,7 @@ struct openofdm_rx_driver_api {
 	void (*OPENOFDM_RX_REG_POWER_THRES_write)(u32 value);
 	void (*OPENOFDM_RX_REG_MIN_PLATEAU_write)(u32 value);
 	void (*OPENOFDM_RX_REG_SOFT_DECODING_write)(u32 value);
+	void (*OPENOFDM_RX_REG_FFT_WIN_SHIFT_write)(u32 value);
 };
 
 // ---------------------------------------openofdm tx-------------------------------
