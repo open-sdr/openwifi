@@ -150,14 +150,6 @@ static inline u32 XPU_REG_FORCE_IDLE_MISC_read(void){
 	return reg_read(XPU_REG_FORCE_IDLE_MISC_ADDR);
 }
 
-static inline u32 XPU_REG_TRX_STATUS_read(void){
-	return reg_read(XPU_REG_TRX_STATUS_ADDR);
-}
-
-static inline u32 XPU_REG_TX_RESULT_read(void){
-	return reg_read(XPU_REG_TX_RESULT_ADDR);
-}
-
 static inline u32 XPU_REG_TSF_RUNTIME_VAL_LOW_read(void){
 	return reg_read(XPU_REG_TSF_RUNTIME_VAL_LOW_ADDR);
 }
@@ -179,34 +171,6 @@ static inline void XPU_REG_TSF_LOAD_VAL_write(u32 high_value, u32 low_value){
 	XPU_REG_TSF_LOAD_VAL_HIGH_write(high_value|0x80000000); // msb high
 	XPU_REG_TSF_LOAD_VAL_HIGH_write(high_value&(~0x80000000)); // msb low
 }
-
-static inline u32 XPU_REG_FC_DI_read(void){
-	return reg_read(XPU_REG_FC_DI_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR1_LOW_read(void){
-	return reg_read(XPU_REG_ADDR1_LOW_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR1_HIGH_read(void){
-	return reg_read(XPU_REG_ADDR1_HIGH_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR2_LOW_read(void){
-	return reg_read(XPU_REG_ADDR2_LOW_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR2_HIGH_read(void){
-	return reg_read(XPU_REG_ADDR2_HIGH_ADDR);
-}
-
-// static inline void XPU_REG_LBT_TH_write(u32 value, u32 en_flag) {
-// 	if (en_flag) {
-// 		reg_write(XPU_REG_LBT_TH_ADDR, value&0x7FFFFFFF);
-// 	} else {
-// 		reg_write(XPU_REG_LBT_TH_ADDR, value|0x80000000);
-// 	}
-// }
 
 static inline void XPU_REG_LBT_TH_write(u32 value) {
 	reg_write(XPU_REG_LBT_TH_ADDR, value);
@@ -539,21 +503,12 @@ static int dev_probe(struct platform_device *pdev)
 	xpu_api->XPU_REG_FORCE_IDLE_MISC_write=XPU_REG_FORCE_IDLE_MISC_write;
 	xpu_api->XPU_REG_FORCE_IDLE_MISC_read=XPU_REG_FORCE_IDLE_MISC_read;
 
-	xpu_api->XPU_REG_TRX_STATUS_read=XPU_REG_TRX_STATUS_read;
-	xpu_api->XPU_REG_TX_RESULT_read=XPU_REG_TX_RESULT_read;
-
 	xpu_api->XPU_REG_TSF_RUNTIME_VAL_LOW_read=XPU_REG_TSF_RUNTIME_VAL_LOW_read;
 	xpu_api->XPU_REG_TSF_RUNTIME_VAL_HIGH_read=XPU_REG_TSF_RUNTIME_VAL_HIGH_read;
 	xpu_api->XPU_REG_TSF_LOAD_VAL_LOW_write=XPU_REG_TSF_LOAD_VAL_LOW_write;
 	xpu_api->XPU_REG_TSF_LOAD_VAL_HIGH_write=XPU_REG_TSF_LOAD_VAL_HIGH_write;
 	xpu_api->XPU_REG_TSF_LOAD_VAL_write=XPU_REG_TSF_LOAD_VAL_write;
 	
-	xpu_api->XPU_REG_FC_DI_read=XPU_REG_FC_DI_read;
-	xpu_api->XPU_REG_ADDR1_LOW_read=XPU_REG_ADDR1_LOW_read;
-	xpu_api->XPU_REG_ADDR1_HIGH_read=XPU_REG_ADDR1_HIGH_read;
-	xpu_api->XPU_REG_ADDR2_LOW_read=XPU_REG_ADDR2_LOW_read;
-	xpu_api->XPU_REG_ADDR2_HIGH_read=XPU_REG_ADDR2_HIGH_read;
-
 	xpu_api->XPU_REG_LBT_TH_write=XPU_REG_LBT_TH_write;
 	xpu_api->XPU_REG_LBT_TH_read=XPU_REG_LBT_TH_read;
 
