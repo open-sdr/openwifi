@@ -240,7 +240,10 @@ enum openofdm_rx_mode {
 #define OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT 64
 #define OPENOFDM_RX_MIN_PLATEAU_INIT 100
 
-#define OPENWIFI_MAX_SIGNAL_LEN_TH 1700 //Packet longer than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
+#define OPENWIFI_MAX_SIGNAL_LEN_TH 1700 //Packet longer  than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
+
+#define OPENWIFI_MIN_SIGNAL_LEN_TH 14   //Packet shorter than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
+                                        //due to CRC32, at least 4 bytes needed to push out expected CRC result
 
 struct openofdm_rx_driver_api {
 	u32 (*hw_init)(enum openofdm_rx_mode mode);
