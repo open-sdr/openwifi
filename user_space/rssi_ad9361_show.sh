@@ -10,7 +10,7 @@
 
 home_dir=$(pwd)
 
-set -x
+#set -x
 if test -f "/sys/bus/iio/devices/iio:device0/in_voltage0_rssi"; then
   cd /sys/bus/iio/devices/iio:device0/
 else if test -f "/sys/bus/iio/devices/iio:device1/in_voltage0_rssi"; then
@@ -30,7 +30,17 @@ else if test -f "/sys/bus/iio/devices/iio:device1/in_voltage0_rssi"; then
           fi
      fi
 fi
-set +x
+#set +x
 
-cat in_voltage0_rssi
+if [ $# -lt 1 ]; then
+  cat in_voltage0_rssi
+else
+  num_read=$1
+  for ((i=0;i<$num_read;i++))
+  do
+    rssi_str=$(cat in_voltage0_rssi)
+    echo "${rssi_str//dB}"
+  done
+fi
 cd $home_dir
+
