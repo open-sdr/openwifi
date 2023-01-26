@@ -7,11 +7,11 @@
 
 if [ "$#" -ne 3 ]; then
     echo "You have input $# arguments."
-    echo "You must enter exactly 3 arguments: \$OPENWIFI_HW_DIR \$XILINX_DIR \$BOARD_NAME"
+    echo "You must enter exactly 3 arguments: \$OPENWIFI_HW_IMG_DIR \$XILINX_DIR \$BOARD_NAME"
     exit 1
 fi
 
-OPENWIFI_HW_DIR=$1
+OPENWIFI_HW_IMG_DIR=$1
 XILINX_DIR=$2
 BOARD_NAME=$3
 
@@ -29,21 +29,21 @@ else
     echo "\$BOARD_NAME is found!"
 fi
 
-if [ -d "$OPENWIFI_HW_DIR/boards/$BOARD_NAME" ]; then
-    echo "\$OPENWIFI_HW_DIR is found!"
+if [ -d "$OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME" ]; then
+    echo "\$OPENWIFI_HW_IMG_DIR is found!"
 else
-    echo "\$OPENWIFI_HW_DIR is not correct. Please check!"
+    echo "\$OPENWIFI_HW_IMG_DIR is not correct. Please check!"
     exit 1
 fi
 
 # uncompress the system.hdf and system_top.bit for use
 mkdir -p hdf_and_bit
 rm hdf_and_bit/* -rf
-unzip $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top.xsa -d ./hdf_and_bit
-# cp ./hdf_and_bit/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
-# cp ./hdf_and_bit/system_top.bit $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
+unzip $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/system_top.xsa -d ./hdf_and_bit
+# cp ./hdf_and_bit/$BOARD_NAME/sdk/system_top_hw_platform_0/system.hdf $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
+# cp ./hdf_and_bit/system_top.bit $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/ -rf
 
-# BIT_FILENAME=$OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system_top.bit
+# BIT_FILENAME=$OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/system_top_hw_platform_0/system_top.bit
 BIT_FILENAME=./hdf_and_bit/system_top.bit
 
 if [ -f "$BIT_FILENAME" ]; then
@@ -78,29 +78,29 @@ make clean
 cd ../user_space
 mkdir -p drv_and_fpga
 rm -rf drv_and_fpga/*
-cp system_top.bit.bin ../driver/tx_intf/tx_intf.ko ../driver/rx_intf/rx_intf.ko ../driver/openofdm_tx/openofdm_tx.ko ../driver/openofdm_rx/openofdm_rx.ko  ../driver/xpu/xpu.ko ../driver/sdr.ko ./drv_and_fpga -f
-cp $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/git_info.txt ./drv_and_fpga -f
+cp system_top.bit.bin ../driver/side_ch/side_ch.ko ../driver/tx_intf/tx_intf.ko ../driver/rx_intf/rx_intf.ko ../driver/openofdm_tx/openofdm_tx.ko ../driver/openofdm_rx/openofdm_rx.ko  ../driver/xpu/xpu.ko ../driver/sdr.ko ./drv_and_fpga -f
+cp $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/git_info.txt ./drv_and_fpga -f
 tar -cvf ./drv_and_fpga/driver.tar $(git ls-files ../driver/)
 
-dir_save=$(pwd)
+# dir_save=$(pwd)
 
-cd $OPENWIFI_HW_DIR/ip/
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-root.tar $(git ls-files ./ | grep -v -E "/|openofdm_rx")
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-xpu.tar $(git ls-files ./xpu)
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-tx_intf.tar $(git ls-files ./tx_intf)
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-rx_intf.tar $(git ls-files ./rx_intf)
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-openofdm_tx.tar $(git ls-files ./openofdm_tx)
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-side_ch.tar $(git ls-files ./side_ch)
+# cd $OPENWIFI_HW_DIR/ip/
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-root.tar $(git ls-files ./ | grep -v -E "/|openofdm_rx")
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-xpu.tar $(git ls-files ./xpu)
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-tx_intf.tar $(git ls-files ./tx_intf)
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-rx_intf.tar $(git ls-files ./rx_intf)
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-openofdm_tx.tar $(git ls-files ./openofdm_tx)
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-ip-side_ch.tar $(git ls-files ./side_ch)
 
-cd ../boards
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-root.tar $(git ls-files ./ | grep -v "/")
-cd ./$BOARD_NAME
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-$BOARD_NAME-root.tar $(git ls-files ./ | grep -v "/")
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-$BOARD_NAME-src.tar $(git ls-files ./src)
-tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-$BOARD_NAME-ip_repo.tar ip_repo
+# cd ../boards
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-root.tar $(git ls-files ./ | grep -v "/")
+# cd ./$BOARD_NAME
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-$BOARD_NAME-root.tar $(git ls-files ./ | grep -v "/")
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-$BOARD_NAME-src.tar $(git ls-files ./src)
+# tar -cvf $dir_save/drv_and_fpga/openwifi-hw-boards-$BOARD_NAME-ip_repo.tar ip_repo
 
-cd $dir_save
-# tar -cvf drv_and_fpga.tar system_top.bit.bin tx_intf.ko rx_intf.ko openofdm_tx.ko openofdm_rx.ko xpu.ko sdr.ko git_info.txt
+# cd $dir_save
+# # tar -cvf drv_and_fpga.tar system_top.bit.bin tx_intf.ko rx_intf.ko openofdm_tx.ko openofdm_rx.ko xpu.ko sdr.ko git_info.txt
 
 tar -zcvf drv_and_fpga.tar.gz drv_and_fpga
 
