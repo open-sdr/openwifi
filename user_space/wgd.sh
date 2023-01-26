@@ -64,6 +64,11 @@ insert_check_module () {
 
 print_usage
 
+modprobe ad9361_drv
+modprobe xilinx_dma
+modprobe mac80211
+lsmod
+
 TARGET_DIR=./
 DOWNLOAD_FLAG=0
 test_mode=0
@@ -149,9 +154,9 @@ fi
 ./rf_init_11n.sh
 # insert_check_module ./ xilinx_dma
 
-depmod
-modprobe mac80211
-lsmod
+# depmod
+# modprobe mac80211
+# lsmod
 
 MODULE_ALL="tx_intf rx_intf openofdm_tx openofdm_rx xpu sdr"
 for MODULE in $MODULE_ALL
