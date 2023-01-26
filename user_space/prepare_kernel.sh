@@ -90,7 +90,7 @@ source $XILINX_DIR/Vitis/2021.1/settings64.sh
   # make zynq_xcomm_adv7511_defconfig
 # fi
 
-make oldconfig && make prepare && make modules_prepare
+make oldconfig
 # make adi_zynqmp_defconfig
 make prepare && make modules_prepare
 
