@@ -43,25 +43,24 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 
 **Performance (best case: aggregation/AMPDU on):**
 - iperf: TCP 40~50Mbps; UDP 50Mbps
-- EVM -38dB; MCS0 sensitivity -87dBm; MCS7 -72dBm. (FMCOMMS2 2.4GHz; cable and OTA test)
+- EVM -38dB; MCS0 sensitivity -92dBm; MCS7 -73dBm. (FMCOMMS2 2.4GHz; cable and OTA test)
 
 **Supported SDR platforms:** (Check [Porting guide](#Porting-guide) for your new board if it isn't in the list)
 
-board_name|board combination|status|SD card img|Vivado license
--------|-------|----|----|-----
-zc706_fmcs2|[Xilinx ZC706 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|Need
-zed_fmcs2|[Xilinx zed board](https://www.xilinx.com/products/boards-and-kits/1-8dyf-11.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
-adrv9364z7020|[ADRV9364-Z7020 + ADRV1CRR-BOB](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/adrv9364-z7020.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
-adrv9361z7035|[ADRV9361-Z7035 + ADRV1CRR-BOB/FMC](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/ADRV9361-Z7035.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|Need
-zc702_fmcs2|[Xilinx ZC702 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc702-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
-antsdr|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO [Notes](kernel_boot/boards/antsdr/notes.md)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
-antsdr_e200|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO [Notes](kernel_boot/boards/antsdr_e200/README.md)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
-sdrpi|[HexSDR](https://github.com/HexSDR/) Powerful SDR in Raspberry Pi size [Notes](kernel_boot/boards/sdrpi/notes.md)|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
-zcu102_fmcs2|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Done|[64bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-64bit.img.xz)|Need
-neptunesdr|Low cost Zynq 7020 + AD9361 board|Done|[32bit img](https://users.ugent.be/~xjiao/openwifi-1.3.1-wilsele-1-32bit.img.xz)|**NO** need
-zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [ADRV9371](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-adrv9371.html)|Future|Future|Need
+board_name|Description|Vivado license
+----------|-----------|--------------
+zc706_fmcs2|[Xilinx ZC706 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Need
+zed_fmcs2|[Xilinx zed board](https://www.xilinx.com/products/boards-and-kits/1-8dyf-11.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|**NO** need
+adrv9364z7020|[ADRV9364-Z7020 + ADRV1CRR-BOB](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/adrv9364-z7020.html)|**NO** need
+adrv9361z7035|[ADRV9361-Z7035 + ADRV1CRR-BOB/FMC](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/ADRV9361-Z7035.html)|Need
+zc702_fmcs2|[Xilinx ZC702 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc702-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|**NO** need
+antsdr|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO [Notes](kernel_boot/boards/antsdr/notes.md)|**NO** need
+antsdr_e200|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO (smaller/cheaper) [Notes](kernel_boot/boards/antsdr_e200/README.md)|**NO** need
+sdrpi|[HexSDR](https://github.com/HexSDR/) SDR in Raspberry Pi size [Notes](kernel_boot/boards/sdrpi/notes.md)|**NO** need
+zcu102_fmcs2|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Need
+neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 
-- board_name is used to identify FPGA design in openwifi-hw/boards/
+- board_name is used to identify FPGA design in openwifi-hw/boards/ and FPGA image in openwifi-hw-img/boards
 - Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
 
 [[Quick start](#Quick-start)]
@@ -78,16 +77,22 @@ zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kit
 [[Application notes](doc/app_notes/README.md)]
 
 ## Quick start
-- Restore openwifi board specific img file (from the table) into a SD card. To do this, program "Disks" in Ubuntu can be used (Install: "sudo apt install gnome-disk-utility"). After restoring, the SD card should have two partitions: BOOT and rootfs. You need to config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
-  - Copy files in **openwifi/board_name** to the base directory of BOOT partition.
-  - Copy **openwifi/zynqmp-common/Image** (zcu102 board) or **openwifi/zynq-common/uImage** (other boards) to the base directory of BOOT partition
-- Connect two antennas to RXA/TXA ports. Config the board to SD card boot mode (check the board manual). Insert the SD card to the board. Power on. 
+- Download [openwifi img](https://drive.google.com/file/d/1fb8eJGJAntOciCiGFVLfQs7m7ucRtSWD/view?usp=share_link) and burn it into a 16GB SD card. After this operation, the SD card should have two partitions: BOOT and rootfs. To flash the SD card, SD card tool software (such as Startup Disk Creator in Ubuntu) or dd command can be used:
+  ```
+  sudo dd bs=512 count=31116288 if=openwifi-xyz.img of=/dev/your_sdcard_dev
+  (To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename")
+  ```
+- Config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
+  - Copy files in **BOOT/openwifi/board_name** to the base directory of BOOT partition.
+  - Delete the **rootfs/root/kernel_modules** directory (if exist).
+- Insert the SD card to the board. Configure the board in SD booting mode. Connect antennas. Power on. 
 - Login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with password **openwifi**.
   ```
   ssh root@192.168.10.122
   ```
 - Then, run openwifi AP and the on board webserver
   ```
+  ./openwifi/setup_once.sh (Only need to run once for new board)
   cd openwifi
   ./wgd.sh
   ./fosdem.sh
@@ -97,7 +102,7 @@ zcu102_9371|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kit
   **NOTE** adrv9361z7035 has ultra low TX power in 5GHz. Move **CLOSER** when you use that board in 5GHz!!!
 - After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your device, you should see the webpage hosted by the webserver on board.
   - Note 1: If your device doesn't support 5GHz (ch44), please change the **hostapd-openwifi.conf** on board and re-run fosdem.sh.
-  - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just power cycle the board if it happens. (If output of "./sdrctl dev sdr0 get reg rx 20" is always the same, it means the decoder halts)
+  - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just reload FPGA ([method](doc/app_notes/drv_fpga_dynamic_loading.md)) or simply power cycle the board if it happens. (If output of "./sdrctl dev sdr0 get reg rx 20" is always the same, it means the decoder halts)
 - To give the Wi-Fi client internet access, configure routing/NAT **on the PC**:
   ```
   sudo sysctl -w net.ipv4.ip_forward=1
@@ -129,7 +134,7 @@ The board actually is an Linux/Ubuntu computer which is running **hostapd** to o
 
 ## Update FPGA
 
-(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files)
+(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files without rebooting/power-cycle)
 
 Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the fpga bitstream and driver (see next section) on to the board.
 
@@ -139,13 +144,13 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   export XILINX_DIR=your_Xilinx_install_directory
   (Example: export XILINX_DIR=/opt/Xilinx. The Xilinx directory should include sth like: Downloads, Vitis, etc.)
-  export OPENWIFI_HW_DIR=your_openwifi-hw_directory
-  (The directory where you store the open-sdr/openwifi-hw repo via git clone)
+  export OPENWIFI_HW_IMG_DIR=your_openwifi-hw-img_directory
+  (The directory where you get the open-sdr/openwifi-hw-img repo via git clone)
   export BOARD_NAME=your_board_name
   ```
-- Pick the FPGA bitstream from openwifi-hw, and generate BOOT.BIN and transfer it on board via ssh channel:
+- Pick the FPGA bitstream from openwifi-hw-img, and generate BOOT.BIN and transfer it on board via ssh channel:
   ```
-  cd openwifi/user_space; ./boot_bin_gen.sh $XILINX_DIR $BOARD_NAME $OPENWIFI_HW_DIR/boards/$BOARD_NAME/sdk/system_top.xsa
+  cd openwifi/user_space; ./boot_bin_gen.sh $XILINX_DIR $BOARD_NAME $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/system_top.xsa
   cd openwifi/kernel_boot/boards/$BOARD_NAME/output_boot_bin; scp ./BOOT.BIN root@192.168.10.122:
   ```
 - On board: Put the BOOT.BIN into the BOOT partition.
@@ -159,11 +164,11 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   **Power cycle** the board to load new FPGA bitstream.
   
-  To load FPGA dynamically without rebooting/power-cycle, check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md).
+  To avoid above manual operation, after BOOT.BIN is generated you can run **transfer_kernel_image_module_to_board.sh** from openwifi/user_space directory and then run **populate_kernel_image_module_reboot.sh** on board to have new FPGA and kernel image (check **prepare_kernel.sh** in the next section) taken effect.
 
 ## Update Driver
 
-(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files)
+(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files without rebooting/power-cycle)
 
 Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the fpga bitstream (see previous section) and driver on to the board.
 
@@ -187,8 +192,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   Now you can use **wgd.sh** on board to load the new openwifi driver. **wgd.sh** also tries to reload FPGA img if system_top.bit.bin presents in the same directory. 
   Find more information in [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md).
   
-  **Note**: If you have symbol or version error while loadng the driver, it could be because the kernel in the SD card image is too old. In this case, you need put the linux 
-  kernel image generated by prepare_kernel.sh (check [[Update Driver](#Update-Driver)]) to the BOOT partition of SD card. The kernel image file name: adi-linux/arch/arm/boot/uImage (32bit); adi-linux-64/arch/arm64/boot/Image (64bit).
+  **Note**: If you have symbol or version error while loadng the driver, it could be because the kernel in the SD card image is too old. In this case, you need put the linux kernel image generated by prepare_kernel.sh (check [[Update Driver](#Update-Driver)]) to the BOOT partition of SD card. The kernel image file name: adi-linux/arch/arm/boot/uImage (32bit); adi-linux-64/arch/arm64/boot/Image (64bit).
 
 ## Update sdrctl
 - Copy the sdrctl source files to the board via ssh channel
@@ -197,11 +201,11 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
 - Compile the sdrctl **on board**:
   ```
-  cd ~/openwifi/sdrctl_src/ && make && cp sdrctl ../ && cd ..
+  cd ~/openwifi/sdrctl_src/ && make clean && make && cp sdrctl ../ && cd ..
   ```
 ## Easy Access and etc
 
-- Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files.
+- Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files without rebooting/power-cycle.
 - FPGA and driver on board update scripts
   - Setup [ftp server](https://ubuntu.com/server/docs/service-ftp) on PC, allow anonymous and change ftp root directory to the openwifi directory.
   - On board:

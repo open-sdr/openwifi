@@ -11,14 +11,15 @@
 
 ## Use openwifi prebuilt img
 
-Download openwifi pre-built img, such as openwifi-xyz.img.xz, and extract it to .img file.
+Download openwifi pre-built img, such as openwifi-xyz.img.xz (in [Quick start](../../README.md#quick-start)), and extract it to .img file.
 
-Use dd command to flash the SD card. (Other software seems having issue!)
+Use dd command to flash the SD card. (Or other software like Startup Disk Creator in Ubuntu)
 ```
 sudo dd bs=512 count=31116288 if=openwifi-xyz.img of=/dev/your_sdcard_dev
 ```
+To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename".
 
-(To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename".
+Then start from the 2nd step of the [Quick start](../../README.md#quick-start) in README.
 
 ## Build SD card from scratch
 
@@ -26,7 +27,7 @@ Download image_2022-08-04-ADI-Kuiper-full.zip from https://wiki.analog.com/resou
 
 Extract it to .img file.
 
-Use dd command to flash the SD card. (Other software seems having issue!)
+Use dd command to flash the SD card. (Or other software like Startup Disk Creator in Ubuntu)
 ```
 sudo dd bs=512 count=24018944 if=2022-08-04-ADI-Kuiper-full.img of=/dev/your_sdcard_dev
 ```
@@ -67,21 +68,21 @@ DefaultTimeoutStopSec=2s
 
 Put the openwifi/kernel_boot/10-network-device.rules into rootfs/etc/udev/rules.d/
 
-Build and put the following 3 files to the BOOT partition of the SD card:
-- Linux kernel image file (check how to generate it by prepare_kernel.sh in [Update Driver](../../README.md#Update-Driver)): 
-  - adi-linux-64/arch/arm64/boot/Image (64bit)
-  - adi-linux/arch/arm/boot/uImage (32bit)
-- devicetree file:
-  - openwifi/kernel_boot/boards/zcu102_fmcs2/system.dtb (64bit)
-  - openwifi/kernel_boot/boards/$BOARD_NAME/devicetree.dtb (32bit)
-- BOOT.BIN (check how to generate it by boot_bin_gen.sh in [Update FPGA](../../README.md#Update-FPGA)):
-  - openwifi/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN
+Run **update_sdcard.sh** from openwifi/user_space directory to further prepare the SD card. The last argument $SDCARD_DIR of the script is the directory (mounting point) on your computer that has BOOT and rootfs directories/partitions.
 
-Build openwifi driver according to [Update Driver](../../README.md#Update-Driver)). No need to copy them onboard at this moment.
+The script will build and put following things into the SD card:
+  - Linux kernel image file ([Update Driver](../../README.md#Update-Driver)): 
+    - adi-linux-64/arch/arm64/boot/Image (64bit)
+    - adi-linux/arch/arm/boot/uImage (32bit)
+  - devicetree file:
+    - openwifi/kernel_boot/boards/zcu102_fmcs2/system.dtb (64bit)
+    - openwifi/kernel_boot/boards/$BOARD_NAME/devicetree.dtb (32bit)
+  - BOOT.BIN ([Update FPGA](../../README.md#Update-FPGA)):
+    - openwifi/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN
+  - openwifi driver ([Update Driver](../../README.md#Update-Driver)).
+  - openwifi/user_space files and openwifi/webserver files
 
-Create /root/openwifi directory in the rootfs partition of the SD card, and put all files in openwifi/user_space to that directory.
-
-Power on the board with the SD card, connect the board to your host PC (static IP 192.168.10.1) via ethernet, and ssh to the board with password "analog"
+After **update_sdcard.sh** finishes, please do the 2nd step "Config the correct files ..." in [Quick start](../../README.md#quick-start). Then power on the board with the SD card, connect the board to your host PC (static IP 192.168.10.1) via ethernet, and ssh to the board with password **"analog"**
 ```
 ssh root@192.168.10.122
 ```
@@ -91,25 +92,6 @@ Then change password to "openwifi" via "passwd" command onbard.
 Enlarge the onboard SD disk space, and reboot (https://github.com/analogdevicesinc/adi-kuiper-gen/releases)
 ```
 raspi-config --expand-rootfs
-reboot now
-```
-
-(You should already build Linux kernel and openwifi driver in previous steps!)
-
-Transfer the kernel modules .ko and openwifi driver .ko onto the board:
-```
-cd openwifi/user_space
-./transfer_driver_userspace_to_board.sh
-./transfer_kernel_image_module_to_board.sh $LINUX_KERNEL_SRC $BOARD_NAME
-($LINUX_KERNEL_SRC is the directory openwifi/adi-linux-64 or adi-linux)
-```
-
-In the ssh session onboard:
-```
-cd /root
-sync
-tar -zxvf openwifi.tar.gz
-./populate_kernel_image_module_reboot.sh
 reboot now
 ```
 Setup routing/NAT **on the PC** for your board -- this internet connection is **important** for post installation/config.
@@ -128,32 +110,15 @@ route add default gw 192.168.10.1
 ping IP_YOU_KNOW_ON_YOUR_NETWORK
 ```
 If there is issue with the connectivity (ping can not reach the target), it needs to be solved before going to the next step.
-  
+
 Do misc configurations/installations in the ssh session onboard:
 ```
-cd /root/openwifi
-route add default gw 192.168.10.1 || true
-ping google.com
 sudo apt update
-chmod +x *.sh
-
-# build sdrctl and inject_80211
-sudo apt-get -y install libnl-3-dev
-sudo apt-get -y install libnl-genl-3-dev
-cd sdrctl_src
-make
-cp sdrctl ../
-cd ../side_ch_ctl_src/
-gcc -o side_ch_ctl side_ch_ctl.c
-cp side_ch_ctl ../
-cd ..
-cd ./inject_80211/
-make
-cd ..
+chmod +x /root/openwifi/*.sh
 
 # install and setup dhcp server
 sudo apt-get -y install isc-dhcp-server
-cp dhcpd.conf /etc/dhcp/dhcpd.conf
+cp /root/openwifi/dhcpd.conf /etc/dhcp/dhcpd.conf
 
 # install hostapd and other useful tools
 sudo apt-get -y install hostapd
@@ -164,33 +129,32 @@ sudo apt-get -y install iperf3
 sudo apt-get -y install libpcap-dev
 sudo apt-get -y install bridge-utils
 
-# add video file into the onbard web server
-wget -P webserver/ https://users.ugent.be/~xjiao/openwifi-low-aac.mp4
+# build on board tools
+sudo apt-get -y install libnl-3-dev
+sudo apt-get -y install libnl-genl-3-dev
+cd /root/openwifi/sdrctl_src
+make clean
+make
+cp sdrctl ../
+cd /root/openwifi/side_ch_ctl_src/
+gcc -o side_ch_ctl side_ch_ctl.c
+cp side_ch_ctl ../
+cd /root/openwifi/inject_80211/
+make clean
+make
+cd ..
 ```
 
 Run openwifi in the ssh session onboard:
 ```
+/root/openwifi/setup_once.sh (Only need to run once for new board)
 cd /root/openwifi
 ./wgd.sh
+ifconfig sdr0 up
 iwlist sdr0 scan
 ./fosdem.sh
 ```
 
 ## Use existing SD card on new board
 
-You don't need to do it from scratch on a blank SD card. Instead, you can start from existing SD card (for example zcu102), and use it for a new board (for example zedboard).
-
-1. Do this section (see above) "Build and put the following 3 files to the BOOT partition of the SD card" for the new board by replacing the file on the existing SD card.
-
-2. Build openwifi driver according to [Update Driver](../../README.md#Update-Driver)). No need to copy them onboard at this moment.
-
-3. Use the existing SD card to boot the new board.
-
-4. Do this section (see above) "Transfer the kernel modules .ko and openwifi driver .ko onto the board". Do not forget the operations onboard after the file transfer:
-  ```
-  cd /root
-  sync
-  tar -zxvf openwifi.tar.gz
-  ./populate_kernel_image_module_reboot.sh
-  reboot now
-  ```
+Just operate the existing/working SD card of the old board on your computer starting from the 2nd step of the [Quick start](../../README.md#quick-start) in README. Then start using the SD card on the new board.

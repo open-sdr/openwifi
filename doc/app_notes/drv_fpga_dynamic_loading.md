@@ -20,7 +20,7 @@ present in the directory. If wgd.sh can not find the FPGA image, it will skip re
 - Generate the reloadable FPGA file **system_top.bit.bin**. In the Linux host computer:
   ```
   cd openwifi/user_space
-  ./drv_and_fpga_package_gen.sh $OPENWIFI_HW_DIR $XILINX_DIR $BOARD_NAME
+  ./drv_and_fpga_package_gen.sh $OPENWIFI_HW_IMG_DIR $XILINX_DIR $BOARD_NAME
   ```
   Then **system_top.bit.bin** will be generated in openwifi/user_space.
 
