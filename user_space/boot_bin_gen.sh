@@ -56,7 +56,7 @@ cd $OPENWIFI_DIR/kernel_boot
 
 if [ "$BOARD_NAME" == "zcu102_fmcs2" ] || [ "$BOARD_NAME" == "zcu102_9371" ]; then
   ./build_zynqmp_boot_bin.sh $XSA_FILE boards/$BOARD_NAME/u-boot_xilinx_zynqmp_zcu102_revA.elf boards/$BOARD_NAME/bl31.elf
-elif [ "$BOARD_NAME" == "antsdr" ] || [ "$BOARD_NAME" == "zc706_fmcs2" ] || [ "$BOARD_NAME" == "zc702_fmcs2" ] || [ "$BOARD_NAME" == "zed_fmcs2" ] || [ "$BOARD_NAME" == "adrv9361z7035" ] || [ "$BOARD_NAME" == "adrv9364z7020" ]; then
+elif [ "$BOARD_NAME" == "antsdr" ] || [ "$BOARD_NAME" == "antsdr_e200" ] || [ "$BOARD_NAME" == "sdrpi" ] || [ "$BOARD_NAME" == "neptunesdr" ] || [ "$BOARD_NAME" == "zc706_fmcs2" ] || [ "$BOARD_NAME" == "zc702_fmcs2" ] || [ "$BOARD_NAME" == "zed_fmcs2" ] || [ "$BOARD_NAME" == "adrv9361z7035" ] || [ "$BOARD_NAME" == "adrv9364z7020" ]; then
   ./build_boot_bin.sh $XSA_FILE boards/$BOARD_NAME/u-boot.elf
 else
   echo "\$BOARD_NAME is not correct. Please check!"
