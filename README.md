@@ -174,11 +174,10 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 
 - Prepare Analog Devices Linux kernel source code (only need to run once):
   ```
+  sudo apt install flex bison libssl-dev device-tree-compiler u-boot-tools -y
   cd openwifi/user_space; ./prepare_kernel.sh $XILINX_DIR ARCH_BIT
   (For Zynq 7000, ARCH_BIT should be 32, for Zynq MPSoC, ARCH_BIT should be 64)
   ```
-  **Note**: You might need to install "flex/bison/libssl-dev" packages via "apt install" to compile the kernel/modules.
-  **Note**: In Ubuntu, gcc-10 might have issue ('yylloc' error), so use gcc-9 if you encounter error.
 - Compile the latest openwifi driver
   ```
   cd openwifi/driver; ./make_all.sh $XILINX_DIR ARCH_BIT
