@@ -2,8 +2,7 @@
 - Install Vivado 2021.1. Make sure install Vitis as well. You should have this directory: your_Xilinx_install_directory/Vitis (NOT Vitis_HLS!)
   - If the Vitis is not installed, you can add it by running "Xilinx Design Tools --> Add Design Tools for Devices 2021.1" from Xilinx program group/menu in your OS start menu, or Help menu of Vivado.
 - SD card at least with 16GB
-- Install the devicetree compiler -- dtc. (For Ubuntu: sudo apt install device-tree-compiler)
-- Install the mkimage tool. (For Ubuntu: sudo apt install u-boot-tools)
+- Install packages: `sudo apt install flex bison libssl-dev device-tree-compiler u-boot-tools -y`
 
 [[Use openwifi prebuilt img](#Use-openwifi-prebuilt-img)]
 [[Build SD card from scratch](#Build-SD-card-from-scratch)]
