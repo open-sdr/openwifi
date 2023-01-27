@@ -45,7 +45,7 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 - iperf: TCP 40~50Mbps; UDP 50Mbps
 - EVM -38dB; MCS0 sensitivity -92dBm; MCS7 -73dBm. (FMCOMMS2 2.4GHz; cable and OTA test)
 
-**Supported SDR platforms:** (Check [Porting guide](#Porting-guide) for your new board if it isn't in the list)
+**Supported SDR platforms:** ([openwifi img](https://drive.google.com/file/d/1fb8eJGJAntOciCiGFVLfQs7m7ucRtSWD/view?usp=share_link))
 
 board_name|Description|Vivado license
 ----------|-----------|--------------
@@ -60,6 +60,7 @@ sdrpi|[HexSDR](https://github.com/HexSDR/) SDR in Raspberry Pi size [Notes](kern
 zcu102_fmcs2|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Need
 neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 
+- Check [Porting guide](#Porting-guide) for your new board if it isn't in the list.
 - board_name is used to identify FPGA design in openwifi-hw/boards/ and FPGA image in openwifi-hw-img/boards
 - Don't have any boards? Or you like JTAG boot instead of SD card? Check our test bed [w-iLab.t](https://doc.ilabt.imec.be/ilabt/wilab/tutorials/openwifi.html) tutorial.
 
@@ -90,6 +91,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
   ```
   ssh root@192.168.10.122
   ```
+- If not successful, check [known issue](doc/known_issue/notter.md)
 - Then, run openwifi AP and the on board webserver
   ```
   ./openwifi/setup_once.sh (Only need to run once for new board)
