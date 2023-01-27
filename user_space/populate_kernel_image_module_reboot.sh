@@ -18,21 +18,16 @@ else
     IMAGE_FILENAME=uImage
 fi
 
+mv ./kernel_modules/ad9361_drv.ko ./openwifi/ -f
+mv ./kernel_modules/adi_axi_hdmi.ko ./openwifi/ -f
+mv ./kernel_modules/axidmatest.ko ./openwifi/ -f
+mv ./kernel_modules/lcd.ko ./openwifi/ -f
+mv ./kernel_modules/xilinx_dma.ko ./openwifi/ -f
+
 rm -rf /lib/modules/$(uname -r)
-# setup kernel module directory
-# if [ -d "/lib/modules/$(uname -r)" ]; then
-#     echo "/lib/modules/$(uname -r) already exists."
-# else
-    # if [ ${MACHINE_TYPE} == 'aarch64' ]; then
-    #     ln -s /root/kernel_modules /lib/modules/$(uname -r)
-    # else
-    #     ln -s /root/kernel_modules /lib/modules/$(uname -r)
-    # fi
-    ln -s /root/kernel_modules /lib/modules/$(uname -r)
-# fi
+ln -s /root/kernel_modules /lib/modules/$(uname -r)
 
 depmod
-# modprobe mac80211
 
 umount /mnt || /bin/true
 mount /dev/mmcblk0p1 /mnt

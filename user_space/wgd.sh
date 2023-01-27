@@ -64,8 +64,10 @@ insert_check_module () {
 
 print_usage
 
-modprobe ad9361_drv
-modprobe xilinx_dma
+insmod ad9361_drv.ko
+insmod xilinx_dma.ko
+# modprobe ad9361_drv
+# modprobe xilinx_dma
 modprobe mac80211
 lsmod
 
@@ -138,7 +140,6 @@ killall wpa_supplicant
 ifconfig sdr0 down
 
 rmmod sdr
-# insert_check_module ./ ad9361_drv
 
 if [ $DOWNLOAD_FLAG -eq 1 ]; then
   download_module fpga $TARGET_DIR
@@ -152,11 +153,6 @@ else
 fi
 
 ./rf_init_11n.sh
-# insert_check_module ./ xilinx_dma
-
-# depmod
-# modprobe mac80211
-# lsmod
 
 MODULE_ALL="tx_intf rx_intf openofdm_tx openofdm_rx xpu sdr"
 for MODULE in $MODULE_ALL

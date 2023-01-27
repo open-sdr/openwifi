@@ -39,6 +39,11 @@ mkdir -p kernel_modules
 rm -rf ./kernel_modules/*
 find $DIR_TO_ADI_LINUX_KERNEL/ -name \*.ko -exec cp {} ./kernel_modules/ \;
 
+cp $DIR_TO_ADI_LINUX_KERNEL/Module.symvers ./kernel_modules/
+cp $DIR_TO_ADI_LINUX_KERNEL/modules.builtin ./kernel_modules/
+cp $DIR_TO_ADI_LINUX_KERNEL/modules.builtin.modinfo ./kernel_modules/
+cp $DIR_TO_ADI_LINUX_KERNEL/modules.order ./kernel_modules/
+
 if test -f "$LINUX_KERNEL_IMAGE"; then
     cp $LINUX_KERNEL_IMAGE ./kernel_modules/
 fi
