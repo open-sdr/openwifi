@@ -12,4 +12,4 @@ If can't connect to the board for the 1st time, you might need to delete /etc/ne
 
 ## antsdr e200 UART console
 
-If can't see the UART console in Linux (/dev/ttyCH341USB0), according to https://github.com/juliagoda/CH341SER, you might need to do `sudo apt remove brltty`
+If can't see the UART console in Linux (/dev/ttyUSB0 or /dev/ttyCH341USB0), according to https://github.com/juliagoda/CH341SER, you might need to do `sudo apt remove brltty`
