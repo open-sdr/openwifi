@@ -10,7 +10,7 @@
 
 ## Use openwifi prebuilt img
 
-Download openwifi pre-built img, such as openwifi-xyz.img.xz (in [Quick start](../../README.md#quick-start)), and extract it to .img file.
+Download openwifi pre-built img (see [Quick start](../../README.md#quick-start)), and extract it to .img file.
 
 Use dd command to flash the SD card. (Or other software like Startup Disk Creator in Ubuntu)
 ```
