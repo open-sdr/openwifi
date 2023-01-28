@@ -10,7 +10,7 @@
 
 If can't ssh to the board via Ethernet for the 1st time, you might need to delete /etc/network/interfaces.new on SD card (on your computer).
 
-If still can't ssh the board via Ethernet, you should use UART console (/dev/ttyUSB0 or /dev/ttyCH341USB0) to monitor what happened during booting.
+If still can't ssh the board via Ethernet, you should use UART console (/dev/ttyUSBx, /dev/ttyCH341USBx, etc.) to monitor what happened during booting.
 
 ## antsdr e200 UART console
 
