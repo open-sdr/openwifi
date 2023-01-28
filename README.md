@@ -78,7 +78,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 [[Application notes](doc/app_notes/README.md)]
 
 ## Quick start
-- Download [openwifi img](https://drive.google.com/file/d/1fb8eJGJAntOciCiGFVLfQs7m7ucRtSWD/view?usp=share_link) and burn it into a 16GB SD card. After this operation, the SD card should have two partitions: BOOT and rootfs. To flash the SD card, SD card tool software (such as Startup Disk Creator in Ubuntu) or dd command can be used:
+- Download [openwifi img](https://drive.google.com/file/d/1fb8eJGJAntOciCiGFVLfQs7m7ucRtSWD/view?usp=share_link) and burn it into a SD card (>=16GB). After this operation, the SD card should have two partitions: BOOT and rootfs. To flash the SD card, SD card tool software (such as Startup Disk Creator in Ubuntu) or dd command can be used:
   ```
   sudo dd bs=512 count=31116288 if=openwifi-xyz.img of=/dev/your_sdcard_dev
   (To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename")
@@ -86,6 +86,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 - Config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
   - Copy files in **BOOT/openwifi/board_name** to the base directory of BOOT partition.
   - Delete the **rootfs/root/kernel_modules** directory (if exist).
+  - Delete the **rootfs/root/etc/network/interfaces.new** directory (if exist).
 - Insert the SD card to the board. Configure the board in SD booting mode. Connect antennas. Power on. 
 - Login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with password **openwifi**.
   ```
@@ -94,6 +95,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 - If not successful, check [known issue](doc/known_issue/notter.md)
 - Then, run openwifi AP and the on board webserver
   ```
+  raspi-config --expand-rootfs (Only needed when your SD card > 16GB. Run and reboot)
   ./openwifi/setup_once.sh (Only need to run once for new board)
   cd openwifi
   ./wgd.sh
