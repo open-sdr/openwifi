@@ -8,7 +8,9 @@
 - OS: Ubuntu 22 LTS
 - image: [openwifi img](https://drive.google.com/file/d/1fb8eJGJAntOciCiGFVLfQs7m7ucRtSWD/view?usp=share_link)
 
-If can't connect to the board for the 1st time, you might need to delete /etc/network/interfaces.new on SD card.
+If can't ssh to the board via Ethernet for the 1st time, you might need to delete /etc/network/interfaces.new on SD card (on your computer).
+
+If still can't ssh the board via Ethernet, you should use UART console (/dev/ttyUSB0 or /dev/ttyCH341USB0) to monitor what happened during booting.
 
 ## antsdr e200 UART console
 
