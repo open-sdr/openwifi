@@ -45,7 +45,7 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 - iperf: TCP 40~50Mbps; UDP 50Mbps
 - EVM -38dB; MCS0 sensitivity -92dBm; MCS7 -73dBm. (FMCOMMS2 2.4GHz; cable and OTA test)
 
-**Supported SDR platforms:** ([openwifi img](https://drive.google.com/file/d/1fb8eJGJAntOciCiGFVLfQs7m7ucRtSWD/view?usp=share_link))
+**Supported SDR platforms:**
 
 board_name|Description|Vivado license
 ----------|-----------|--------------
