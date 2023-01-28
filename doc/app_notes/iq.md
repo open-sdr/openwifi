@@ -84,7 +84,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   0 |receiver gives FCS checksum result. no matter pass/fail
   1 |receiver gives FCS checksum result. pass
   2 |receiver gives FCS checksum result. fail
-  3 |receiver gives SIGNAL field checksum result. no matter pass/fail
+  3 |the tx_intf_iq0 becomes non zero (the 1st I/Q out)
   4 |receiver gives SIGNAL field checksum result. pass
   5 |receiver gives SIGNAL field checksum result. fail
   6 |receiver gives SIGNAL field checksum result. no matter pass/fail. HT packet

@@ -5,8 +5,18 @@
 # SPDX-FileCopyrightText: 2019 UGent
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-if [ "$#" -lt 2 ]; then
-    echo "You must enter at least 2 arguments: \$XILINX_DIR ARCH_BIT(32 or 64)"
+# ATTENTION! You need Vitis, NOT Vitis_HLS, installed
+
+# if [ "$#" -ne 1 ]; then
+#     echo "You must enter 1 arguments: ARCH_BIT(32 or 64)"
+#     exit 1
+# fi
+
+# OPENWIFI_DIR=$(pwd)/../
+# ARCH_OPTION=$1
+
+if [ "$#" -ne 2 ]; then
+    echo "You must enter 2 arguments: \$XILINX_DIR ARCH_BIT(32 or 64)"
     exit 1
 fi
 
@@ -21,7 +31,7 @@ else
     exit 1
 fi
 
-if [ -d "$XILINX_DIR/SDK" ]; then
+if [ -d "$XILINX_DIR/Vitis" ]; then
     echo "\$XILINX_DIR is found!"
 else
     echo "\$XILINX_DIR is not correct. Please check!"
@@ -55,29 +65,38 @@ set -x
 
 cd $OPENWIFI_DIR/
 git submodule init $LINUX_KERNEL_SRC_DIR_NAME
+cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
+git reset --hard
+cd $OPENWIFI_DIR/
 git submodule update $LINUX_KERNEL_SRC_DIR_NAME
 cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
-git checkout 2019_R1
-git pull origin 2019_R1
-git reset --hard
-# git reset --hard 4e81f0927cfb2fada92fc762dbd65d002848405a
-cp $LINUX_KERNEL_CONFIG_FILE ./.config
-cp $OPENWIFI_DIR/driver/ad9361/ad9361.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361.c -rf
-cp $OPENWIFI_DIR/driver/ad9361/ad9361_conv.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361_conv.c -rf
+git fetch
+git checkout 2021_r1
+git pull origin 2021_r1
+git reset --hard 2021_r1
 
-source $XILINX_DIR/SDK/2018.3/settings64.sh
 export ARCH=$ARCH_NAME
 export CROSS_COMPILE=$CROSS_COMPILE_NAME
+source $XILINX_DIR/Vitis/2021.1/settings64.sh
 
-make oldconfig && make prepare && make modules_prepare
+# if [ "$ARCH_OPTION" == "64" ]; then
+  cp $LINUX_KERNEL_CONFIG_FILE ./.config
+  # cp $OPENWIFI_DIR/driver/ad9361/ad9361.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361.c -rf
+  # cp $OPENWIFI_DIR/driver/ad9361/ad9361_conv.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361_conv.c -rf
+  git apply ../kernel_boot/axi_hdmi_crtc.patch
+  git apply ../kernel_boot/ad9361.patch
+  git apply ../kernel_boot/ad9361_conv.patch
+# else
+  # make zynq_xcomm_adv7511_defconfig
+# fi
 
-if [ "$#" -gt 2 ]; then
-    # if [ -f "$OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/arch/$ARCH_NAME/boot/$IMAGE_TYPE" ]; then
-    #     echo "Kernel found! Skip the time costly Linux kernel compiling."
-    # else
-        make -j12 $IMAGE_TYPE UIMAGE_LOADADDR=0x8000
-        make modules
-    # fi
-fi
+make oldconfig
+# make adi_zynqmp_defconfig
+make prepare && make modules_prepare
+
+# if [ "$#" -gt 2 ]; then
+make -j12 $IMAGE_TYPE UIMAGE_LOADADDR=0x8000
+make modules
+# fi
 
 cd $home_dir

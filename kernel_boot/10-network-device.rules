@@ -1,0 +1,1 @@
+SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="66:55:44:33:22:*", NAME="sdr0"

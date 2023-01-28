@@ -1,0 +1,14 @@
+diff --git a/drivers/iio/adc/ad9361_conv.c b/drivers/iio/adc/ad9361_conv.c
+index 1902e7d07501..ef421dbd5e70 100644
+--- a/drivers/iio/adc/ad9361_conv.c
++++ b/drivers/iio/adc/ad9361_conv.c
+@@ -449,7 +449,8 @@ static int ad9361_dig_tune_delay(struct ad9361_rf_phy *phy,
+ 				 unsigned long max_freq,
+ 				 enum dig_tune_flags flags, bool tx)
+ {
+-	static const unsigned int rates[3] = {25000000U, 40000000U, 61440000U};
++	// static const unsigned int rates[3] = {25000000U, 40000000U, 61440000U};
++	static const unsigned int rates[3] = {25000000U, 40000000U, 40000000U};
+ 	struct axiadc_converter *conv = spi_get_drvdata(phy->spi);
+ 	unsigned int s0, s1, c0, c1;
+ 	unsigned int i, j, r;

@@ -5,13 +5,13 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 One super power of the openwifi platform is "**Full Duplex**" which means that openwifi baseband can receive its own TX signal.
-This makes the IQ sample and WiFi packet self loopback test possible. Reading the normal IQ sample capture [app note](iq.md) will help if you have issue or 
-want to understand openwifi side channel (for IQ and CSI) deeper.
+This makes the IQ sample, WiFi packet and CSI self loopback test possible. Reading the normal [IQ sample capture app note](iq.md) and [CSI radar app note](radar-self-csi.md) will help if you have issue or want to understand openwifi side channel (for IQ and CSI) deeper.
 ![](./openwifi-loopback-principle.jpg)
 
 [[IQ self loopback quick start](#IQ-self-loopback-quick-start)]
 [[Check the packet loopback on board](#Check-the-packet-loopback-on-board)]
-[[Self loopback config](#Self-loopback-config)]
+[[IQ self loopback config](#IQ-self-loopback-config)]
+[[CSI FPGA self loopback quick start](#CSI-FPGA-self-loopback-quick-start)]
 
 ## IQ self loopback quick start
 (Please replace the IQ length **8187** by **4095** if you use low end FPGA board: zedboard/adrv9464z7020/antsdr/zc702/sdrpi)
@@ -112,7 +112,7 @@ to do further offline analysis, or feed the IQ sample to the openwifi receiver s
   ```
   You should see the printk message of packet Tx and Rx from the openwifi driver (sdr.c).
 
-## Self loopback config
+## IQ self loopback config
 
 - By default, the loopback is via the air (from Tx antenna to Rx antenna). FPGA inernal loopback option is offered to have IQ sample and packet without 
   any interference. To have FPGA internal loopback, replace the "./side_ch_ctl wh5h0" during setup (the very 1st ssh session) by:
@@ -128,3 +128,34 @@ to do further offline analysis, or feed the IQ sample to the openwifi receiver s
 
 - To understand deeper of all above commands/settings, please refer to [Capture IQ sample, AGC gain, RSSI with many types of trigger condition](iq.md) and
   [Capture dual antenna TX/RX IQ for multi-purpose (capture collision)](iq_2ant.md)
+  
+## CSI FPGA self loopback quick start
+
+This section will show how to connect the WiFi OFDM transmitter to the receiver directly inside FPGA, and show the ideal CSI/constellation/frequency-offset. (For CSI over the air loopback, please refer to [CSI radar app note](radar-self-csi.md))
+
+Command sequence on board:
+```
+cd openwifi
+./wgd.sh
+./monitor_ch.sh sdr0 6
+insmod side_ch.ko
+./side_ch_ctl g
+```
+Open another ssh session on board, then:
+```
+cd openwifi
+./sdrctl dev sdr0 set reg rx_intf 3 256
+(Above command let the FPGA Tx IQ come to receiver directly. Set 256 back to 0 to let receiver back connect to AD9361 RF frontend)
+./sdrctl dev sdr0 set reg rx 5 0
+(Disable the receiver FFT window shift. By default it is 1 -- good for multipath, overfitting for direct loopback)
+./inject_80211/inject_80211 -m n -r 7 -n 99999 -s 1400 -d 1000000 sdr0
+(Transmit 802.11n MCS7 1400Byte packet every second)
+```
+
+Command on computer:
+```
+cd openwifi/user_space/side_ch_ctl_src
+python3 side_info_display.py
+```
+Now you should see the following screenshot that shows the CSI/constellation/frequency-offset over this in-FPGA ideal channel.
+![](./openwifi-csi-fpga-loopback.jpg)

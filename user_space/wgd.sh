@@ -64,6 +64,13 @@ insert_check_module () {
 
 print_usage
 
+insmod ad9361_drv.ko
+insmod xilinx_dma.ko
+# modprobe ad9361_drv
+# modprobe xilinx_dma
+modprobe mac80211
+lsmod
+
 TARGET_DIR=./
 DOWNLOAD_FLAG=0
 test_mode=0
@@ -125,10 +132,14 @@ fi
 
 echo " "
 
-service network-manager stop
+killall hostapd
+service dhcpcd stop #dhcp client. it will get secondary ip for sdr0 which causes trouble
+killall dhcpd 
+killall wpa_supplicant
+#service network-manager stop
+ifconfig sdr0 down
 
 rmmod sdr
-insert_check_module ./ ad9361_drv
 
 if [ $DOWNLOAD_FLAG -eq 1 ]; then
   download_module fpga $TARGET_DIR
@@ -142,11 +153,6 @@ else
 fi
 
 ./rf_init_11n.sh
-insert_check_module ./ xilinx_dma
-
-depmod
-modprobe mac80211
-lsmod
 
 MODULE_ALL="tx_intf rx_intf openofdm_tx openofdm_rx xpu sdr"
 for MODULE in $MODULE_ALL
@@ -161,8 +167,8 @@ do
   fi
 done
 
-[ -e /tmp/check_calib_inf.pid ] && kill -0 $(</tmp/check_calib_inf.pid)
-./check_calib_inf.sh
+# [ -e /tmp/check_calib_inf.pid ] && kill -0 $(</tmp/check_calib_inf.pid)
+# ./check_calib_inf.sh
 
 echo the end
 # dmesg

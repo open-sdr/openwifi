@@ -150,14 +150,6 @@ static inline u32 XPU_REG_FORCE_IDLE_MISC_read(void){
 	return reg_read(XPU_REG_FORCE_IDLE_MISC_ADDR);
 }
 
-static inline u32 XPU_REG_TRX_STATUS_read(void){
-	return reg_read(XPU_REG_TRX_STATUS_ADDR);
-}
-
-static inline u32 XPU_REG_TX_RESULT_read(void){
-	return reg_read(XPU_REG_TX_RESULT_ADDR);
-}
-
 static inline u32 XPU_REG_TSF_RUNTIME_VAL_LOW_read(void){
 	return reg_read(XPU_REG_TSF_RUNTIME_VAL_LOW_ADDR);
 }
@@ -179,34 +171,6 @@ static inline void XPU_REG_TSF_LOAD_VAL_write(u32 high_value, u32 low_value){
 	XPU_REG_TSF_LOAD_VAL_HIGH_write(high_value|0x80000000); // msb high
 	XPU_REG_TSF_LOAD_VAL_HIGH_write(high_value&(~0x80000000)); // msb low
 }
-
-static inline u32 XPU_REG_FC_DI_read(void){
-	return reg_read(XPU_REG_FC_DI_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR1_LOW_read(void){
-	return reg_read(XPU_REG_ADDR1_LOW_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR1_HIGH_read(void){
-	return reg_read(XPU_REG_ADDR1_HIGH_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR2_LOW_read(void){
-	return reg_read(XPU_REG_ADDR2_LOW_ADDR);
-}
-
-static inline u32 XPU_REG_ADDR2_HIGH_read(void){
-	return reg_read(XPU_REG_ADDR2_HIGH_ADDR);
-}
-
-// static inline void XPU_REG_LBT_TH_write(u32 value, u32 en_flag) {
-// 	if (en_flag) {
-// 		reg_write(XPU_REG_LBT_TH_ADDR, value&0x7FFFFFFF);
-// 	} else {
-// 		reg_write(XPU_REG_LBT_TH_ADDR, value|0x80000000);
-// 	}
-// }
 
 static inline void XPU_REG_LBT_TH_write(u32 value) {
 	reg_write(XPU_REG_LBT_TH_ADDR, value);
@@ -370,31 +334,12 @@ static inline u32 hw_init(enum xpu_mode mode){
 	// From CMW measurement: lo up 1us before the packet; lo down 0.4us after the packet/RF port switches 1.2us before and 0.2us after
 	xpu_api->XPU_REG_BB_RF_DELAY_write((16<<24)|(0<<16)|(26<<8)|9); // calibrated by ila and spectrum analyzer (trigger mode)
 
-	// setup time schedule of 4 slices
-	// slice 0
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write(50000-1); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write(0); //start 0ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write(50000-1); //end 50ms
-
-	// slice 1
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((1<<20)|(50000-1)); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((1<<20)|(0)); //start 0ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(20000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(50000-1)); //end 20ms
-
-	// slice 2
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((2<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(20000)); //start 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(0)); //start 20ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(40000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(50000-1)); //end 20ms
-
-	// slice 3
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((3<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(40000)); //start 40ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(0)); //start 40ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
+	// setup time schedule of all queues. all time open.
+	for (i=0; i<4; i++) {
+		xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((i<<20)|16);//total 16us
+		xpu_api->XPU_REG_SLICE_COUNT_START_write((i<<20)|0); //start 0us
+		xpu_api->XPU_REG_SLICE_COUNT_END_write((i<<20)|16);  //end   16us
+	}
 
 	// all slice sync rest
 	xpu_api->XPU_REG_MULTI_RST_write(1<<7); //bit7 reset the counter for all queues at the same time
@@ -433,42 +378,16 @@ static inline u32 hw_init(enum xpu_mode mode){
 	// xpu_api->XPU_REG_CSMA_CFG_write(268435459);  // Linux will do config for each queue via openwifi_conf_tx
 	// xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); // Linux will do config for each queue via openwifi_conf_tx
 
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((16+23)<<16)|(0+23) );
-
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+//	// ------- assume 2.4 and 5GHz have the same SIFS (6us signal extension) --------
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((16+25)<<16)|((16+25)<<0) );
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+//	// ------- assume 2.4 and 5GHz have different SIFS --------
+	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((16+23)<<16)|(0+23) );
+	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
 
 	xpu_api->XPU_REG_DIFS_ADVANCE_write((OPENWIFI_MAX_SIGNAL_LEN_TH<<16)|2); //us. bit31~16 max pkt length threshold
-
-	// setup time schedule of 4 slices
-	// slice 0
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write(50000-1); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write(0); //start 0ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write(50000-1); //end 50ms
-
-	// slice 1
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((1<<20)|(50000-1)); // total 50ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((1<<20)|(0)); //start 0ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(20000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((1<<20)|(50000-1)); //end 20ms
-
-	// slice 2
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((2<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(20000)); //start 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((2<<20)|(0)); //start 20ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(40000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((2<<20)|(50000-1)); //end 20ms
-
-	// slice 3
-	xpu_api->XPU_REG_SLICE_COUNT_TOTAL_write((3<<20)|(50000-1)); // total 50ms
-	//xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(40000)); //start 40ms
-	xpu_api->XPU_REG_SLICE_COUNT_START_write((3<<20)|(0)); //start 40ms
-	//xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-	xpu_api->XPU_REG_SLICE_COUNT_END_write((3<<20)|(50000-1)); //end 20ms
-
-	// all slice sync rest
-	xpu_api->XPU_REG_MULTI_RST_write(1<<7); //bit7 reset the counter for all queues at the same time
-	xpu_api->XPU_REG_MULTI_RST_write(0<<7); 
 
 	printk("%s hw_init err %d\n", xpu_compatible_str, err);
 	return(err);
@@ -535,21 +454,12 @@ static int dev_probe(struct platform_device *pdev)
 	xpu_api->XPU_REG_FORCE_IDLE_MISC_write=XPU_REG_FORCE_IDLE_MISC_write;
 	xpu_api->XPU_REG_FORCE_IDLE_MISC_read=XPU_REG_FORCE_IDLE_MISC_read;
 
-	xpu_api->XPU_REG_TRX_STATUS_read=XPU_REG_TRX_STATUS_read;
-	xpu_api->XPU_REG_TX_RESULT_read=XPU_REG_TX_RESULT_read;
-
 	xpu_api->XPU_REG_TSF_RUNTIME_VAL_LOW_read=XPU_REG_TSF_RUNTIME_VAL_LOW_read;
 	xpu_api->XPU_REG_TSF_RUNTIME_VAL_HIGH_read=XPU_REG_TSF_RUNTIME_VAL_HIGH_read;
 	xpu_api->XPU_REG_TSF_LOAD_VAL_LOW_write=XPU_REG_TSF_LOAD_VAL_LOW_write;
 	xpu_api->XPU_REG_TSF_LOAD_VAL_HIGH_write=XPU_REG_TSF_LOAD_VAL_HIGH_write;
 	xpu_api->XPU_REG_TSF_LOAD_VAL_write=XPU_REG_TSF_LOAD_VAL_write;
 	
-	xpu_api->XPU_REG_FC_DI_read=XPU_REG_FC_DI_read;
-	xpu_api->XPU_REG_ADDR1_LOW_read=XPU_REG_ADDR1_LOW_read;
-	xpu_api->XPU_REG_ADDR1_HIGH_read=XPU_REG_ADDR1_HIGH_read;
-	xpu_api->XPU_REG_ADDR2_LOW_read=XPU_REG_ADDR2_LOW_read;
-	xpu_api->XPU_REG_ADDR2_HIGH_read=XPU_REG_ADDR2_HIGH_read;
-
 	xpu_api->XPU_REG_LBT_TH_write=XPU_REG_LBT_TH_write;
 	xpu_api->XPU_REG_LBT_TH_read=XPU_REG_LBT_TH_read;
 

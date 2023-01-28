@@ -205,6 +205,7 @@ const char *openofdm_rx_compatible_str = "sdr,openofdm_rx";
 #define OPENOFDM_RX_REG_POWER_THRES_ADDR   (2*4)
 #define OPENOFDM_RX_REG_MIN_PLATEAU_ADDR   (3*4)
 #define OPENOFDM_RX_REG_SOFT_DECODING_ADDR (4*4)
+#define OPENOFDM_RX_REG_FFT_WIN_SHIFT_ADDR (5*4)
 #define OPENOFDM_RX_REG_STATE_HISTORY_ADDR (20*4)
 
 enum openofdm_rx_mode {
@@ -236,11 +237,15 @@ enum openofdm_rx_mode {
 // 11a/g BPSK 6m, Rx sensitivity level dmesg report -86dBm
 // priv->rssi_correction = 148; rssi_half_db/2 = 148-86=62; rssi_half_db = 124
 
-#define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-84)
+#define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-95) //the best openwifi reported sensitivity is like -90/-92
 #define OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT 64
 #define OPENOFDM_RX_MIN_PLATEAU_INIT 100
+#define OPENOFDM_RX_FFT_WIN_SHIFT_INIT 1
 
-#define OPENWIFI_MAX_SIGNAL_LEN_TH 1700 //Packet longer than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
+#define OPENWIFI_MAX_SIGNAL_LEN_TH 1700 //Packet longer  than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
+
+#define OPENWIFI_MIN_SIGNAL_LEN_TH 14   //Packet shorter than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
+                                        //due to CRC32, at least 4 bytes needed to push out expected CRC result
 
 struct openofdm_rx_driver_api {
 	u32 (*hw_init)(enum openofdm_rx_mode mode);
@@ -255,6 +260,7 @@ struct openofdm_rx_driver_api {
 	void (*OPENOFDM_RX_REG_POWER_THRES_write)(u32 value);
 	void (*OPENOFDM_RX_REG_MIN_PLATEAU_write)(u32 value);
 	void (*OPENOFDM_RX_REG_SOFT_DECODING_write)(u32 value);
+	void (*OPENOFDM_RX_REG_FFT_WIN_SHIFT_write)(u32 value);
 };
 
 // ---------------------------------------openofdm tx-------------------------------
@@ -301,18 +307,18 @@ const char *xpu_compatible_str = "sdr,xpu";
 #define XPU_REG_RSSI_DB_CFG_ADDR          		(7*4)
 #define XPU_REG_LBT_TH_ADDR               		(8*4)
 #define XPU_REG_CSMA_DEBUG_ADDR           		(9*4)
-#define XPU_REG_BB_RF_DELAY_ADDR         		(10*4)
+#define XPU_REG_BB_RF_DELAY_ADDR         		  (10*4)
 #define XPU_REG_ACK_CTL_MAX_NUM_RETRANS_ADDR	(11*4)
-#define XPU_REG_AMPDU_ACTION_ADDR        		(12*4)
-#define XPU_REG_SPI_DISABLE_ADDR        		(13*4)
+#define XPU_REG_AMPDU_ACTION_ADDR        		  (12*4)
+#define XPU_REG_SPI_DISABLE_ADDR        		  (13*4)
 #define XPU_REG_RECV_ACK_COUNT_TOP0_ADDR  		(16*4)
 #define XPU_REG_RECV_ACK_COUNT_TOP1_ADDR  		(17*4)
 #define XPU_REG_SEND_ACK_WAIT_TOP_ADDR    		(18*4)
 #define XPU_REG_CSMA_CFG_ADDR             		(19*4)
 
-#define XPU_REG_SLICE_COUNT_TOTAL_ADDR   (20*4)
-#define XPU_REG_SLICE_COUNT_START_ADDR   (21*4)
-#define XPU_REG_SLICE_COUNT_END_ADDR     (22*4)
+#define XPU_REG_SLICE_COUNT_TOTAL_ADDR    (20*4)
+#define XPU_REG_SLICE_COUNT_START_ADDR    (21*4)
+#define XPU_REG_SLICE_COUNT_END_ADDR      (22*4)
 
 #define XPU_REG_CTS_TO_RTS_CONFIG_ADDR    (26*4)
 #define XPU_REG_FILTER_FLAG_ADDR          (27*4)
@@ -321,26 +327,11 @@ const char *xpu_compatible_str = "sdr,xpu";
 #define XPU_REG_MAC_ADDR_LOW_ADDR         (30*4)
 #define XPU_REG_MAC_ADDR_HIGH_ADDR        (31*4)
 
-#define XPU_REG_FC_DI_ADDR                (34*4)
-#define XPU_REG_ADDR1_LOW_ADDR            (35*4)
-#define XPU_REG_ADDR1_HIGH_ADDR           (36*4)
-#define XPU_REG_ADDR2_LOW_ADDR            (37*4)
-#define XPU_REG_ADDR2_HIGH_ADDR           (38*4)
-#define XPU_REG_ADDR3_LOW_ADDR            (39*4)
-#define XPU_REG_ADDR3_HIGH_ADDR           (40*4)
-
-#define XPU_REG_SC_LOW_ADDR               (41*4)
-#define XPU_REG_ADDR4_HIGH_ADDR           (42*4)
-#define XPU_REG_ADDR4_LOW_ADDR            (43*4)
-
-#define XPU_REG_TRX_STATUS_ADDR           (50*4)
-#define XPU_REG_TX_RESULT_ADDR            (51*4)
-
 #define XPU_REG_TSF_RUNTIME_VAL_LOW_ADDR  (58*4)
 #define XPU_REG_TSF_RUNTIME_VAL_HIGH_ADDR (59*4)
 
-#define XPU_REG_RSSI_HALF_DB_ADDR         (60*4)
-#define XPU_REG_IQ_RSSI_HALF_DB_ADDR      (61*4)
+#define XPU_REG_MAC_ADDR_READ_BACK_ADDR   (62*4)
+#define XPU_REG_FPGA_GIT_REV_ADDR         (63*4)
 
 enum xpu_mode {
 	XPU_TEST = 0,

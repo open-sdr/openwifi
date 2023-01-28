@@ -129,7 +129,10 @@ enum sdrctl_reg_cat {
 #define LEN_PHY_CRC 4
 #define LEN_MPDU_DELIM 4
 
-#define RING_ROOM_THRESHOLD 2
+#define MAX_NUM_HW_QUEUE 4 // number of queue in FPGA
+#define MAX_NUM_SW_QUEUE 4 // number of queue in Linux, depends on the number we report by dev->queues in openwifi_dev_probe
+
+#define RING_ROOM_THRESHOLD (2+MAX_NUM_SW_QUEUE) // MAX_NUM_SW_QUEUE is for the room of MAX_NUM_SW_QUEUE last packets from MAX_NUM_SW_QUEUE queue before stop
 #define NUM_BIT_NUM_TX_BD 6
 #define NUM_TX_BD (1<<NUM_BIT_NUM_TX_BD) // !!! should align to the fifo size in tx_bit_intf.v
 
@@ -143,8 +146,6 @@ enum sdrctl_reg_cat {
 #define RX_BD_BUF_SIZE (2048)
 
 #define NUM_BIT_MAX_NUM_HW_QUEUE 2
-#define MAX_NUM_HW_QUEUE 4 // number of queue in FPGA
-#define MAX_NUM_SW_QUEUE 4 // number of queue in Linux, depends on the number we report by dev->queues in openwifi_dev_probe
 #define NUM_BIT_MAX_PHY_TX_SN 10 // decrease 12 to 10 to reserve 2 bits storing related linux prio idx
 #define MAX_PHY_TX_SN ((1<<NUM_BIT_MAX_PHY_TX_SN)-1)
 
@@ -350,30 +351,30 @@ static const u16 wifi_n_dbps_ht_table[16] =        {26, 26, 26,  26, 26, 52,  78
 
 // ===== copy from adi-linux/drivers/iio/frequency/cf_axi_dds.c =====
 struct cf_axi_dds_state {
-	struct device			*dev_spi;
-	struct clk			*clk;
+	struct device			          *dev_spi;
+	struct clk			            *clk;
 	struct cf_axi_dds_chip_info	*chip_info;
-	struct gpio_desc		*plddrbypass_gpio;
-	struct gpio_desc		*interpolation_gpio;
+  struct gpio_desc		        *plddrbypass_gpio;
+  struct gpio_desc		        *interpolation_gpio;
 
-	bool				standalone;
-	bool				dp_disable;
-	bool				enable;
-	bool				pl_dma_fifo_en;
-	enum fifo_ctrl			gpio_dma_fifo_ctrl;
+	bool				                standalone;
+	bool				                dp_disable;
+	bool				                enable;
+	bool				                pl_dma_fifo_en;
+	enum fifo_ctrl	            gpio_dma_fifo_ctrl;
 
-	struct iio_info			iio_info;
-	size_t				regs_size;
-	void __iomem			*regs;
-	void __iomem			*slave_regs;
-	void __iomem			*master_regs;
-	u64				dac_clk;
-	unsigned int			ddr_dds_interp_en;
-	unsigned int			cached_freq[16];
-	unsigned int			version;
-	unsigned int			have_slave_channels;
-	unsigned int			interpolation_factor;
-	struct notifier_block		clk_nb;
+	struct iio_info	            iio_info;
+	size_t				              regs_size;
+	void __iomem		            *regs;
+	void __iomem		            *slave_regs;
+	void __iomem		            *master_regs;
+	u64				                  dac_clk;
+	unsigned int		            ddr_dds_interp_en;
+	unsigned int		            cached_freq[16];
+	unsigned int		            version;
+	unsigned int		            have_slave_channels;
+	unsigned int		            interpolation_factor;
+	struct notifier_block		    clk_nb;
 };
 // ===== end of copy from adi-linux/drivers/iio/frequency/cf_axi_dds.c =====
 
@@ -445,16 +446,16 @@ struct openwifi_stat {
 
 #define RX_DMA_CYCLIC_MODE
 struct openwifi_priv {
-	struct platform_device *pdev;
-	struct ieee80211_vif *vif[MAX_NUM_VIF];
+	struct platform_device       *pdev;
+	struct ieee80211_vif         *vif[MAX_NUM_VIF];
 
 	const struct openwifi_rf_ops *rf;
-	enum openwifi_fpga_type fpga_type;
+	enum openwifi_fpga_type      fpga_type;
 
-	struct cf_axi_dds_state *dds_st;  //axi_ad9361 hdl ref design module, dac channel
-	struct axiadc_state *adc_st;      //axi_ad9361 hdl ref design module, adc channel
-	struct ad9361_rf_phy *ad9361_phy; //ad9361 chip
-	struct ctrl_outs_control ctrl_out;
+	struct cf_axi_dds_state      *dds_st;  //axi_ad9361 hdl ref design module, dac channel
+	struct axiadc_state          *adc_st;      //axi_ad9361 hdl ref design module, adc channel
+	struct ad9361_rf_phy         *ad9361_phy; //ad9361 chip
+	struct ctrl_outs_control     ctrl_out;
 
 	int rx_freq_offset_to_lo_MHz;
 	int tx_freq_offset_to_lo_MHz;
@@ -463,51 +464,51 @@ struct openwifi_priv {
 	u32 actual_tx_lo;
 	u32 last_tx_quad_cal_lo;
 
-	struct ieee80211_rate rates_2GHz[12];
-	struct ieee80211_rate rates_5GHz[12];
-	struct ieee80211_channel channels_2GHz[13];
-	struct ieee80211_channel channels_5GHz[11];
+	struct ieee80211_rate           rates_2GHz[12];
+	struct ieee80211_rate           rates_5GHz[12];
+	struct ieee80211_channel        channels_2GHz[13];
+	struct ieee80211_channel        channels_5GHz[11];
 	struct ieee80211_supported_band band_2GHz;
 	struct ieee80211_supported_band band_5GHz;
 	bool rfkill_off;
-	u8 runtime_tx_ant_cfg;
-	u8 runtime_rx_ant_cfg;
+	u8   runtime_tx_ant_cfg;
+	u8   runtime_rx_ant_cfg;
 
-	int rssi_correction; // dynamic RSSI correction according to current channel in _rf_set_channel()
+	int  rssi_correction; // dynamic RSSI correction according to current channel in _rf_set_channel()
 	
-	enum rx_intf_mode rx_intf_cfg;
-	enum tx_intf_mode tx_intf_cfg;
+	enum rx_intf_mode     rx_intf_cfg;
+	enum tx_intf_mode     tx_intf_cfg;
 	enum openofdm_rx_mode openofdm_rx_cfg;
 	enum openofdm_tx_mode openofdm_tx_cfg;
-	enum xpu_mode xpu_cfg;
+	enum xpu_mode         xpu_cfg;
 
 	int irq_rx;
 	int irq_tx;
 
 	// u32 call_counter;
-	u8 *rx_cyclic_buf;
-	dma_addr_t rx_cyclic_buf_dma_mapping_addr;
-	struct dma_chan *rx_chan;
+	u8                             *rx_cyclic_buf;
+	dma_addr_t                     rx_cyclic_buf_dma_mapping_addr;
+	struct dma_chan                *rx_chan;
 	struct dma_async_tx_descriptor *rxd;
-	dma_cookie_t rx_cookie;
+	dma_cookie_t                   rx_cookie;
 
-	struct openwifi_ring tx_ring[MAX_NUM_SW_QUEUE];
-	struct scatterlist tx_sg;
-	struct dma_chan *tx_chan;
+	struct openwifi_ring           tx_ring[MAX_NUM_SW_QUEUE];
+	struct scatterlist             tx_sg;
+	struct dma_chan                *tx_chan;
 	struct dma_async_tx_descriptor *txd;
-	dma_cookie_t tx_cookie;
+	dma_cookie_t                   tx_cookie;
 	// struct completion tx_dma_complete;
 	// bool openwifi_tx_first_time_run;
 
 	// int phy_tx_sn;
 	u32 slice_idx;
 	u32 dest_mac_addr_queue_map[MAX_NUM_HW_QUEUE];
-	u8 mac_addr[ETH_ALEN];
+	u8  mac_addr[ETH_ALEN];
 	u16 seqno;
 
 	bool use_short_slot;
-	u8 band;
-	u16 channel;
+	u8   band;
+	u16  channel;
 
 	u32 ampdu_reference;
 
@@ -518,9 +519,9 @@ struct openwifi_priv {
 	int last_auto_fpga_lbt_th;
 
 	struct bin_attribute bin_iq;
-	u32 tx_intf_arbitrary_iq[512];
-	u16 tx_intf_arbitrary_iq_num;
-	u8  tx_intf_iq_ctl;
+	u32                  tx_intf_arbitrary_iq[512];
+	u16                  tx_intf_arbitrary_iq_num;
+	u8                   tx_intf_iq_ctl;
 
 	struct openwifi_stat stat;
 	// u8 num_led;

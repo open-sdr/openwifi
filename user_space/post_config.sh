@@ -30,6 +30,8 @@ fi
 # add gateway (PC) for internet access
 route add default gw 192.168.10.1 || true
 
+sudo apt update
+
 chmod +x *.sh
 
 # build sdrctl
@@ -53,6 +55,7 @@ sudo apt-get -y install nano
 sudo apt-get -y install tcpdump
 sudo apt-get -y install webfs
 sudo apt-get -y install iperf
+sudo apt-get -y install iperf3
 sudo apt-get -y install libpcap-dev
 sudo apt-get -y install bridge-utils
 

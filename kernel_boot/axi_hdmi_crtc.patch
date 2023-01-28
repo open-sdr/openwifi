@@ -1,0 +1,13 @@
+diff --git a/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c b/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c
+index f24669f623d6..70c5769019fa 100644
+--- a/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c
++++ b/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c
+@@ -54,7 +54,7 @@ static struct dma_async_tx_descriptor *axi_hdmi_vdma_prep_interleaved_desc(
+ 		memset(&vdma_config, 0, sizeof(vdma_config));
+ 		vdma_config.park = 1;
+ 		vdma_config.coalesc = 0xff;
+-		xilinx_vdma_channel_set_config(axi_hdmi_crtc->dma, &vdma_config);
++		// xilinx_vdma_channel_set_config(axi_hdmi_crtc->dma, &vdma_config);
+ 	}
+ #endif
+ 
