@@ -31,8 +31,10 @@ fi
 
 if [ "$BOARD_NAME" == "zcu102_fmcs2" ] || [ "$BOARD_NAME" == "zcu102_9371" ]; then
     LINUX_KERNEL_IMAGE=$DIR_TO_ADI_LINUX_KERNEL/arch/arm64/boot/Image
+    DTB_FILENAME="system.dtb"
 else
     LINUX_KERNEL_IMAGE=$DIR_TO_ADI_LINUX_KERNEL/arch/arm/boot/uImage
+    DTB_FILENAME="devicetree.dtb"
 fi
 
 mkdir -p kernel_modules
@@ -50,6 +52,9 @@ fi
 
 if test -f "../kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN"; then
     cp ../kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN ./kernel_modules/
+fi
+if test -f "../kernel_boot/boards/$BOARD_NAME/$DTB_FILENAME"; then
+    cp ../kernel_boot/boards/$BOARD_NAME/$DTB_FILENAME ./kernel_modules/
 fi
 tar -zcvf kernel_modules.tar.gz kernel_modules
 
