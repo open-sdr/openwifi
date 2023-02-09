@@ -20,22 +20,26 @@ Some usual/frequent control trick over the openwifi FPGA. You need to do these c
 In normal operation, different threshold is set to FPGA according to the different calibration of different frequency/channel by driver automatically. Show the current LBT threshold in FPGA:
 ```
 ./set_lbt_th.sh
+dmesg
 ```
-"reg  val: 00000086" means the current threshold is 134 (86 in Hex). Its unit is rssi_half_db. Check rssi_half_db_to_rssi_dbm()/rssi_dbm_to_rssi_half_db() in sdr.c to see the relation to rssi dBm.
+It shows: "sdr,sdr FPGA LBT threshold 166(-62dBm). The last_auto_fpga_lbt_th 166(-62dBm). rssi corr 145". Check rssi_half_db_to_rssi_dbm()/rssi_dbm_to_rssi_half_db() in sdr.c to see the relation to rssi dBm.
 
 Override a new threshold -NNdBm to FPGA, for example -70dBm:
 ```
 ./set_lbt_th.sh 70
+dmesg
 ```
 Above will disable the automatic CCA threshold setting from the openwifi driver.
 
 Recover the driver automatic control on the threshold:
 ```
 ./set_lbt_th.sh 0
+dmesg
 ```
 Disable the CCA by setting a very strong level as threshold, for example -1dBm:
 ```
 ./set_lbt_th.sh 1
+dmesg
 ```
 After above command, the CCA engine will always believe the channel is idle, because the rx signal strength not likely could exceed -1dBm.
   
