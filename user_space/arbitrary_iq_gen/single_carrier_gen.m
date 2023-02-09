@@ -1,4 +1,6 @@
-% xianjun.jiao@imec.be
+% Author: Xianjun Jiao (xianjun.jiao@imec.be; putaoshu@msn.com)
+% SPDX-FileCopyrightText: 2023 UGent
+% SPDX-License-Identifier: AGPL-3.0-or-later
 
 function single_carrier_gen(carrier_freq, num_iq)
 if exist('carrier_freq', 'var')==0 || isempty(carrier_freq)
