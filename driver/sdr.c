@@ -1098,7 +1098,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		rate_hw_value = 1;
 
 	// sifs = (priv->actual_rx_lo<2500?10:16);
-  sifs = 16; // for ofdm, sifs is always 16
+	sifs = 16; // for ofdm, sifs is always 16
 
 	if (use_ht_rate) {
 		// printk("%s openwifi_tx: rate_hw_value %d aggr %d sifs %d\n", sdr_compatible_str, rate_hw_value, use_ht_aggr, sifs);

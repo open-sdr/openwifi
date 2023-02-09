@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
 		ieee_hdr_data[0]  = ( ieee_hdr_data[0]|(sub_type<<4) );
 		ieee_hdr_data[9]  = addr1;
 		ieee_hdr_data[15] = addr2;
-    ieee_hdr_data[21] = addr1;
+		ieee_hdr_data[21] = addr1;
 		ieee_hdr_len = sizeof(ieee_hdr_data);
 		ieee_hdr = ieee_hdr_data;
 	}
@@ -279,7 +279,7 @@ int main(int argc, char *argv[])
 		ieee_hdr_mgmt[0]  = ( ieee_hdr_mgmt[0]|(sub_type<<4) );
 		ieee_hdr_mgmt[9]  = addr1;
 		ieee_hdr_mgmt[15] = addr2;
-    ieee_hdr_mgmt[21] = addr1;
+		ieee_hdr_mgmt[21] = addr1;
 		ieee_hdr_len = sizeof(ieee_hdr_mgmt);
 		ieee_hdr = ieee_hdr_mgmt;
 	}
