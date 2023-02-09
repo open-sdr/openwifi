@@ -149,7 +149,7 @@ if [ -f "$TARGET_DIR/system_top.bit.bin" ]; then
   ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
 else
   echo $TARGET_DIR/system_top.bit.bin not found. Skip reloading FPGA.
-  ./load_fpga_img.sh fjdo349ujtrueugjhj
+  # ./load_fpga_img.sh fjdo349ujtrueugjhj
 fi
 
 ./rf_init_11n.sh
