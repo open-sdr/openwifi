@@ -146,8 +146,8 @@ Open another ssh session on board, then:
 cd openwifi
 ./sdrctl dev sdr0 set reg rx_intf 3 256
 (Above command let the FPGA Tx IQ come to receiver directly. Set 256 back to 0 to let receiver back connect to AD9361 RF frontend)
-./sdrctl dev sdr0 set reg rx 5 0
-(Disable the receiver FFT window shift. By default it is 1 -- good for multipath, overfitting for direct loopback)
+./sdrctl dev sdr0 set reg rx 5 768
+(Disable the receiver FFT window shift. By default it is 1 (768+1) -- good for multipath, overfitting for direct loopback)
 ./inject_80211/inject_80211 -m n -r 7 -n 99999 -s 1400 -d 1000000 sdr0
 (Transmit 802.11n MCS7 1400Byte packet every second)
 ```
