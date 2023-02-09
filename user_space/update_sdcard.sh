@@ -16,7 +16,7 @@ fi
 SKIP_KERNEL_BUILD=0
 SKIP_BOOT=0
 SKIP_rootfs=0
-if [ "$#" -eq 4 ]; then
+if [ "$#" -gt 3 ]; then
     SKIP_KERNEL_BUILD=$(( ($4 >> 0) & 1 ))
     SKIP_BOOT=$(( ($4 >> 1) & 1 ))
     SKIP_rootfs=$(( ($4 >> 2) & 1 ))
@@ -24,6 +24,12 @@ if [ "$#" -eq 4 ]; then
     echo SKIP_KERNEL_BUILD $SKIP_KERNEL_BUILD
     echo SKIP_BOOT $SKIP_BOOT
     echo SKIP_rootfs $SKIP_rootfs
+fi
+
+BOARD_NAME_ALL="sdrpi antsdr antsdr_e200 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 neptunesdr"
+if [ "$#" -gt 4 ]; then
+    BOARD_NAME_ALL=$5
+    echo BOARD_NAME_ALL $BOARD_NAME_ALL
 fi
 
 OPENWIFI_HW_IMG_DIR=$1
@@ -95,7 +101,6 @@ fi
 if [ "$SKIP_BOOT" == "0" ]; then
   sudo rm -rf $SDCARD_DIR/BOOT/openwifi/
   sudo mkdir -p $SDCARD_DIR/BOOT/openwifi
-  BOARD_NAME_ALL="sdrpi antsdr antsdr_e200 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 neptunesdr"
   for BOARD_NAME_TMP in $BOARD_NAME_ALL
   do
       if [ "$BOARD_NAME_TMP" == "zcu102_fmcs2" ] || [ "$BOARD_NAME_TMP" == "zcu102_9371" ]; then
