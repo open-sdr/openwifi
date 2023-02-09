@@ -104,7 +104,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
   (Use "./fosdem-11ag.sh" to force 11a/g mode)
   ```
   **NOTE** adrv9361z7035 has ultra low TX power in 5GHz. Move **CLOSER** when you use that board in 5GHz!!!
-- After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it. Browser to 192.168.13.1 on your device, you should see the webpage hosted by the webserver on board.
+- After you see the "openwifi" SSID on your device (Phone/Laptop/etc), connect it (If not get 192.168.13.* IP automatically, check [known issue](doc/known_issue/notter.md)). Browser to 192.168.13.1 on your device, you should see the webpage hosted by the webserver on board.
   - Note 1: If your device doesn't support 5GHz (ch44), please change the **hostapd-openwifi.conf** on board and re-run fosdem.sh.
   - Note 2: After ~2 hours, the Viterbi decoder will halt (Xilinx Evaluation License). Just reload FPGA ([method](doc/app_notes/drv_fpga_dynamic_loading.md)) or simply power cycle the board if it happens. (If output of "./sdrctl dev sdr0 get reg rx 20" is always the same, it means the decoder halts)
 - To give the Wi-Fi client internet access, configure routing/NAT **on the PC**:

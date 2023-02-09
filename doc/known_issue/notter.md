@@ -2,6 +2,7 @@
 
 - [Network issue in quick start](#Network-issue-in-quick-start)
 - [antsdr e200 UART console](#antsdr-e200-UART-console)
+- [Client can not get IP](#Client-can-not-get-IP)
 
 ## Network issue in quick star
 
@@ -15,3 +16,7 @@ If still can't ssh the board via Ethernet, you should use UART console (/dev/tty
 ## antsdr e200 UART console
 
 If can't see the UART console in Linux (/dev/ttyUSB0 or /dev/ttyCH341USB0), according to https://github.com/juliagoda/CH341SER, you might need to do `sudo apt remove brltty`
+
+## Client can not get IP
+
+If the client can not get IP from the openwifi AP, just re-run "service isc-dhcp-server restart" on board and do re-connect from the client.
