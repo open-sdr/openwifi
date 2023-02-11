@@ -47,5 +47,6 @@ Publications in category:
 - [Jasper Devreker, Developing IEEE 802.11 PHY fuzzing capabilities using the open source Openwifi project. UGent master thesis 2022](https://users.ugent.be/~xjiao/Jasper_Devreker_masterproef.pdf)
 - [Thomas Schuddinck, Cybersecurity: Breaking IEEE 802.11 Devices at the Physical Layer. UGent master thesis 2022](https://users.ugent.be/~xjiao/Thomas_Schuddinck_masterproef.pdf)
 - [Seppe Dejonckheere, The design of a CSI sensing authorisation mechanism using the open source Openwifi project. UGnet master thesis 2022](https://users.ugent.be/~xjiao/Seppe_Dejonckheere_masterproef.pdf)
+- [Mathy Vanhoef, et al. Testing and Improving the Correctness of Wi-Fi Frame Injection. ACM WiSec 2023](https://papers.mathyvanhoef.com/wisec2023-wifi-injection.pdf)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
