@@ -22,7 +22,7 @@
 // 2007-03-15 fixes to getopt_long code by Matteo Croce rootkit85@yahoo.it
 
 #include "inject_80211.h"
-#include "radiotap.h"
+#include "ieee80211_radiotap.h"
 
 #define BUF_SIZE_MAX   (1536)
 #define BUF_SIZE_TOTAL (BUF_SIZE_MAX+1) // +1 in case the sprintf insert the last 0

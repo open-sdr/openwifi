@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 		if (packet_size < 0)
 			continue;
 
-		if (ieee80211_radiotap_iterator_init(&rti, (struct ieee80211_radiotap_header *)packet, packet_size) < 0)
+		if (ieee80211_radiotap_iterator_init(&rti, (struct ieee80211_radiotap_header *)packet, packet_size, NULL) < 0)
 			continue;
 
 		while ((n = ieee80211_radiotap_iterator_next(&rti)) == 0)
