@@ -370,7 +370,9 @@ static inline u32 hw_init(enum xpu_mode mode){
 	rssi_half_db_th = 87<<1; // -62dBm
 	xpu_api->XPU_REG_LBT_TH_write(rssi_half_db_th); // set IQ rssi th step .5dB to xxx and enable it
 
-	xpu_api->XPU_REG_FORCE_IDLE_MISC_write(75); //control the duration to force ch_idle after decoding a packet due to imperfection of agc and signals
+  // control the duration to force ch_idle after decoding a packet due to imperfection of agc and signals
+  // (1<<26) to disable eifs_trigger_by_last_tx_fail by default (standard does not ask so)
+	xpu_api->XPU_REG_FORCE_IDLE_MISC_write((1<<26)|75);
 
 	//xpu_api->XPU_REG_CSMA_DEBUG_write((1<<31)|(20<<24)|(4<<19)|(3<<14)|(10<<7)|(5));
 	xpu_api->XPU_REG_CSMA_DEBUG_write(0);
