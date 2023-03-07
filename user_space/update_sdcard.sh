@@ -138,7 +138,7 @@ if [ "$SKIP_rootfs" == "0" ]; then
   cd $saved_dir
   sudo cp $OPENWIFI_DIR/user_space/* $SDCARD_DIR/rootfs/root/openwifi/ -rf
   sudo mv $SDCARD_DIR/rootfs/root/openwifi/system_top.bit.bin $SDCARD_DIR/rootfs/root/openwifi/system_top.bit.bin.bak
-  sudo wget -P $SDCARD_DIR/rootfs/root/openwifi/webserver/ https://users.ugent.be/~xjiao/openwifi-low-aac.mp4
+  sudo wget -P $SDCARD_DIR/rootfs/root/openwifi/webserver/ https://github.com/open-sdr/openwifi-hw-img/raw/master/openwifi-low-aac.mp4
 
   ARCH_OPTION_ALL="32 64"
   for ARCH_OPTION_TMP in $ARCH_OPTION_ALL
