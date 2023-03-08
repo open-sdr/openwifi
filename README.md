@@ -78,7 +78,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 [[Application notes](doc/app_notes/README.md)]
 
 ## Quick start
-- Download [openwifi img](https://users.ugent.be/~xjiao/openwifi-1.4.0-notter.img.xz), unzip and burn it into a SD card (>=16GB). After this operation, the SD card should have two partitions: BOOT and rootfs. To flash the SD card, SD card tool software (such as Startup Disk Creator in Ubuntu) or dd command can be used:
+- Download [openwifi img](https://drive.google.com/file/d/12egFLT9TclmY8m3vCMHmUuSne3qK0SWc/view?usp=sharing), unzip and burn it into a SD card (>=16GB). After this operation, the SD card should have two partitions: BOOT and rootfs. To flash the SD card, SD card tool software (such as Startup Disk Creator in Ubuntu) or dd command can be used:
   ```
   sudo dd bs=512 count=31116288 if=openwifi-xyz.img of=/dev/your_sdcard_dev
   (To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename")
