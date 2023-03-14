@@ -189,5 +189,5 @@ sync
 
 cd $home_dir
 
-umount $SDCARD_DIR/BOOT/
-umount $SDCARD_DIR/rootfs/
+sudo umount $SDCARD_DIR/BOOT/
+sudo umount $SDCARD_DIR/rootfs/
