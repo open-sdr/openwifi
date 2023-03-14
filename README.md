@@ -96,7 +96,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 - Then, run openwifi AP and the on board webserver
   ```
   raspi-config --expand-rootfs (Only needed when your SD card > 16GB. Run and reboot)
-  ./openwifi/setup_once.sh (Only need to run once for new board)
+  ./openwifi/setup_once.sh (Reboot the board. Only need to run once for new board)
   cd openwifi
   ./wgd.sh
   ./fosdem.sh
