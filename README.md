@@ -152,23 +152,12 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   (The directory where you get the open-sdr/openwifi-hw-img repo via git clone)
   export BOARD_NAME=your_board_name
   ```
-- Pick the FPGA bitstream from openwifi-hw-img, and generate BOOT.BIN and transfer it on board via ssh channel:
+- Pick the FPGA bitstream from openwifi-hw-img, generate system_top.bit.bin and transfer it on board via ssh channel:
   ```
   cd openwifi/user_space; ./boot_bin_gen.sh $XILINX_DIR $BOARD_NAME $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/system_top.xsa
-  cd openwifi/kernel_boot/boards/$BOARD_NAME/output_boot_bin; scp ./BOOT.BIN root@192.168.10.122:
+  scp ./system_top.bit.bin root@192.168.10.122:openwifi/
   ```
-- On board: Put the BOOT.BIN into the BOOT partition.
-  ```
-  mount /dev/mmcblk0p1 /mnt
-  cp ~/BOOT.BIN /mnt
-  cd /mnt
-  sync
-  cd ~
-  umount /mnt
-  ```
-  **Power cycle** the board to load new FPGA bitstream.
-  
-  To avoid above manual operation, after BOOT.BIN is generated you can run **transfer_kernel_image_module_to_board.sh** from openwifi/user_space directory and then run **populate_kernel_image_module_reboot.sh** on board to have new FPGA and kernel image (check **prepare_kernel.sh** in the next section) taken effect.
+- Now the system_top.bit.bin is onboard in /root/openwifi/ directory. When wgd.sh runs onboard from that directory, it will discover the FPGA img file system_top.bit.bin and load it before loading driver .ko files.
 
 ## Update Driver
 
