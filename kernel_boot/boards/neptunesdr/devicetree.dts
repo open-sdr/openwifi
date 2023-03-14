@@ -5,7 +5,7 @@
 	#size-cells = <0x01>;
 	compatible = "xlnx,zynq-7000";
 	interrupt-parent = <0x01>;
-	model = "Analog Devices ADRV9364-Z7020 (Z7020/AD9364)";
+	model = "neptunesdr";
 
 	cpus {
 		#address-cells = <0x01>;
