@@ -119,6 +119,7 @@ if [ "$SKIP_BOOT" == "0" ]; then
       sudo mkdir -p $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
       sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/$dtb_filename_tmp $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP/
       sudo cp $OPENWIFI_DIR/kernel_boot/boards/$BOARD_NAME_TMP/output_boot_bin/BOOT.BIN $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP/
+      sudo cp ./system_top.bit.bin $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP/
       sudo true
   done
 
@@ -139,6 +140,10 @@ if [ "$SKIP_rootfs" == "0" ]; then
   sudo cp $OPENWIFI_DIR/user_space/* $SDCARD_DIR/rootfs/root/openwifi/ -rf
   sudo mv $SDCARD_DIR/rootfs/root/openwifi/system_top.bit.bin $SDCARD_DIR/rootfs/root/openwifi/system_top.bit.bin.bak
   sudo wget -P $SDCARD_DIR/rootfs/root/openwifi/webserver/ https://github.com/open-sdr/openwifi-hw-img/raw/master/openwifi-low-aac.mp4
+
+  sudo rm -rf $SDCARD_DIR/rootfs/root/openwifi_BOOT/
+  sudo mkdir -p $SDCARD_DIR/rootfs/root/openwifi_BOOT
+  sudo cp $SDCARD_DIR/BOOT/openwifi/* $SDCARD_DIR/rootfs/root/openwifi_BOOT/ -rf
 
   ARCH_OPTION_ALL="32 64"
   for ARCH_OPTION_TMP in $ARCH_OPTION_ALL
