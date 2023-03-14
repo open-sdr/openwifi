@@ -56,8 +56,12 @@ cd $OPENWIFI_DIR/kernel_boot
 
 if [ "$BOARD_NAME" == "zcu102_fmcs2" ] || [ "$BOARD_NAME" == "zcu102_9371" ]; then
   ./build_zynqmp_boot_bin.sh $XSA_FILE boards/$BOARD_NAME/u-boot_xilinx_zynqmp_zcu102_revA.elf boards/$BOARD_NAME/bl31.elf
+  ARCH="zynqmp"
+  ARCH_BIT=64
 elif [ "$BOARD_NAME" == "antsdr" ] || [ "$BOARD_NAME" == "antsdr_e200" ] || [ "$BOARD_NAME" == "sdrpi" ] || [ "$BOARD_NAME" == "neptunesdr" ] || [ "$BOARD_NAME" == "zc706_fmcs2" ] || [ "$BOARD_NAME" == "zc702_fmcs2" ] || [ "$BOARD_NAME" == "zed_fmcs2" ] || [ "$BOARD_NAME" == "adrv9361z7035" ] || [ "$BOARD_NAME" == "adrv9364z7020" ]; then
   ./build_boot_bin.sh $XSA_FILE boards/$BOARD_NAME/u-boot.elf
+  ARCH="zynq"
+  ARCH_BIT=32
 else
   echo "\$BOARD_NAME is not correct. Please check!"
   cd $home_dir
@@ -69,3 +73,9 @@ rm -rf boards/$BOARD_NAME/output_boot_bin
 mv output_boot_bin boards/$BOARD_NAME/
 
 cd $home_dir
+
+# generate system_top.bit.bin for FPGA dynamic loading
+unzip -o $XSA_FILE
+rm -rf ./system_top.bit.bin
+bootgen -image system_top.bif -arch $ARCH -process_bitstream bin -w
+ls ./system_top.bit.bin -al
