@@ -2574,6 +2574,27 @@
 			dma-names = "axidma0", "axidma1";
 		} ;
 
+		openwifi_ip_axi_bram_ctrl_0: axi_bram_ctrl@b0000000 {
+			clock-names = "s_axi_aclk";
+			clocks = <0x3 0x49>;
+			compatible = "xlnx,axi-bram-ctrl-4.1";
+			reg = <0x0 0xb0000000 0x0 0x80000>;
+			xlnx,bram-addr-width = <0x10>;
+			xlnx,bram-inst-mode = "EXTERNAL";
+			xlnx,ecc = <0x0>;
+			xlnx,ecc-onoff-reset-value = <0x0>;
+			xlnx,ecc-type = <0x0>;
+			xlnx,fault-inject = <0x0>;
+			xlnx,memory-depth = <0x10000>;
+			xlnx,rd-cmd-optimization = <0x1>;
+			xlnx,read-latency = <0x1>;
+			xlnx,s-axi-ctrl-addr-width = <0x20>;
+			xlnx,s-axi-ctrl-data-width = <0x20>;
+			xlnx,s-axi-id-width = <0x10>;
+			xlnx,s-axi-supports-narrow-burst = <0x1>;
+			xlnx,single-port-bram = <0x1>;
+		};
+
 		tx_dma: dma@a0000000 {
 			#dma-cells = <1>;
 			clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
