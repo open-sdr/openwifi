@@ -14,6 +14,7 @@ One super power of the openwifi platform is "**Full Duplex**" which means that o
   ssh root@192.168.10.122
   (password: openwifi)
   cd openwifi
+  ./wgd.sh
   ./fosdem.sh
   (After the AP started by above command, you can connect a WiFi client to this openwifi AP)
   (Or setup other scenario according to your requirement)
