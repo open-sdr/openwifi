@@ -340,10 +340,10 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 						tmp_int = (-reg_val); // rssi_dbm
 						tmp = rssi_dbm_to_rssi_half_db(tmp_int, priv->rssi_correction);
 						xpu_api->XPU_REG_LBT_TH_write( tmp );
-						printk("%s override FPGA LBT threshold to %d(%ddBm). The last_auto_fpga_lbt_th %d(%ddBm)\n", sdr_compatible_str, tmp, tmp_int, priv->last_auto_fpga_lbt_th, rssi_half_db_to_rssi_dbm(priv->last_auto_fpga_lbt_th, priv->rssi_correction));
+						printk("%s override FPGA LBT threshold to %d(%ddBm). The last_auto_fpga_lbt_th %d(%ddBm). rssi corr %d (%d/%dMHz)\n", sdr_compatible_str, tmp, tmp_int, priv->last_auto_fpga_lbt_th, rssi_half_db_to_rssi_dbm(priv->last_auto_fpga_lbt_th, priv->rssi_correction), priv->rssi_correction, priv->actual_tx_lo, priv->actual_rx_lo);
 					} else {
 						xpu_api->XPU_REG_LBT_TH_write(priv->last_auto_fpga_lbt_th);
-						printk("%s Restore last_auto_fpga_lbt_th %d(%ddBm) to FPGA. ad9361_rf_set_channel will take control\n", sdr_compatible_str, priv->last_auto_fpga_lbt_th, rssi_half_db_to_rssi_dbm(priv->last_auto_fpga_lbt_th, priv->rssi_correction));
+						printk("%s Restore last_auto_fpga_lbt_th %d(%ddBm) to FPGA. ad9361_rf_set_channel will take control. rssi corr %d (%d/%dMHz)\n", sdr_compatible_str, priv->last_auto_fpga_lbt_th, rssi_half_db_to_rssi_dbm(priv->last_auto_fpga_lbt_th, priv->rssi_correction), priv->rssi_correction, priv->actual_tx_lo, priv->actual_rx_lo);
 					}
 				}
 			} else {
@@ -412,7 +412,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 				if (reg_addr_idx==DRV_XPU_REG_IDX_LBT_TH) {
 					tmp = xpu_api->XPU_REG_LBT_TH_read();//rssi_half_db
 					tmp_int = rssi_half_db_to_rssi_dbm(tmp, priv->rssi_correction); //rssi_dbm
-					printk("%s FPGA LBT threshold %d(%ddBm). The last_auto_fpga_lbt_th %d(%ddBm)\n", sdr_compatible_str, tmp, tmp_int, priv->last_auto_fpga_lbt_th, rssi_half_db_to_rssi_dbm(priv->last_auto_fpga_lbt_th, priv->rssi_correction));
+					printk("%s FPGA LBT threshold %d(%ddBm). The last_auto_fpga_lbt_th %d(%ddBm). rssi corr %d (%d/%dMHz)\n", sdr_compatible_str, tmp, tmp_int, priv->last_auto_fpga_lbt_th, rssi_half_db_to_rssi_dbm(priv->last_auto_fpga_lbt_th, priv->rssi_correction), priv->rssi_correction, priv->actual_tx_lo, priv->actual_rx_lo);
 				}
 				tmp = priv->drv_xpu_reg_val[reg_addr_idx];
 			} else {

@@ -22,7 +22,7 @@
 // 2007-03-15 fixes to getopt_long code by Matteo Croce rootkit85@yahoo.it
 
 #include "inject_80211.h"
-#include "radiotap.h"
+#include "ieee80211_radiotap.h"
 
 #define BUF_SIZE_MAX   (1536)
 #define BUF_SIZE_TOTAL (BUF_SIZE_MAX+1) // +1 in case the sprintf insert the last 0
@@ -142,7 +142,7 @@ void usage(void)
 	    "-h   this menu\n\n"
 
 	    "Example:\n"
-	    "  iw dev wlan0 interface add mon0 type monitor && ifconfig mon0 up\n"
+	    "  iw dev sdr0 interface add mon0 type monitor && ifconfig mon0 up\n"
 	    "  inject_80211 mon0\n"
 	    "\n");
 	exit(1);
@@ -270,6 +270,7 @@ int main(int argc, char *argv[])
 		ieee_hdr_data[0]  = ( ieee_hdr_data[0]|(sub_type<<4) );
 		ieee_hdr_data[9]  = addr1;
 		ieee_hdr_data[15] = addr2;
+		ieee_hdr_data[21] = addr1;
 		ieee_hdr_len = sizeof(ieee_hdr_data);
 		ieee_hdr = ieee_hdr_data;
 	}
@@ -278,6 +279,7 @@ int main(int argc, char *argv[])
 		ieee_hdr_mgmt[0]  = ( ieee_hdr_mgmt[0]|(sub_type<<4) );
 		ieee_hdr_mgmt[9]  = addr1;
 		ieee_hdr_mgmt[15] = addr2;
+		ieee_hdr_mgmt[21] = addr1;
 		ieee_hdr_len = sizeof(ieee_hdr_mgmt);
 		ieee_hdr = ieee_hdr_mgmt;
 	}

@@ -311,7 +311,7 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 	if (mode!=TX_INTF_AXIS_LOOP_BACK) {
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 		tx_intf_api->TX_INTF_REG_CSI_FUZZER_write(0);
-		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(10*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
+		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(16*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 	
 		tx_intf_api->TX_INTF_REG_TX_CONFIG_write(tx_config);
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
@@ -350,9 +350,9 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);
 	}
 
-	if (mode == TX_INTF_BYPASS) {
-		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0x100); //slv_reg10[8]
-	}
+	// if (mode == TX_INTF_BYPASS) {
+	// 	tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0x100); //slv_reg10[8] -- bit 8 not used anymore. only bit0/1 are still reserved. 
+	// }
 
 	printk("%s hw_init err %d\n", tx_intf_compatible_str, err);
 	return(err);

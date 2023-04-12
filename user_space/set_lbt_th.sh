@@ -13,5 +13,6 @@ if [ $lbt_th -ne 987654321 ]; then
 fi
 
 # show
-./sdrctl dev sdr0 get reg xpu 8 
+# ./sdrctl dev sdr0 get reg xpu 8 
+./sdrctl dev sdr0 get reg drv_xpu 0
 set +x

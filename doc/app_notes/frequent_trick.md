@@ -1,7 +1,7 @@
 Some usual/frequent control trick over the openwifi FPGA. You need to do these controls on board in the openwifi directory.
 
 [[CCA LBT threshold and disable](#CCA-LBT-threshold-and-disable)]
-[[Retransmission and ACK tx control](#Retransmission-and-ACK-tx-control)]
+[[Retransmission and ACK control](#Retransmission-and-ACK-control)]
 [[NAV DIFS EIFS CW disable and enable](#NAV-DIFS-EIFS-CW-disable-and-enable)]
 [[CW max and min config](#CW-max-and-min-config)]
 
@@ -20,26 +20,30 @@ Some usual/frequent control trick over the openwifi FPGA. You need to do these c
 In normal operation, different threshold is set to FPGA according to the different calibration of different frequency/channel by driver automatically. Show the current LBT threshold in FPGA:
 ```
 ./set_lbt_th.sh
+dmesg
 ```
-"reg  val: 00000086" means the current threshold is 134 (86 in Hex). Its unit is rssi_half_db. Check rssi_half_db_to_rssi_dbm()/rssi_dbm_to_rssi_half_db() in sdr.c to see the relation to rssi dBm.
+It shows: "sdr,sdr FPGA LBT threshold 166(-62dBm). The last_auto_fpga_lbt_th 166(-62dBm). rssi corr 145". Check rssi_half_db_to_rssi_dbm()/rssi_dbm_to_rssi_half_db() in sdr.c to see the relation to rssi dBm.
 
 Override a new threshold -NNdBm to FPGA, for example -70dBm:
 ```
 ./set_lbt_th.sh 70
+dmesg
 ```
 Above will disable the automatic CCA threshold setting from the openwifi driver.
 
 Recover the driver automatic control on the threshold:
 ```
 ./set_lbt_th.sh 0
+dmesg
 ```
 Disable the CCA by setting a very strong level as threshold, for example -1dBm:
 ```
 ./set_lbt_th.sh 1
+dmesg
 ```
 After above command, the CCA engine will always believe the channel is idle, because the rx signal strength not likely could exceed -1dBm.
   
-## Retransmission and ACK tx control
+## Retransmission and ACK control
 
 The best way of override the maximum number of re-transmission for a Tx packet is doing it in the driver openwifi_tx() function. 
 ```
@@ -60,7 +64,7 @@ To override the maximum number of re-transmission, set bit3 to 1, and set the va
 
 9 in binary form is 01001.
 
-To disable the ACK TX after receive a packet, set bit4 to 1. (Assume we want to preserve the above re-transmission overriding setting)
+To disable the ACK TX after receiving a packet, set bit4 to 1. (Assume we want to preserve the above re-transmission overriding setting)
 ```
 ./sdrctl dev sdr0 set reg xpu 11 25
 ```
@@ -68,6 +72,8 @@ To disable the ACK TX after receive a packet, set bit4 to 1. (Assume we want to 
 25 in binary form is 11001. the 1001 of bit3 to 1 is untouched.
 
 Disabling ACK TX might be useful for monitor mode and packet injection.
+
+To disable the ACK RX after sending a packet, set bit5 to 1.
   
 ## NAV DIFS EIFS CW disable and enable
 

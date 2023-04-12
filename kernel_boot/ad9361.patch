@@ -1,0 +1,68 @@
+diff --git a/drivers/iio/adc/ad9361.c b/drivers/iio/adc/ad9361.c
+index b21e2129e27c..b53d7b7ab20d 100644
+--- a/drivers/iio/adc/ad9361.c
++++ b/drivers/iio/adc/ad9361.c
+@@ -1234,7 +1234,7 @@ static int ad9361_load_mixer_gm_subtable(struct ad9361_rf_phy *phy)
+ 	return 0;
+ }
+ 
+-static int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb,
++int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb,
+ 			       bool tx1, bool tx2, bool immed)
+ {
+ 	u8 buf[2];
+@@ -1266,8 +1266,8 @@ static int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb,
+ 
+ 	return ret;
+ }
+-
+-static int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num)
++EXPORT_SYMBOL(ad9361_set_tx_atten);
++int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num)
+ {
+ 	u8 buf[2];
+ 	int ret = 0;
+@@ -1285,7 +1285,7 @@ static int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num)
+ 
+ 	return code;
+ }
+-
++EXPORT_SYMBOL(ad9361_get_tx_atten);
+ int ad9361_tx_mute(struct ad9361_rf_phy *phy, u32 state)
+ {
+ 	struct ad9361_rf_phy_state *st = phy->state;
+@@ -3744,7 +3744,7 @@ static int ad9361_get_auxadc(struct ad9361_rf_phy *phy)
+   // Setup Control Outs
+   //************************************************************
+ 
+-static int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
++int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
+ 				  struct ctrl_outs_control *ctrl)
+ {
+ 	struct spi_device *spi = phy->spi;
+@@ -3754,6 +3754,7 @@ static int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
+ 	ad9361_spi_write(spi, REG_CTRL_OUTPUT_POINTER, ctrl->index); // Ctrl Out index
+ 	return ad9361_spi_write(spi, REG_CTRL_OUTPUT_ENABLE, ctrl->en_mask); // Ctrl Out [7:0] output enable
+ }
++EXPORT_SYMBOL(ad9361_ctrl_outs_setup);
+   //************************************************************
+   // Setup GPO
+   //************************************************************
+@@ -5235,7 +5236,7 @@ static int ad9361_setup(struct ad9361_rf_phy *phy)
+ 
+ }
+ 
+-static int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
++int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
+ {
+ 	struct ad9361_rf_phy_state *st = phy->state;
+ 	int ret;
+@@ -5268,7 +5269,7 @@ static int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
+ 
+ 	return ret;
+ }
+-
++EXPORT_SYMBOL(ad9361_do_calib_run);
+ static int ad9361_update_rf_bandwidth(struct ad9361_rf_phy *phy,
+ 				     u32 rf_rx_bw, u32 rf_tx_bw)
+ {
