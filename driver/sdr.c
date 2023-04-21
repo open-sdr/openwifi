@@ -2,17 +2,21 @@
 // SPDX-FileCopyrightText: 2022 UGent
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-#include <linux/bitops.h>
-#include <linux/dmapool.h>
-#include <linux/io.h>
-#include <linux/iopoll.h>
-#include <linux/of_address.h>
-#include <linux/of_platform.h>
-#include <linux/of_irq.h>
-#include <linux/slab.h>
-#include <linux/clk.h>
-#include <linux/io-64-nonatomic-lo-hi.h>
+//Headers to support the implementation of a device driver
 
+#include <linux/bitops.h>   //Provides various bit manipulation operations.
+#include <linux/dmapool.h>  //Provides functions for managing DMA memory pools.
+#include <linux/io.h>      // Provides input/output operations for accessing memory-mapped I/O.
+#include <linux/iopoll.h>   //Provides functions for polling memory-mapped I/O operations
+#include <linux/of_address.h>  //Provides functions for working with device tree address translations.
+#include <linux/of_platform.h>  //Provides functions for working with device tree platform devices
+#include <linux/of_irq.h>      // Provides functions for working with device tree interrupt controllers
+#include <linux/slab.h>        // Provides functions for managing kernel memory allocation
+#include <linux/clk.h>        //Provides functions for working with clock sources.
+#include <linux/io-64-nonatomic-lo-hi.h> // Provides functions for accessing 64-bit I/O registers on some architectures.
+
+//standard linux headers
+//headers provide various kernel-level functionality related to delays, interrupts,DMA operations, Ethernet devices, initialization, and kernel threads.
 #include <linux/delay.h>
 #include <linux/interrupt.h>
 
