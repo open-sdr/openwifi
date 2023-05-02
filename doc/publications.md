@@ -49,5 +49,6 @@ Publications in category:
 - [Seppe Dejonckheere, The design of a CSI sensing authorisation mechanism using the open source Openwifi project. UGnet master thesis 2022](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Seppe_Dejonckheere_masterproef.pdf)
 - [Mathy Vanhoef, et al. Testing and Improving the Correctness of Wi-Fi Frame Injection. ACM WiSec 2023](https://papers.mathyvanhoef.com/wisec2023-wifi-injection.pdf)
 - [Wen Liu, et al. A New Paradigm for Device-free Indoor Localization: Deep Learning with Error Vector Spectrum in Wi-Fi Systems. arxiv 2023](https://arxiv.org/pdf/2304.06490.pdf)
+- [Paul Zanna, et al. Preventing Attacks on Wireless Networks Using SDN Controlled OODA Loops and Cyber Kill Chains. Sensors 2022, 22(23), 9481](https://www.mdpi.com/1986552)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
