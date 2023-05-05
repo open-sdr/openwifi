@@ -86,7 +86,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 - Config the **correct files in the BOOT partition** according to the **board you have** by operation on your computer: 
   - Copy files in **BOOT/openwifi/board_name** to the base directory of BOOT partition.
   - Delete the **rootfs/root/kernel_modules** directory (if exist).
-  - Delete the **rootfs/root/etc/network/interfaces.new** directory (if exist).
+  - Delete the **rootfs/etc/network/interfaces.new** directory (if exist).
 - Insert the SD card to the board. Configure the board in SD booting mode. Connect antennas. Power on. 
 - Login to the board from your PC (PC Ethernet should have IP 192.168.10.1) with password **openwifi**.
   ```
