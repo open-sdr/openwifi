@@ -55,6 +55,7 @@ adrv9364z7020|[ADRV9364-Z7020 + ADRV1CRR-BOB](https://www.analog.com/en/design-c
 adrv9361z7035|[ADRV9361-Z7035 + ADRV1CRR-BOB/FMC](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/ADRV9361-Z7035.html)|Need
 zc702_fmcs2|[Xilinx ZC702 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc702-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|**NO** need
 antsdr|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO [Notes](kernel_boot/boards/antsdr/notes.md)|**NO** need
+e310v2|[MicroPhase](https://github.com/MicroPhase/) new antsdr [Notes](kernel_boot/boards/e310v2/README.md)|**NO** need
 antsdr_e200|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO (smaller/cheaper) [Notes](kernel_boot/boards/antsdr_e200/README.md)|**NO** need
 sdrpi|[HexSDR](https://github.com/HexSDR/) SDR in Raspberry Pi size [Notes](kernel_boot/boards/sdrpi/notes.md)|**NO** need
 zcu102_fmcs2|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Need
