@@ -38,6 +38,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Removing the Wires in Time-Sensitive Networks. 2022 61st FITCE International Congress Future Telecommunications: Infrastructure and Sustainability (FITCE)](https://ieeexplore.ieee.org/abstract/document/9934268)
 - [Pablo Avila-Campos, et al. Periodic Control Traffic Support in a Wireless Time-Sensitive Network. 2022 13th International Conference on Network of the Future (NoF)](https://ieeexplore.ieee.org/document/9942586)
 - [Gilson Miranda, et al. The Quality-Aware and Vertical-Tailored Management of Wireless Time-Sensitive Networks. IEEE Internet of Things Magazine ( Volume: 5, Issue: 4, December 2022)](https://ieeexplore.ieee.org/abstract/document/10012491)
+- [Jetmir Haxhibeqiri, et al. To update or not: Dynamic traffic classification for high priority traffic in wireless TSN. IEEE WFCS2023](http://hdl.handle.net/1854/LU-01GZNGJFAJQRM3NX7FY5VRB4MR)
 
 ## CSI Channel State Information and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
