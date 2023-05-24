@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 FCCM2023 Poster: [Thijs Havinga, et al. Accelerating FPGA-Based Wi-Fi Transceiver Design and Prototyping by High-Level Synthesis](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Thijs-FCCM2023-poster.jpg)
 
-[Longer/detailed info about the poster](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Thijs-FCCM2023.pdf)
+[Longer/detailed info about the poster](https://arxiv.org/abs/2305.13351)
 
 In order to speed up or ease FPGA development, it is possible to use High-Level Synthesis (HLS) for creating core baseband processing modules of openwifi. We have already programmed the receiver modules channel estimation and equalization in C++ and converted to Verilog using Vitis HLS. In order to use openwifi with these HLS modules, follow the [build instructions](#build-instructions).
 In order to modify these modules within Vitis HLS, follow [the instructions below](#modify-the-code-using-vitis-hls). 
