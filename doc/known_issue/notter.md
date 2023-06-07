@@ -4,6 +4,7 @@
 - [EXT4 fs error rootfs issue](#EXT4-fs-error-rootfs-issue)
 - [antsdr e200 UART console](#antsdr-e200-UART-console)
 - [Client can not get IP](#Client-can-not-get-IP)
+- [No space left on device](#No-space-left-on-device)
 
 ## Network issue in quick star
 
@@ -28,3 +29,24 @@ If can't see the UART console in Linux (/dev/ttyUSB0 or /dev/ttyCH341USB0), acco
 ## Client can not get IP
 
 If the client can not get IP from the openwifi AP, just re-run "service isc-dhcp-server restart" on board and do re-connect from the client.
+
+## No space left on device
+It might be due to too many dmesg/log/journal, disk becomes full. 
+```
+systemd-journald[5694]: Failed to open system journal: No space left on device
+```
+You can try following operations.
+```
+systemd-tmpfiles --clean
+sudo systemd-tmpfiles --remove
+rm /var/log/* -rf
+apt --autoremove purge rsyslog
+```
+Add followings into `/etc/systemd/journald.conf`
+```
+SystemMaxUse=64M
+Storage=volatile
+RuntimeMaxUse=64M
+ForwardToConsole=no
+ForwardToWall=no
+```
