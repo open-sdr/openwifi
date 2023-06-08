@@ -42,6 +42,7 @@ This makes the IQ sample, WiFi packet and CSI self loopback test possible. Readi
   ./sdrctl dev sdr0 set reg xpu 1 1
   # Set the loopback mode to over-the-air
   ./side_ch_ctl wh5h0
+  (./side_ch_ctl wh5h4 for FPGA internal loopback)
   # Relay the FPGA IQ capture to the host computer that will show the captured IQ later on)
   ./side_ch_ctl g0
   ```
