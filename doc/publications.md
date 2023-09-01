@@ -23,6 +23,7 @@ Publications in category:
 - [Merkebu Girmay, et al. Technology recognition and traffic characterization for wireless technologies in ITS band. Vehicular Communications Volume 39, February 2023, 100563](https://doi.org/10.1016/j.vehcom.2022.100563)
 - [Thijs Havinga, et al. Accelerating FPGA-Based Wi-Fi Transceiver Design and Prototyping by High-Level Synthesis. FCCM2023 Poster](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Thijs-FCCM2023-poster.jpg), [[Longer/detailed info about the poster](https://arxiv.org/abs/2305.13351)]
 - [Merkebu Girmay, et al. Intelligent Spectrum Sharing Between LTE and Wi-Fi Networks using Muted MBSFN Subframes. WAMICON 2023](https://ieeexplore.ieee.org/abstract/document/10124903)
+- [Thijs Havinga, et al. Improved TDD operation on Software-Defined Radio platforms towards future wireless standards. Computer Communications, Volume 209, 1 September 2023, Pages 178-187](https://doi.org/10.1016/j.comcom.2023.06.026)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
