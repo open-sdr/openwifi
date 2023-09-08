@@ -24,6 +24,7 @@ Publications in category:
 - [Thijs Havinga, et al. Accelerating FPGA-Based Wi-Fi Transceiver Design and Prototyping by High-Level Synthesis. FCCM2023 Poster](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Thijs-FCCM2023-poster.jpg), [[Longer/detailed info about the poster](https://arxiv.org/abs/2305.13351)]
 - [Merkebu Girmay, et al. Intelligent Spectrum Sharing Between LTE and Wi-Fi Networks using Muted MBSFN Subframes. WAMICON 2023](https://ieeexplore.ieee.org/abstract/document/10124903)
 - [Thijs Havinga, et al. Improved TDD operation on Software-Defined Radio platforms towards future wireless standards. Computer Communications, Volume 209, 1 September 2023, Pages 178-187](https://doi.org/10.1016/j.comcom.2023.06.026)
+- [Yuyang Du, et al. The Power of Large Language Models for Wireless Communication System Development: A Case Study on FPGA Platforms. arxiv, Submitted on 14 Jul 2023 (v1), last revised 5 Sep 2023 (this version, v2)](https://arxiv.org/abs/2307.07319)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
@@ -41,6 +42,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Periodic Control Traffic Support in a Wireless Time-Sensitive Network. 2022 13th International Conference on Network of the Future (NoF)](https://ieeexplore.ieee.org/document/9942586)
 - [Gilson Miranda, et al. The Quality-Aware and Vertical-Tailored Management of Wireless Time-Sensitive Networks. IEEE Internet of Things Magazine ( Volume: 5, Issue: 4, December 2022)](https://ieeexplore.ieee.org/abstract/document/10012491)
 - [Jetmir Haxhibeqiri, et al. To update or not: Dynamic traffic classification for high priority traffic in wireless TSN. IEEE WFCS2023](http://hdl.handle.net/1854/LU-01GZNGJFAJQRM3NX7FY5VRB4MR)
+- [Pablo Avila-Campos, et al. Residual Service Time Optimization for legacy Wireless-TSN end nodes. 2023 19th International Conference on Wireless and Mobile Computing, Networking and Communications (WiMob). p.466-471](https://ieeexplore.ieee.org/document/10187722)
 
 ## CSI Channel State Information and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
