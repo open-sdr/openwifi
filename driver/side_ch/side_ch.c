@@ -375,9 +375,9 @@ static int get_side_info(int num_eq, int iq_len) {
 		num_dma_symbol_per_trans = HEADER_LEN + CSI_LEN + num_eq*EQUALIZER_LEN;
 	//set number of dma symbols expected to ps
 	num_dma_symbol = SIDE_CH_REG_M_AXIS_DATA_COUNT_read();
-	printk("%s get_side_info m axis data count %d per trans %d\n", side_ch_compatible_str, num_dma_symbol, num_dma_symbol_per_trans);
+	// printk("%s get_side_info m axis data count %d per trans %d\n", side_ch_compatible_str, num_dma_symbol, num_dma_symbol_per_trans);
 	num_dma_symbol = num_dma_symbol_per_trans*(num_dma_symbol/num_dma_symbol_per_trans);
-	printk("%s get_side_info actual num dma symbol %d\n", side_ch_compatible_str, num_dma_symbol);
+	// printk("%s get_side_info actual num dma symbol %d\n", side_ch_compatible_str, num_dma_symbol);
 	if (num_dma_symbol == 0)
 		return(-2);
 
@@ -464,13 +464,13 @@ static void side_ch_nl_recv_msg(struct sk_buff *skb) {
     reg_type = cmd_buf[1];
     reg_idx = cmd_buf[2];
     reg_val = cmd_buf[3];
-	printk("%s recv msg: len %d action_flag %d reg_type %d reg_idx %d reg_val %u\n", side_ch_compatible_str, nlmsg_len(nlh), action_flag, reg_type, reg_idx, reg_val);
+	// printk("%s recv msg: len %d action_flag %d reg_type %d reg_idx %d reg_val %u\n", side_ch_compatible_str, nlmsg_len(nlh), action_flag, reg_type, reg_idx, reg_val);
 
 	pid = nlh->nlmsg_pid; /*pid of sending process */
 
 	if (action_flag==ACTION_SIDE_INFO_GET) {
 		res = get_side_info(num_eq_init, iq_len_init);
-		printk(KERN_INFO "%s recv msg: get_side_info(%d,%d) res %d\n", side_ch_compatible_str, num_eq_init, iq_len_init, res);
+		// printk(KERN_INFO "%s recv msg: get_side_info(%d,%d) res %d\n", side_ch_compatible_str, num_eq_init, iq_len_init, res);
 		if (res>0) {
 			msg_size = res;
 			// printk("%s recv msg: %d %d %d %d %d %d %d %d\n", side_ch_compatible_str, msg[0], msg[1], msg[2], msg[3], msg[4], msg[5], msg[6], msg[7]);
