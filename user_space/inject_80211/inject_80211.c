@@ -186,6 +186,7 @@ int main(int argc, char *argv[])
 
 			case 'h':
 				usage();
+        break;
 
 			case 'm':
 				hw_mode = optarg[0];
