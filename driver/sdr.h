@@ -120,12 +120,10 @@ enum sdrctl_reg_cat {
 #define DMESG_LOG_BROADCAST (1<<2)
 #define DMESG_LOG_NORMAL_QUEUE_STOP (1<<3)
 #define DMESG_LOG_ANY (0xF)
-
 // ------end of dmesg printk control flag------------------
 
 #define MAX_NUM_VIF 4
 
-//#define LEN_PHY_HEADER 16
 #define LEN_PHY_CRC 4
 #define LEN_MPDU_DELIM 4
 
