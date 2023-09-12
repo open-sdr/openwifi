@@ -61,4 +61,4 @@ register idx|meaning               |note
 
 Note: addr2 (source/sender's MAC address) target setting uses only 32bit. For address 6c:fd:b9:4c:b1:c1, you set b94cb1c1
 
-Note: read register 37 of xpu for some addr2 captured by the receiver
+Note: read register 62 of xpu for some addr2 captured by the receiver

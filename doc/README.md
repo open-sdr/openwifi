@@ -220,9 +220,9 @@ reg_idx|meaning|comment
 29|BSSID address high 16bit for BSSID filtering|auto set by xpu_api->XPU_REG_BSSID_FILTER_HIGH_write in openwifi_bss_info_changed of sdr.c
 30|MAC address low  32bit|auto set by XPU_REG_MAC_ADDR_write in sdr.c
 31|MAC address high 16bit|auto set by XPU_REG_MAC_ADDR_write in sdr.c
-37|addr2 of rx packet read back|bit31-0 are from bit47-16 of addr2 field in the received packet
 58|TSF runtime value low  32bit|read only
 59|TSF runtime value high 32bit|read only
+62|addr2 of rx packet read back|bit31-0 are from bit47-16 of addr2 field in the received packet
 63|git revision when build the FPGA|returned register value means git revision in hex format
 
 ## Rx packet flow and filtering config
