@@ -262,7 +262,7 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 			break;
 
 		case TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH:
-			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT0\n", tx_intf_compatible_str);
+			printk("%s hw_init mode TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH\n", tx_intf_compatible_str);
 			mixer_cfg = 0x2001F400;
 			ant_sel=0x11;
 			break;
