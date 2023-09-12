@@ -63,7 +63,7 @@ static const u8 u8aRadiotapHeader[] =
 /* IEEE80211 header */
 static u8 ieee_hdr_data[] =
 {
-	0x08, 0x02, 0x00, 0x00,             // FC 0x0801. 0--subtype; 8--type&version; 02--toDS0 fromDS1 (data packet from DS to STA)
+	0x08, 0x02, 0x00, 0x00,             // FC 0x0802. 0--subtype; 8--type&version; 02--toDS0 fromDS1 (data packet from DS to STA)
 	0x66, 0x55, 0x44, 0x33, 0x22, 0x11, // BSSID/MAC of AP
 	0x66, 0x55, 0x44, 0x33, 0x22, 0x22, // Source address (STA)
 	0x66, 0x55, 0x44, 0x33, 0x22, 0x33, // Destination address (another STA under the same AP)
