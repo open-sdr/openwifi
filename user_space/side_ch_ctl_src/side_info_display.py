@@ -8,7 +8,7 @@ import socket
 import numpy as np
 import matplotlib.pyplot as plt
 
-def display_side_info(freq_offset, csi, equalizer, CSI_LEN, EQUALIZER_LEN):
+def display_side_info(freq_offset, csi, equalizer, waterfall_flag, CSI_LEN, EQUALIZER_LEN):
     if not hasattr(display_side_info, 'freq_offset_store'):
         display_side_info.freq_offset_store = np.zeros((256,))
 
@@ -50,6 +50,7 @@ def display_side_info(freq_offset, csi, equalizer, CSI_LEN, EQUALIZER_LEN):
     if ( (len(equalizer)==0) or ((len(equalizer)>0)and(good_row_idx>0)) ):
         fig_csi = plt.figure(1)
         fig_csi.clf()
+        # if waterfall_flag == 0:
         ax_abs_csi = fig_csi.add_subplot(211)
         ax_abs_csi.set_xlabel("subcarrier idx")
         ax_abs_csi.set_ylabel("abs")
@@ -60,6 +61,36 @@ def display_side_info(freq_offset, csi, equalizer, CSI_LEN, EQUALIZER_LEN):
         ax_phase_csi.set_ylabel("phase")
         plt.plot(np.angle(csi_for_plot))
         fig_csi.canvas.flush_events()
+
+        # else:
+
+        if waterfall_flag == 1:
+            # print(np.abs(display_side_info.csi_mat_for_waterfall))
+            display_side_info.csi_mat_for_waterfall = np.roll(display_side_info.csi_mat_for_waterfall, 1, axis=0)
+            # print(np.abs(display_side_info.csi_mat_for_waterfall))
+
+            display_side_info.csi_mat_for_waterfall[0,:] = csi[0,:]
+
+            fig_waterfall = plt.figure(3)
+            fig_waterfall.clf()
+
+            ax_abs_csi_waterfall = fig_waterfall.add_subplot(121)
+            ax_abs_csi_waterfall.set_title('CSI amplitude')
+            ax_abs_csi_waterfall.set_xlabel("subcarrier idx")
+            ax_abs_csi_waterfall.set_ylabel("time")
+            # ax_abs_csi_waterfall_shw = ax_abs_csi_waterfall.imshow(np.abs(display_side_info.csi_mat_for_waterfall), vmin=200, vmax=500)
+            ax_abs_csi_waterfall_shw = ax_abs_csi_waterfall.imshow(np.abs(display_side_info.csi_mat_for_waterfall))
+            plt.colorbar(ax_abs_csi_waterfall_shw)
+
+            ax_phase_csi_waterfall = fig_waterfall.add_subplot(122)
+            ax_phase_csi_waterfall.set_title('CSI phase')
+            ax_phase_csi_waterfall.set_xlabel("subcarrier idx")
+            ax_phase_csi_waterfall.set_ylabel("time")
+            # ax_phase_csi_waterfall_shw = ax_phase_csi_waterfall.imshow(np.angle(display_side_info.csi_mat_for_waterfall), vmin=-3.14, vmax=3.14)
+            ax_phase_csi_waterfall_shw = ax_phase_csi_waterfall.imshow(np.angle(display_side_info.csi_mat_for_waterfall))
+            plt.colorbar(ax_phase_csi_waterfall_shw)
+
+            fig_waterfall.canvas.flush_events()
 
     if ( (len(equalizer)>0) and (good_row_idx>0) ):
         fig_equalizer = plt.figure(2)
@@ -125,6 +156,12 @@ else:
     print(num_eq)
     # print(type(num_eq))
 
+waterfall_flag = 0
+if len(sys.argv)>2:
+    print("Will plot CSI in waterfall!")
+    display_side_info.csi_mat_for_waterfall = np.zeros((64, CSI_LEN)) + 1j*np.zeros((64, CSI_LEN))
+    waterfall_flag = 1
+
 num_dma_symbol_per_trans = HEADER_LEN + CSI_LEN + num_eq*EQUALIZER_LEN
 num_byte_per_trans = 8*num_dma_symbol_per_trans
 
@@ -138,7 +175,7 @@ while True:
     try:
         data, addr = sock.recvfrom(MAX_NUM_DMA_SYMBOL*8) # buffer size
         # print(addr)
-        print(len(data), num_byte_per_trans)
+        # print(len(data), num_byte_per_trans)
         test_residual = len(data)%num_byte_per_trans
         if (test_residual != 0):
             print("Abnormal length")
@@ -147,11 +184,11 @@ while True:
         np.savetxt(side_info_fd, side_info)
 
         timestamp, freq_offset, csi, equalizer = parse_side_info(side_info, num_eq, CSI_LEN, EQUALIZER_LEN, HEADER_LEN)
-        print(timestamp)
+        # print(timestamp)
         # print(freq_offset)
         # print(csi[0,0:10])
         # print(equalizer[0,0:10])
-        display_side_info(freq_offset, csi, equalizer, CSI_LEN, EQUALIZER_LEN)
+        display_side_info(freq_offset, csi, equalizer, waterfall_flag, CSI_LEN, EQUALIZER_LEN)
 
     except KeyboardInterrupt:
         print('User quit')
