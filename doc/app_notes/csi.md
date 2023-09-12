@@ -7,6 +7,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 We extend the **CSI** (Channel State Information) to **CSI** (Chip State Information)!
 
+(This app note shows general CSI collection. To use self-Tx CSI in full duplex mode as **RADAR**, please refer to [WiFi CSI radar via self CSI capturing](radar-self-csi.md))
+
 ## Quick start
 - Power on the SDR board.
 - Connect a computer to the SDR board via Ethernet cable. The computer should have static IP 192.168.10.1. Open a terminal on the computer, and then in the terminal:
