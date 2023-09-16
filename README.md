@@ -9,9 +9,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 **openwifi:** Linux mac80211 compatible full-stack IEEE802.11/Wi-Fi design based on SDR (Software Defined Radio).
 
+[[Download img and Quick start](#Download-img-and-Quick-start)]
+
 This repository includes Linux driver and software. **openwifi-hw** repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
 
-[[Download img and Quick start](#Download-img-and-Quick-start)]
 [[Project document](doc/README.md)]
 [[Application notes](doc/app_notes/README.md)]
 [[Videos](doc/videos.md)]
