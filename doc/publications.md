@@ -12,12 +12,12 @@ Publications in category:
 - [Feature Functionality and System](#Feature-Functionality-and-System)
 - [TSN Time Sensitive Network and RT Real Time](#TSN-Time-Sensitive-Network-and-RT-Real-Time)
 - [CSI Channel State Information and Security](#CSI-Channel-State-Information-and-Security)
+- [WiFi and Cellular 5G 6G](#WiFi-and-Cellular-5G-6G)
 
 ## Feature Functionality and System
 - [Xianjun Jiao, et al. openwifi: a free and open-source IEEE802.11 SDR implementation on SoC. VTC2020 spring Antwerp](https://www.orca-project.eu/wp-content/uploads/sites/4/2020/03/openwifi-vtc-antwerp-PID1249076.pdf)
 - [Cedric Den Haese, The initial 802.11n 2*2 MIMO and diversity (CSD/Combining) work. UGent master thesis 2021](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Cedric_Den_Haese_masterproef.pdf)
 - [Paul Zanna, et al. A novel method for utilizing RF information from IEEE 802.11 frames in Software Defined Networks. MethodsX 2021](https://www.sciencedirect.com/science/article/pii/S2215016121003368)
-- [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
 - [Thijs Havinga, et al. WIP: Achieving Self-Interference-Free Operation on SDR Platform with Critical TDD Turnaround Time. accepted WoWMoM2022 paper](https://arxiv.org/abs/2204.07354)
 - [Yingshuo Xi, Baiming Zhang. High-Throughput Open Source Viterbi Decoder for OpenWiFi. 2022 KU Leuven master thesis](https://github.com/BaimingZhang26213/viterbi_decoder)
 - [Merkebu Girmay, et al. Technology recognition and traffic characterization for wireless technologies in ITS band. Vehicular Communications Volume 39, February 2023, 100563](https://doi.org/10.1016/j.vehcom.2022.100563)
@@ -56,5 +56,9 @@ Publications in category:
 - [Mathy Vanhoef, et al. Testing and Improving the Correctness of Wi-Fi Frame Injection. ACM WiSec 2023](https://papers.mathyvanhoef.com/wisec2023-wifi-injection.pdf)
 - [Wen Liu, et al. A New Paradigm for Device-free Indoor Localization: Deep Learning with Error Vector Spectrum in Wi-Fi Systems. arxiv 2023](https://arxiv.org/pdf/2304.06490.pdf)
 - [Paul Zanna, et al. Preventing Attacks on Wireless Networks Using SDN Controlled OODA Loops and Cyber Kill Chains. Sensors 2022, 22(23), 9481](https://www.mdpi.com/1986552)
+
+## WiFi and Cellular 5G 6G
+- [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
+- [Christian Arendt, et al. Empowering the Convergence of Wi-Fi and 5G for Future Private 6G Networks. Accepted by European Wireless 2023; 28th European Wireless Conference 2023](https://cni.etit.tu-dortmund.de/storages/cni-etit/r/Research/Publications/2023/Arendt_2023_EW/2023_openwifi_ew_cr.pdf)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
