@@ -140,9 +140,9 @@ The board actually is an Linux/Ubuntu computer which is running **hostapd** to o
 
 ## Update FPGA
 
-(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files without rebooting/power-cycle)
+Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the FPGA&Driver according to the Quick start of [this app note](doc/app_notes/radar-self-csi.md#quick-start). Following instructions are doing the same thing with extra info for environment setup.
 
-Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the fpga bitstream and driver (see next section) on to the board.
+(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for better understanding of updating FPGA and driver files without rebooting/power-cycle)
 
 - Install Vivado 2021.1. Make sure install Vitis as well. You should have this directory: your_Xilinx_install_directory/Vitis (NOT Vitis_HLS!)
   - If the Vitis is not installed, you can add it by running "Xilinx Design Tools --> Add Design Tools for Devices 2021.1" from Xilinx program group/menu in your OS start menu.
@@ -163,9 +163,9 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 
 ## Update Driver
 
-(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files without rebooting/power-cycle)
+Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the FPGA&Driver according to the Quick start of [this app note](doc/app_notes/radar-self-csi.md#quick-start). Following instructions are doing the same thing with extra info for environment setup.
 
-Since the pre-built SD card image might not have the latest bug-fixes/updates, it is recommended to always copy the latest files in the [user_space](./user_space) directory on to the board. Then update the fpga bitstream (see previous section) and driver on to the board.
+(Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for better understanding of updating FPGA and driver files without rebooting/power-cycle)
 
 - Prepare Analog Devices Linux kernel source code (only need to run once):
   ```
