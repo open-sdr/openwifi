@@ -112,7 +112,7 @@ def parse_side_info(side_info, num_eq, CSI_LEN, EQUALIZER_LEN, HEADER_LEN):
     
     timestamp = side_info[:,0] + pow(2,16)*side_info[:,1] + pow(2,32)*side_info[:,2] + pow(2,48)*side_info[:,3]
     
-    freq_offset = (20e6*side_info[:,4]/512)/(2*3.14159265358979323846)
+    freq_offset = (20e6*np.int16(side_info[:,4])/512)/(2*3.14159265358979323846)
 
     csi = np.zeros((num_trans, CSI_LEN), dtype='int16')
     csi = csi + csi*1j
@@ -123,8 +123,8 @@ def parse_side_info(side_info, num_eq, CSI_LEN, EQUALIZER_LEN, HEADER_LEN):
         equalizer = equalizer + equalizer*1j
     
     for i in range(num_trans):
-        tmp_vec_i = side_info[i,8:(num_int16_per_trans-1):4]
-        tmp_vec_q = side_info[i,9:(num_int16_per_trans-1):4]
+        tmp_vec_i = np.int16(side_info[i,8:(num_int16_per_trans-1):4])
+        tmp_vec_q = np.int16(side_info[i,9:(num_int16_per_trans-1):4])
         tmp_vec = tmp_vec_i + tmp_vec_q*1j
         # csi[i,:] = tmp_vec[0:CSI_LEN]
         csi[i,:CSI_LEN_HALF] = tmp_vec[CSI_LEN_HALF:CSI_LEN]
@@ -180,7 +180,7 @@ while True:
         if (test_residual != 0):
             print("Abnormal length")
 
-        side_info = np.frombuffer(data, dtype='int16')
+        side_info = np.frombuffer(data, dtype='uint16')
         np.savetxt(side_info_fd, side_info)
 
         timestamp, freq_offset, csi, equalizer = parse_side_info(side_info, num_eq, CSI_LEN, EQUALIZER_LEN, HEADER_LEN)

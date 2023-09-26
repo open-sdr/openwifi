@@ -38,8 +38,8 @@ def parse_iq(iq, iq_len):
     iq = iq.reshape([num_trans, num_int16_per_trans])
     
     timestamp = iq[:,0] + pow(2,16)*iq[:,1] + pow(2,32)*iq[:,2] + pow(2,48)*iq[:,3]
-    iq0_capture = iq[:,4::4] + iq[:,5::4]*1j
-    iq1_capture = iq[:,6::4] + iq[:,7::4]*1j
+    iq0_capture = np.int16(iq[:,4::4]) + np.int16(iq[:,5::4])*1j
+    iq1_capture = np.int16(iq[:,6::4]) + np.int16(iq[:,7::4])*1j
     # print(num_trans, iq_len, iq0_capture.shape, iq1_capture.shape)
 
     iq0_capture = iq0_capture.reshape([num_trans*iq_len,])
@@ -87,7 +87,7 @@ while True:
         if (test_residual != 0):
             print("Abnormal length")
 
-        iq = np.frombuffer(data, dtype='int16')
+        iq = np.frombuffer(data, dtype='uint16')
         np.savetxt(iq_fd, iq)
 
         timestamp, iq0_capture, iq1_capture = parse_iq(iq, iq_len)
