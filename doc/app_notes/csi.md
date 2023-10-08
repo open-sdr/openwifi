@@ -130,6 +130,8 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   The openwifi CSI feature could run with not only monitor mode but also other modes, such as AP-Client or ad-hoc mode. After the communication functionality is fully up in those modes, you can start CSI feature from "**insmod side_ch.ko**" and "**./side_ch_ctl g**" on board as described in the previous sections to extract CSI to your computer.
 
 ## Map the CSI information to the WiFi packet
+  Please check this discussion: https://github.com/open-sdr/openwifi/discussions/344
+  
   If you want to relate the CSI information to the WiFi packet, you need to capture WiFi packets (tcpdump/wireshark/etc) while capturing CSI. Then you can match the timestamp (TSF timer value) between WiFi packet and CSI information, because this is the unique same identity of a Wifi packet and related CSI information.
   
   Please learn the python and Matlab script to extract CSI information per packet according to your requirement.
