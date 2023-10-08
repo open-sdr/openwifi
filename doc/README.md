@@ -14,6 +14,7 @@ Above figure shows software and hardware/FPGA modules that compose the openwifi 
 - [sdrctl command](#sdrctl-command)
 - [Rx packet flow and filtering config](#Rx-packet-flow-and-filtering-config)
 - [Tx packet flow and config](#Tx-packet-flow-and-config)
+- [Understand the timestamp of WiFi packet](#Understand-the-timestamp-of-WiFi-packet)
 - [Regulation and channel config](#Regulation-and-channel-config)
 - [Analog and digital frequency design](#Analog-and-digital-frequency-design)
 - [Debug methods](#Debug-methods)
@@ -265,6 +266,18 @@ Each time when FPGA sends a packet, an interrupt will be raised to Linux reporti
     - packet length and sequence number to capture abnormal situation (cross checking between FPGA, openwifi_tx and openwifi_tx_interrupt)
     - packet sending result: packet is sent successfully (FPGA receives ACK for this packet) or not. How many retransmissions have been done (in case FPGA doesn't receive ACK in time, FPGA will do retransmission according to CSMA/CA low MAC state)
   - send above information to upper layer (Linux mac80211 subsystem) via ieee80211_tx_status_irqsafe()
+
+## Understand the timestamp of WiFi packet
+
+The TSF timestamp shown in the usual wireshark snapshot is reported by openwifi Linux driver towards Linux mac80211 framework.
+![](https://user-images.githubusercontent.com/5212105/270659135-44a048ae-773f-48a7-bf3f-76ffc3ee399a.jpg)
+
+This TSF timestamp is attached to the DMA of the received packet in FPGA by reading the TSF timier (defined by 802.11 standard and implemented in FPGA) value while PHY header is received: [FPGA code snip](https://github.com/open-sdr/openwifi-hw/blob/14b1e840591f470ee945844cd3bb51a95d7da09f/ip/rx_intf/src/rx_intf_pl_to_m_axis.v#L201).
+
+Then openwifi driver report this timestamp value (together with the corresponding packet) to Linux via:
+https://github.com/open-sdr/openwifi/blob/0ce2e6b86ade2f6164a373b2e98d075eb7eecd9e/driver/sdr.c#L530
+
+To match the openwifi side channel collected data (CSI, IQ sample, etc.) to the TSF timestamp of the packet, please check: https://github.com/open-sdr/openwifi/discussions/344
 
 ## Regulation and channel config
 
