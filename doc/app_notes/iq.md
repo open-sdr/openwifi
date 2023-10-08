@@ -166,6 +166,8 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   The openwifi IQ capture feature could run with not only monitor mode but also other modes, such as AP-Client or ad-hoc mode. After the communication functionality is fully up in those modes, you can start IQ capture from "**insmod side_ch.ko**" and "**./side_ch_ctl g**" on board as described in the previous sections to extract IQ information to your computer.
 
 ## Map the IQ information to the WiFi packet
+  (See this https://github.com/open-sdr/openwifi/discussions/344 to understand how to map the collected data to the packet via the TSF timestamp)
+  
   If you want to relate the IQ information to the WiFi packet, you need to capture WiFi packets (tcpdump/wireshark/etc) while capturing IQ. Then you can relate the timestamp between WiFi packet and IQ information. Please be noticed that the timestamp in the IQ information is the moment when capture is triggered, which could be different from the timestamp reported in the packet capture program. But since they share the same time base (TSF timer), you can relate them easily by analyzing the WiFi packet and IQ sample sequence.
   
   Please learn the python and Matlab script to extract IQ information per capture according to your requirement.
