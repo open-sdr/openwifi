@@ -8,6 +8,8 @@ One super power of the openwifi platform is "**Full Duplex**" which means that o
  ![](./openwifi-radar.jpg)
  ![](./sensing.png)
 
+(See this https://github.com/open-sdr/openwifi/discussions/344 to understand how to map the collected data to the packet via the TSF timestamp)
+
 ## Quick start
 - Power on the SDR board.
 - Connect a computer to the SDR board via Ethernet cable. The computer should have static IP 192.168.10.1. Open a terminal on the computer, and then in the terminal:
