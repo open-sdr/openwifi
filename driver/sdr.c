@@ -112,7 +112,8 @@ static bool openwifi_is_radio_enabled(struct openwifi_priv *priv)
 	else
 		reg = ad9361_get_tx_atten(priv->ad9361_phy, 2);
 
-	if (reg == (AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]))
+	// if (reg == (AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT]))
+  if (reg < AD9361_RADIO_OFF_TX_ATT)
 		return true;// 0 off, 1 on
 	return false;
 }
