@@ -693,7 +693,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 				seq_no = ring->bds[ring->bd_rd_idx].seq_no;
 
 				if (seq_no == 0xffff) {// it has been forced cleared by the openwifi_tx (due to out-of-order Tx of different queues to the air?)
-					printk("%s openwifi_tx_interrupt: WARNING wr%d rd%d last_bd_rd_idx%d i%d pkt_cnt%d prio%d fpga q%d hwq len%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr0x%u\n", sdr_compatible_str,
+					printk("%s openwifi_tx_interrupt: WARNING wr%d rd%d last_bd_rd_idx%d i%d pkt_cnt%d prio%d fpga q%d hwq len%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%u\n", sdr_compatible_str,
 					ring->bd_wr_idx, ring->bd_rd_idx, last_bd_rd_idx, i, pkt_cnt, prio, queue_idx, hw_queue_len, ring->bds[ring->bd_rd_idx].prio, ring->bds[ring->bd_rd_idx].len_mpdu, seq_no, ring->bds[ring->bd_rd_idx].skb_linked, ring->bds[ring->bd_rd_idx].dma_mapping_addr);
 					continue;
 				}
