@@ -271,7 +271,7 @@ static const struct of_device_id dev_of_ids[] = {
 MODULE_DEVICE_TABLE(of, dev_of_ids);
 
 static struct xpu_driver_api xpu_driver_api_inst;
-static struct xpu_driver_api *xpu_api = &xpu_driver_api_inst;
+struct xpu_driver_api *xpu_api = &xpu_driver_api_inst;
 EXPORT_SYMBOL(xpu_api);
 
 static inline u32 hw_init(enum xpu_mode mode){

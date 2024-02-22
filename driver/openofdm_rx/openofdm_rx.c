@@ -65,7 +65,7 @@ static const struct of_device_id dev_of_ids[] = {
 MODULE_DEVICE_TABLE(of, dev_of_ids);
 
 static struct openofdm_rx_driver_api openofdm_rx_driver_api_inst;
-static struct openofdm_rx_driver_api *openofdm_rx_api = &openofdm_rx_driver_api_inst;
+struct openofdm_rx_driver_api *openofdm_rx_api = &openofdm_rx_driver_api_inst;
 EXPORT_SYMBOL(openofdm_rx_api);
 
 static inline u32 hw_init(enum openofdm_rx_mode mode){

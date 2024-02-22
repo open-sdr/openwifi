@@ -165,7 +165,7 @@ static const struct of_device_id dev_of_ids[] = {
 MODULE_DEVICE_TABLE(of, dev_of_ids);
 
 static struct rx_intf_driver_api rx_intf_driver_api_inst;
-static struct rx_intf_driver_api *rx_intf_api = &rx_intf_driver_api_inst;
+struct rx_intf_driver_api *rx_intf_api = &rx_intf_driver_api_inst;
 EXPORT_SYMBOL(rx_intf_api);
 
 static inline u32 hw_init(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps){
