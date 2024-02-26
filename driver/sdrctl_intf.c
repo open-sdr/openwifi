@@ -27,7 +27,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		xpu_api->XPU_REG_CSMA_CFG_write(tmp); // unit us
 		return 0;
 	case OPENWIFI_CMD_GET_GAP:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		tmp = xpu_api->XPU_REG_CSMA_CFG_read();
@@ -48,7 +48,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		}
 		return 0;
 	case OPENWIFI_CMD_GET_SLICE_IDX:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		tmp = priv->slice_idx;
@@ -69,7 +69,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		}
 		return 0;
 	case OPENWIFI_CMD_GET_ADDR:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		if (priv->slice_idx>=MAX_NUM_HW_QUEUE) {
@@ -95,7 +95,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		}
 		return 0;
 	case OPENWIFI_CMD_GET_SLICE_TOTAL:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		tmp = (xpu_api->XPU_REG_SLICE_COUNT_TOTAL_read());
@@ -117,7 +117,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		}
 		return 0;
 	case OPENWIFI_CMD_GET_SLICE_START:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		tmp = (xpu_api->XPU_REG_SLICE_COUNT_START_read());
@@ -139,7 +139,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		}
 		return 0;
 	case OPENWIFI_CMD_GET_SLICE_END:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		tmp = (xpu_api->XPU_REG_SLICE_COUNT_END_read());
@@ -206,7 +206,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		printk("%s WARNING Please use command: sdrctl dev sdr0 set reg drv_xpu 0 reg_value! (1~2047, 0 means AUTO)!\n", sdr_compatible_str);
 		return -EOPNOTSUPP;
 	case OPENWIFI_CMD_GET_RSSI_TH:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		tmp_int = rssi_half_db_to_rssi_dbm(xpu_api->XPU_REG_LBT_TH_read(), priv->rssi_correction); //rssi_dbm
@@ -358,7 +358,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
 		
 		return 0;
 	case REG_CMD_GET:
-		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
+		skb = (struct sk_buff *)cfg80211_testmode_alloc_reply_skb(hw->wiphy, nla_total_size(sizeof(u32)));
 		if (!skb)
 			return -ENOMEM;
 		reg_addr = nla_get_u32(tb[REG_ATTR_ADDR]);
