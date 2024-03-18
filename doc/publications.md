@@ -25,6 +25,7 @@ Publications in category:
 - [Merkebu Girmay, et al. Intelligent Spectrum Sharing Between LTE and Wi-Fi Networks using Muted MBSFN Subframes. WAMICON 2023](https://ieeexplore.ieee.org/abstract/document/10124903)
 - [Thijs Havinga, et al. Improved TDD operation on Software-Defined Radio platforms towards future wireless standards. Computer Communications, Volume 209, 1 September 2023, Pages 178-187](https://doi.org/10.1016/j.comcom.2023.06.026)
 - [Yuyang Du, et al. The Power of Large Language Models for Wireless Communication System Development: A Case Study on FPGA Platforms. arxiv, Submitted on 14 Jul 2023 (v1), last revised 5 Sep 2023 (this version, v2)](https://arxiv.org/abs/2307.07319)
+- [Muhammad Aslam, et al. A novel hardware efficient design for IEEE 802.11ax compliant OFDMA transceiver](https://www.sciencedirect.com/science/article/pii/S0140366424000926?dgcid=coauthor)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
