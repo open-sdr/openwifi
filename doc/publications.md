@@ -61,6 +61,7 @@ Publications in category:
 - [Mathy Vanhoef, et al. Testing and Improving the Correctness of Wi-Fi Frame Injection. ACM WiSec 2023](https://papers.mathyvanhoef.com/wisec2023-wifi-injection.pdf)
 - [Wen Liu, et al. A New Paradigm for Device-free Indoor Localization: Deep Learning with Error Vector Spectrum in Wi-Fi Systems. arxiv 2023](https://arxiv.org/pdf/2304.06490.pdf)
 - [Paul Zanna, et al. Preventing Attacks on Wireless Networks Using SDN Controlled OODA Loops and Cyber Kill Chains. Sensors 2022, 22(23), 9481](https://www.mdpi.com/1986552)
+- [Hayoung Seong, et al. Practical Covert Wireless Unidirectional Communication in IEEE 802.11 Environment, IEEE Internet of Things Journal ( Volume: 10, Issue: 2, 15 January 2023)](https://ieeexplore.ieee.org/abstract/document/9881568)
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
