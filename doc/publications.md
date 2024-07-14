@@ -27,6 +27,7 @@ Publications in category:
 - [Yuyang Du, et al. The Power of Large Language Models for Wireless Communication System Development: A Case Study on FPGA Platforms. arxiv, Submitted on 14 Jul 2023 (v1), last revised 5 Sep 2023 (this version, v2)](https://arxiv.org/abs/2307.07319)
 - [Muhammad Aslam, et al. A novel hardware efficient design for IEEE 802.11ax compliant OFDMA transceiver](https://www.sciencedirect.com/science/article/pii/S0140366424000926?dgcid=coauthor)
 - [Trio Adiono, et al. FPGA Implementation of SFO for OFDM-based Network Enabled Li-Fi System. IEEE ISCAS 2024](https://ieeexplore.ieee.org/abstract/document/10557957)
+- [Trio Adiono, et al. A Scalable Design of A Full-Stack Real-Time OFDM Baseband Processor for Network-Enabled VLC Systems. IEEE Access 2024](https://ieeexplore.ieee.org/document/10589620)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
