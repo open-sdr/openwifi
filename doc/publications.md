@@ -70,7 +70,6 @@ Publications in category:
 - [Fan Qi, et al. Deep Learning-based CSI Feedback in Wi-Fi Systems, arxiv, 2024](https://arxiv.org/pdf/2407.05905)
 - [Lorenzo Ghiro, et al. Wi-Fi Localization Obfuscation: An implementation in openwifi. ELSEVIER Computer Communications, 2023](http://www.sciencedirect.com/science/article/pii/S0140366423001111)
 
-
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
 - [Christian Arendt, et al. Empowering the Convergence of Wi-Fi and 5G for Future Private 6G Networks. Accepted by European Wireless 2023; 28th European Wireless Conference 2023](https://cni.etit.tu-dortmund.de/storages/cni-etit/r/Research/Publications/2023/Arendt_2023_EW/2023_openwifi_ew_cr.pdf)
