@@ -11,5 +11,5 @@
 - High Precision Time Synchronization on Wi-Fi based Multi-Hop Network [[Youtube](https://youtu.be/m5ryRArbdC8)], [[link for CHN user](https://www.zhihu.com/zvideo/1418222775224492032)]
 - FOSDEM2022 presentation [[Presentation](https://video.fosdem.org/2022/D.radio/radio_openwifi.webm)], [[link for CHN user](https://www.bilibili.com/video/BV12b4y1j7YK?share_source=copy_web)]
 - [Find the corresponding Wi-Fi packet in wireshark after openwifi CSI/IQ capture](https://github.com/open-sdr/openwifi/discussions/344) [[Youtube](https://youtu.be/iiiINz7XTGA)], [[link for CHN user](https://www.bilibili.com/video/BV13w411Y7GX/?share_source=copy_web&vd_source=587e4ed61021396d31fd3a09c077969f)]
-- CCC GPN2 DanielAW, 2How a Wifi chip works internally [[link](https://media.ccc.de/v/gpn22-380-how-a-wifi-chip-works-internally)]
+- CCC GPN22 DanielAW, How a Wifi chip works internally [[link](https://media.ccc.de/v/gpn22-380-how-a-wifi-chip-works-internally)]
 - FSiC2024, An opensource Wi-Fi chip, What, Why and How? [[link](https://wiki.f-si.org/index.php?title=An_opensource_Wi-Fi_chip,_What,_Why_and_How%3F)]
