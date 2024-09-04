@@ -48,7 +48,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Residual Service Time Optimization for legacy Wireless-TSN end nodes. 2023 19th International Conference on Wireless and Mobile Computing, Networking and Communications (WiMob). p.466-471](https://ieeexplore.ieee.org/document/10187722)
 - [Dirk Dahlhaus, et al. Towards Functional Safety in Dynamic Distributed Systems. Journal of Mobile Multimedia, Vol. 20 1, 1–24.](https://biblio.ugent.be/publication/01HGD7JAZY0YAQ1T13HQV35JC0/file/01HGD7PD2WRP9QW7J1G964Z6Y7.pdf)
 - [Kouros Zanbour, et al. A Comprehensive Survey of Wireless Time-Sensitive Networking (TSN): Architecture, Technologies, Applications, and Open Issues. arXiv, 2 Dec 2023](https://arxiv.org/abs/2312.01204)
-- [Pablo Avila-Campos, et al. Impactless association methods for wi-fi based time-sensitive networks. Wireless Networks Journal, 2024](https://trebuchet.public.springernature.app/get_content/5ddce362-b52a-4591-8eca-3e2e1b201114?utm_source=rct_congratemailt&utm_medium=email&utm_campaign=nonoa_20240221&utm_content=10.1007/s11276-024-03681-w)
+- [Pablo Avila-Campos, et al. Impactless association methods for wi-fi based time-sensitive networks. Wireless Networks Journal, 2024](https://dl.acm.org/doi/10.1007/s11276-024-03681-w)
 - [Pablo Avila-Campos, et al. Unlocking Mobility for Wi-Fi-based Wireless Time-Sensitive Networks. IEEE Access, 2024](https://ieeexplore.ieee.org/document/10443947)
 
 ## CSI Channel State Information and Security
