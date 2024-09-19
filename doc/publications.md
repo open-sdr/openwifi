@@ -74,6 +74,7 @@ Publications in category:
 - [Hayoung Seong, et al. Practical Covert Wireless Unidirectional Communication in IEEE 802.11 Environment, IEEE Internet of Things Journal ( Volume: 10, Issue: 2, 15 January 2023)](https://ieeexplore.ieee.org/abstract/document/9881568)
 - [Fan Qi, et al. Deep Learning-based CSI Feedback in Wi-Fi Systems, arxiv, 2024](https://arxiv.org/pdf/2407.05905)
 - [Lorenzo Ghiro, et al. Wi-Fi Localization Obfuscation: An implementation in openwifi. ELSEVIER Computer Communications, 2023](http://www.sciencedirect.com/science/article/pii/S0140366423001111)
+- [Andreas Toftegaard Kristensen, et al. Monostatic Multi-Target Wi-Fi-Based Breathing Rate Sensing Using Openwifi, IEEE Wireless Communications and Networking Conference (WCNC) 2024](https://ieeexplore.ieee.org/document/10570912)
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
