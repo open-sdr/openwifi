@@ -69,7 +69,7 @@ Publications in category:
 - [Renato Lo Cigno, et al. Integrating CSI Sensing in Wireless Networks: Challenges to Privacy and Countermeasures. IEEE Network, 2022](https://ieeexplore.ieee.org/document/9919763)
 - [Renato Lo Cigno, et al. AntiSense: Standard-compliant CSI obfuscation against unauthorized Wi-Fi sensing. ELSEVIER Computer Communications, 2022](https://www.sciencedirect.com/science/article/pii/S0140366421004916)
 - [Mathy Vanhoef, et al. Testing and Improving the Correctness of Wi-Fi Frame Injection. ACM WiSec 2023](https://papers.mathyvanhoef.com/wisec2023-wifi-injection.pdf)
-- [Wen Liu, et al. A New Paradigm for Device-free Indoor Localization: Deep Learning with Error Vector Spectrum in Wi-Fi Systems. arxiv 2023](https://arxiv.org/pdf/2304.06490.pdf)
+- [Wen Liu, et al. A New Paradigm for Device-free Indoor Localization: Deep Learning with Error Vector Spectrum in Wi-Fi Systems. PIMRC 2023](https://arxiv.org/pdf/2304.06490.pdf)
 - [Paul Zanna, et al. Preventing Attacks on Wireless Networks Using SDN Controlled OODA Loops and Cyber Kill Chains. Sensors 2022, 22(23), 9481](https://www.mdpi.com/1986552)
 - [Hayoung Seong, et al. Practical Covert Wireless Unidirectional Communication in IEEE 802.11 Environment, IEEE Internet of Things Journal ( Volume: 10, Issue: 2, 15 January 2023)](https://ieeexplore.ieee.org/abstract/document/9881568)
 - [Fan Qi, et al. Deep Learning-based CSI Feedback in Wi-Fi Systems, arxiv, 2024](https://arxiv.org/pdf/2407.05905)
