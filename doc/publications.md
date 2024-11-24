@@ -28,6 +28,7 @@ Publications in category:
 - [Muhammad Aslam, et al. A novel hardware efficient design for IEEE 802.11ax compliant OFDMA transceiver](https://www.sciencedirect.com/science/article/pii/S0140366424000926?dgcid=coauthor)
 - [Trio Adiono, et al. FPGA Implementation of SFO for OFDM-based Network Enabled Li-Fi System. IEEE ISCAS 2024](https://ieeexplore.ieee.org/abstract/document/10557957)
 - [Trio Adiono, et al. A Scalable Design of A Full-Stack Real-Time OFDM Baseband Processor for Network-Enabled VLC Systems. IEEE Access 2024](https://ieeexplore.ieee.org/document/10589620)
+- [Roni Fagerholm, FPGA-based DECT-2020 New Radio Packet Detection. Master thesis, Aalto University, 30 September 2024](https://aaltodoc.aalto.fi/server/api/core/bitstreams/a5105c46-f4c6-4034-8024-96ed9e440feb/content)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
@@ -55,7 +56,7 @@ Publications in category:
 - [Ozgur Ozkaya, et al. Simulating and Validating openwifi W-TSN in ns-3, IEEE 20th International Conference on Factory Communication Systems (WFCS) 2024](https://ieeexplore.ieee.org/document/10540899)
 - [Pablo Avila-Campos, et al. Impactless association methods for wi-fi based time-sensitive networks. Wireless Networks Journal, 2024](https://dl.acm.org/doi/10.1007/s11276-024-03681-w)
 - [Pablo Avila-Campos, et al. Unlocking Mobility for Wi-Fi-based Wireless Time-Sensitive Networks. IEEE Access, 2024](https://ieeexplore.ieee.org/document/10443947)
-- [Analog Devices, AN-2597: An OFDM-Based HDL Reference Modem Using the AD936x RF Transceivers, November, 2024](https://www.analog.com/en/resources/app-notes/an-2597.html)
+- [Analog Devices, AN-2597: An OFDM-Based HDL Reference Modem Using the AD936x RF Transceivers. November, 2024](https://www.analog.com/en/resources/app-notes/an-2597.html)
 
 ## CSI Channel State Information and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
