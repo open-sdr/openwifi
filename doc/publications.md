@@ -55,6 +55,7 @@ Publications in category:
 - [Ozgur Ozkaya, et al. Simulating and Validating openwifi W-TSN in ns-3, IEEE 20th International Conference on Factory Communication Systems (WFCS) 2024](https://ieeexplore.ieee.org/document/10540899)
 - [Pablo Avila-Campos, et al. Impactless association methods for wi-fi based time-sensitive networks. Wireless Networks Journal, 2024](https://dl.acm.org/doi/10.1007/s11276-024-03681-w)
 - [Pablo Avila-Campos, et al. Unlocking Mobility for Wi-Fi-based Wireless Time-Sensitive Networks. IEEE Access, 2024](https://ieeexplore.ieee.org/document/10443947)
+- [Analog Devices, AN-2597: An OFDM-Based HDL Reference Modem Using the AD936x RF Transceivers, November, 2024](https://www.analog.com/en/resources/app-notes/an-2597.html)
 
 ## CSI Channel State Information and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
