@@ -11,7 +11,7 @@ You can also cite openwifi github code: [LaTex example](cite-openwifi-github-cod
 Publications in category:
 - [Feature Functionality and System](#Feature-Functionality-and-System)
 - [TSN Time Sensitive Network and RT Real Time](#TSN-Time-Sensitive-Network-and-RT-Real-Time)
-- [CSI Channel State Information and Security](#CSI-Channel-State-Information-and-Security)
+- [CSI Sensing and Security](#CSI-Sensing-and-Security)
 - [WiFi and Cellular 5G 6G](#WiFi-and-Cellular-5G-6G)
 
 ## Feature Functionality and System
@@ -58,7 +58,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Unlocking Mobility for Wi-Fi-based Wireless Time-Sensitive Networks. IEEE Access, 2024](https://ieeexplore.ieee.org/document/10443947)
 - [Analog Devices, AN-2597: An OFDM-Based HDL Reference Modem Using the AD936x RF Transceivers. November, 2024](https://www.analog.com/en/resources/app-notes/an-2597.html)
 
-## CSI Channel State Information and Security
+## CSI Sensing and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
 - [Marco Cominelli, et al. IEEE 802.11 CSI randomization to preserve location privacy: An empirical evaluation in different scenarios. ELSEVIER Computer Networks, 2021](https://www.sciencedirect.com/science/article/abs/pii/S138912862100102X)
 - [Xianjun Jiao, et al. Openwifi CSI fuzzer for authorized sensing and covert channels. ACM WiSec 2021](https://dl.acm.org/doi/pdf/10.1145/3448300.3468255)
@@ -77,6 +77,7 @@ Publications in category:
 - [Fan Qi, et al. Deep Learning-based CSI Feedback in Wi-Fi Systems, arxiv, 2024](https://arxiv.org/pdf/2407.05905)
 - [Lorenzo Ghiro, et al. Wi-Fi Localization Obfuscation: An implementation in openwifi. ELSEVIER Computer Communications, 2023](http://www.sciencedirect.com/science/article/pii/S0140366423001111)
 - [Andreas Toftegaard Kristensen, et al. Monostatic Multi-Target Wi-Fi-Based Breathing Rate Sensing Using Openwifi, IEEE Wireless Communications and Networking Conference (WCNC) 2024](https://ieeexplore.ieee.org/document/10570912)
+- [Andreas Toftegaard Kristensen, et al. An SDR-Based Monostatic Wi-Fi System with Analog Self-Interference Cancellation for Sensing, arXiv, 11 DEC 2024](https://arxiv.org/abs/2412.08612)
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
