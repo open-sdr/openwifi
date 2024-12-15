@@ -77,7 +77,7 @@ Publications in category:
 - [Fan Qi, et al. Deep Learning-based CSI Feedback in Wi-Fi Systems, arxiv, 2024](https://arxiv.org/pdf/2407.05905)
 - [Lorenzo Ghiro, et al. Wi-Fi Localization Obfuscation: An implementation in openwifi. ELSEVIER Computer Communications, 2023](http://www.sciencedirect.com/science/article/pii/S0140366423001111)
 - [Andreas Toftegaard Kristensen, et al. Monostatic Multi-Target Wi-Fi-Based Breathing Rate Sensing Using Openwifi, IEEE Wireless Communications and Networking Conference (WCNC) 2024](https://ieeexplore.ieee.org/document/10570912)
-- [Andreas Toftegaard Kristensen, et al. An SDR-Based Monostatic Wi-Fi System with Analog Self-Interference Cancellation for Sensing, arXiv, 11 DEC 2024](https://arxiv.org/abs/2412.08612)
+- [Andreas Toftegaard Kristensen, et al. An SDR-Based Monostatic Wi-Fi System with Analog Self-Interference Cancellation for Sensing, arXiv, 11 DEC 2024](https://arxiv.org/abs/2412.08612) [[**block diagram**](AnSIC-sensing-correction.png)]
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
