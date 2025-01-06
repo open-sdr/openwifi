@@ -4,7 +4,8 @@ SPDX-FileCopyrightText: 2021 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-[ACM WiSec 2021. Openwifi CSI fuzzer for authorized sensing and covert channels](https://dl.acm.org/doi/pdf/10.1145/3448300.3468255)
+- [ACM WiSec 2021. Openwifi CSI fuzzer for authorized sensing and covert channels](https://dl.acm.org/doi/pdf/10.1145/3448300.3468255)
+- [Privacy Protection in WiFi Sensing via CSI Fuzzing](https://ieeexplore.ieee.org/abstract/document/10818006)
 
 CSI (Channel State Information) of WiFi systems is available in some WiFi chips and can be used for sensing the environment (keystrokes, people, object) passively and secretly.
 
