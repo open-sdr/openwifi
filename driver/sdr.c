@@ -218,12 +218,12 @@ inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 a
 	if (actual_rx_lo < 2500) {
 		if (priv->band != BAND_2_4GHZ) {
 			priv->band = BAND_2_4GHZ;
-			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
+			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|actual_rx_lo );
 		}
 	} else {
 		if (priv->band != BAND_5_8GHZ) {
 			priv->band = BAND_5_8GHZ;
-			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
+			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|actual_rx_lo );
 		}
 	}
 	printk("%s openwifi_rf_rx_update_after_tuning %dMHz rssi_correction %d fpga_lbt_th %d(%ddBm) auto %d static %d receiver th %d(%ddBm)\n", sdr_compatible_str,
@@ -1906,10 +1906,10 @@ static void openwifi_bss_info_changed(struct ieee80211_hw *dev,
 		changed&BSS_CHANGED_ERP_SLOT,changed&BSS_CHANGED_ERP_PREAMBLE,info->use_short_slot);
 		if (info->use_short_slot && priv->use_short_slot==false) {
 			priv->use_short_slot=true;
-			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
+			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|priv->actual_rx_lo );
 		} else if ((!info->use_short_slot) && priv->use_short_slot==true) {
 			priv->use_short_slot=false;
-			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16) );
+			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|priv->actual_rx_lo );
 		}
 	}
 
