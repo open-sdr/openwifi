@@ -86,6 +86,8 @@ source $XILINX_DIR/Vitis/2021.1/settings64.sh
   git apply ../kernel_boot/axi_hdmi_crtc.patch
   git apply ../kernel_boot/ad9361.patch
   git apply ../kernel_boot/ad9361_conv.patch
+  # Ignore warning in mac80211
+  sed -i '3692 s/^/\/\//' ../adi-linux-64/net/mac80211/util.c
 # else
   # make zynq_xcomm_adv7511_defconfig
 # fi
