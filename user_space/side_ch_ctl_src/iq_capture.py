@@ -56,8 +56,8 @@ def parse_iq(iq, iq_len):
     
     timestamp = iq[:,0] + pow(2,16)*iq[:,1] + pow(2,32)*iq[:,2] + pow(2,48)*iq[:,3]
     iq_capture = np.int16(iq[:,4::4]) + np.int16(iq[:,5::4])*1j
-    agc_gain = iq[:,6::4]
-    rssi_half_db = iq[:,7::4]
+    agc_gain = np.bitwise_and(iq[:,6::4], np.uint16(0xFF))
+    rssi_half_db = np.bitwise_and(iq[:,7::4], np.uint16(0x7FF))
     # print(num_trans, iq_len, iq_capture.shape, agc_gain.shape, rssi_half_db.shape)
 
     iq_capture = iq_capture.reshape([num_trans*iq_len,])

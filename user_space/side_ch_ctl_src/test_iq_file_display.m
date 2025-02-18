@@ -37,8 +37,10 @@ for i=1:num_iq_capture
     ep = i*num_data_in_each_iq_capture;
     timestamp(i) = double(b(sp,1)) + (2^16)*double(b(sp,2)) + (2^32)*double(b(sp,3)) + (2^48)*double(b(sp,4));
     iq_capture(:,i) = double(typecast(b((sp+1):ep,1),'int16')) + 1i.*double(typecast(b((sp+1):ep,2),'int16'));
-    agc_gain(:,i) = double(b((sp+1):ep,3));
-    rssi_half_db(:,i) = double(b((sp+1):ep,4));
+    // agc_gain(:,i) = double(b((sp+1):ep,3));
+    agc_gain(:,i) = double(bitand(b((sp+1):ep,3), uint16(255)));
+    // rssi_half_db(:,i) = double(b((sp+1):ep,4));
+    rssi_half_db(:,i) = double(bitand(b((sp+1):ep,4), uint16(2047)));
 end
 save(['iq_' num2str(iq_len) '.mat'], 'iq_capture');
 
