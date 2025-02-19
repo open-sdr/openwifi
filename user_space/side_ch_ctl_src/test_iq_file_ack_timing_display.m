@@ -144,7 +144,7 @@ plot(ones(1,num_iq_capture).*mean(tx_ack_gap_us(tx_ack_gap_us~=-1)),'r'); title(
 function [gap, gap_sp, gap_ep] = extract_gap_from_iq_of_two_pkts(iq)
 iq = iq - mean(iq);
 
-num_sample_power_window = 20;
+num_sample_power_window = 17;
 power_ratio = 100;
 power_sum_2us_before = zeros(1, length(iq));
 iq_extend = [iq(1:num_sample_power_window); iq];
