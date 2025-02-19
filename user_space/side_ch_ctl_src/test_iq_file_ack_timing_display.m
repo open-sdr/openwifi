@@ -3,7 +3,7 @@
 % clear all;
 % close all;
 
-function test_iq_file_ack_timing_display(varargin)
+function timestamp = test_iq_file_ack_timing_display(varargin)
 close all;
 idx_ack_show = 1;
 if nargin == 0
@@ -110,7 +110,7 @@ for i=1:num_iq_capture
     end
 end
 
-figure; plot(timestamp); title('time stamp (TSF value)'); ylabel('us'); xlabel('packet idx');  grid on;
+figure; plot(timestamp,'b+-'); title('time stamp (TSF value)'); ylabel('us'); xlabel('packet idx');  grid on;
 figure; plot(rssi_half_db(:,idx_ack_show)); title(['RSSI half dB (uncalibrated). Cap idx' num2str(idx_ack_show)]); xlabel('sample idx'); ylabel('dB'); grid on;
 
 figure;
