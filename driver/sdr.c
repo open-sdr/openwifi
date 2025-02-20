@@ -85,7 +85,10 @@ void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 actual_r
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
 
-static int test_mode = 0; // bit0: aggregation enable(1)/disable(0); NO USE ANY MORE: bit1: tx offset tuning enable(0)/disable(1)
+// bit0: aggregation enable(1)/disable(0); 
+// bit1: tx offset tuning enable(0)/disable(1). NO USE ANY MORE
+// bit1: short GI enable(1)/disable(0); 
+static int test_mode = 0; 
 // Internal indication variables after parsing test_mode
 static bool AGGR_ENABLE = false;
 static bool TX_OFFSET_TUNING_ENABLE = false;
@@ -2292,7 +2295,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 		goto err_free_dev;
 	}
 
-	printk("%s openwifi_dev_probe: test_mode %d AGGR_ENABLE %d TX_OFFSET_TUNING_ENABLE %d init_tx_att %d\n", sdr_compatible_str, test_mode, AGGR_ENABLE, TX_OFFSET_TUNING_ENABLE, init_tx_att);
+	printk("%s openwifi_dev_probe: test_mode %x AGGR_ENABLE %d TX_OFFSET_TUNING_ENABLE %d init_tx_att %d\n", sdr_compatible_str, test_mode, AGGR_ENABLE, TX_OFFSET_TUNING_ENABLE, init_tx_att);
 
 	priv->runtime_tx_ant_cfg = ((priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT0 || priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0)?1:(priv->tx_intf_cfg==TX_INTF_BW_20MHZ_AT_0MHZ_ANT_BOTH?3:2));
 	priv->runtime_rx_ant_cfg = (priv->rx_intf_cfg==RX_INTF_BW_20MHZ_AT_0MHZ_ANT0?1:2);
@@ -2369,8 +2372,11 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_2GHz.bitrates = priv->rates_2GHz;
 	priv->band_2GHz.n_bitrates = ARRAY_SIZE(priv->rates_2GHz);
 	priv->band_2GHz.ht_cap.ht_supported = true;
-	// priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
-	if (AGGR_ENABLE) {
+
+	if (test_mode&2)
+    priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
+	
+  if (AGGR_ENABLE) {
 		priv->band_2GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
 		priv->band_2GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
 	}
@@ -2385,8 +2391,11 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	priv->band_5GHz.bitrates = priv->rates_5GHz;
 	priv->band_5GHz.n_bitrates = ARRAY_SIZE(priv->rates_5GHz);
 	priv->band_5GHz.ht_cap.ht_supported = true;
-	// priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
-	if (AGGR_ENABLE) {
+
+  if (test_mode&2)
+	  priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
+	
+  if (AGGR_ENABLE) {
 		priv->band_5GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
 		priv->band_5GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
 	}
