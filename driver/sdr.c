@@ -1305,14 +1305,15 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 //	for(i = 0; i <= num_dma_symbol; i++)
 //		printk("%16llx\n", (*(u64*)(&(dma_buf[i*8]))));
 
-	rate_signal_value = (use_ht_rate ? rate_hw_value : wifi_mcs_table_11b_force_up[rate_hw_value]);
-
 	retry_limit_hw_value = ( retry_limit_raw==0?0:((retry_limit_raw - 1)&0xF) );
 
 	queue_idx = drv_ring_idx; // from driver ring idx to FPGA queue_idx mapping
 
-	cts_rate_signal_value = wifi_mcs_table_11b_force_up[cts_rate_hw_value];
-	cts_reg = ((use_cts_protect|force_use_cts_protect)<<31 | cts_use_traffic_rate<<30 | cts_duration<<8 | cts_rate_signal_value<<4 | rate_signal_value);
+  if (use_cts_protect || force_use_cts_protect) {
+	  rate_signal_value = (use_ht_rate ? rate_hw_value : wifi_mcs_table_11b_force_up[rate_hw_value]);
+	  cts_rate_signal_value = wifi_mcs_table_11b_force_up[cts_rate_hw_value];
+	  cts_reg = ((use_cts_protect|force_use_cts_protect)<<31 | cts_use_traffic_rate<<30 | cts_duration<<8 | cts_rate_signal_value<<4 | rate_signal_value);
+  }
 	tx_config = ( prio<<26 | ring->bd_wr_idx<<20 | queue_idx<<18 | retry_limit_hw_value<<14 | pkt_need_ack<<13 | num_dma_symbol );
 	phy_hdr_config = ( ht_aggr_start<<20 | rate_hw_value<<16 | use_ht_rate<<15 | use_short_gi<<14 | use_ht_aggr<<13 | len_psdu );
 
