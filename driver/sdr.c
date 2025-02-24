@@ -2164,11 +2164,13 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 		priv->fpga_type = SMALL_FPGA;
 	} else {
 		// LARGE FPGAs (i.e. ZCU102, Z7035, ZC706)
-		if(strstr(fpga_model, "ZCU102") != NULL || strstr(fpga_model, "Z7035") != NULL || strstr(fpga_model, "ZC706") != NULL)
+		if(strstr(fpga_model, "ZCU102") != NULL || strstr(fpga_model, "Z7035") != NULL || strstr(fpga_model, "ZC706") != NULL) {
 			priv->fpga_type = LARGE_FPGA;
 		// SMALL FPGA: (i.e. ZED, ZC702, Z7020)
-		else if(strstr(fpga_model, "ZED") != NULL || strstr(fpga_model, "ZC702") != NULL || strstr(fpga_model, "Z7020") != NULL)
+    }//	else if(strstr(fpga_model, "ZED") != NULL || strstr(fpga_model, "ZC702") != NULL || strstr(fpga_model, "Z7020") != NULL) {
+    else { // ALL others are SAMLL_FPGA
 			priv->fpga_type = SMALL_FPGA;
+    }
 	}
 
 	// //-------------find ad9361-phy driver for lo/channel control---------------
