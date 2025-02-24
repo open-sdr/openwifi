@@ -856,7 +856,7 @@ inline int calc_n_ofdm(int num_octet, int n_dbps)
 	return (num_ofdm_sym);
 }
 
-inline __le16 gen_ht_duration_id(__le16 frame_control, __le16 aid, u8 qos_hdr, bool use_ht_aggr, u16 rate_hw_value, u16 sifs) 
+inline __le16 gen_ht_duration_id(__le16 frame_control, __le16 aid, u8 qos_hdr, bool use_ht_aggr, u8 rate_hw_value, u16 sifs) 
 {
 // COTS wifi ht QoS data duration field analysis (lots of capture):
 
@@ -938,17 +938,17 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 	struct ieee80211_tx_info *info_skipped;
 	dma_addr_t dma_mapping_addr;
 	unsigned int i, j, empty_bd_idx = 0;
-	u16 rate_signal_value, rate_hw_value, len_mpdu, len_psdu, num_dma_symbol, len_mpdu_delim_pad=0, num_byte_pad;
-	u32 num_dma_byte, addr1_low32, addr2_low32=0, addr3_low32=0, tx_config, cts_reg, phy_hdr_config;//, openofdm_state_history;
-	u16 addr1_high16, addr2_high16=0, addr3_high16=0, sc, seq_no=0, cts_duration=0, cts_rate_hw_value=0, cts_rate_signal_value=0, sifs, ack_duration=0, traffic_pkt_duration, n_dbps;
-	u8 pkt_need_ack, retry_limit_raw,use_short_gi,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr,prio,queue_idx,drv_ring_idx;
+	u16 rate_signal_value, len_mpdu, len_psdu, num_dma_symbol, len_mpdu_delim_pad=0, num_byte_pad;
+	u32 num_dma_byte, addr1_low32, addr2_low32=0, addr3_low32=0, tx_config, cts_reg=0, phy_hdr_config;//, openofdm_state_history;
+	u16 addr1_high16, addr2_high16=0, addr3_high16=0, sc, seq_no=0, cts_duration=0, sifs, ack_duration=0, traffic_pkt_duration, n_dbps;
+	u8 cts_rate_hw_value=0, cts_rate_signal_value=0, rate_hw_value, pkt_need_ack, retry_limit_raw,use_short_gi,*dma_buf,retry_limit_hw_value,rc_flags,qos_hdr,prio,queue_idx,drv_ring_idx;
 	bool drv_seqno=false, use_rts_cts, use_cts_protect, ht_aggr_start=false, use_ht_rate, use_ht_aggr, cts_use_traffic_rate=false, force_use_cts_protect=false;
 	__le16 frame_control,duration_id;
 	u32 dma_fifo_no_room_flag, hw_queue_len, delay_count=0;
 	enum dma_status status;
 
 	static u32 addr1_low32_prev = -1;
-	static u16 rate_hw_value_prev = -1;
+	static u8 rate_hw_value_prev = -1;
 	static u8 pkt_need_ack_prev = -1;
 	static u16 addr1_high16_prev = -1;
 	static __le16 duration_id_prev = -1;
