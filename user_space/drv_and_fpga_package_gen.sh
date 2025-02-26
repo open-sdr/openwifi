@@ -5,9 +5,9 @@
 # SPDX-FileCopyrightText: 2022 UGent
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -lt 3 ]; then
     echo "You have input $# arguments."
-    echo "You must enter exactly 3 arguments: \$OPENWIFI_HW_IMG_DIR \$XILINX_DIR \$BOARD_NAME"
+    echo "You must enter at least the first three 3 arguments: \$OPENWIFI_HW_IMG_DIR \$XILINX_DIR \$BOARD_NAME file_postfix"
     exit 1
 fi
 
@@ -102,6 +102,11 @@ tar -cvf ./drv_and_fpga/driver.tar $(git ls-files ../driver/)
 # cd $dir_save
 # # tar -cvf drv_and_fpga.tar system_top.bit.bin tx_intf.ko rx_intf.ko openofdm_tx.ko openofdm_rx.ko xpu.ko sdr.ko git_info.txt
 
-tar -zcvf drv_and_fpga.tar.gz drv_and_fpga
+if [ "$#" == 4 ]; then
+    POSTFIX="_${4}"
+else
+    POSTFIX=""
+fi
+tar -zcvf drv_and_fpga$POSTFIX.tar.gz drv_and_fpga
 
 set +x
