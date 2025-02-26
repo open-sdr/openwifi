@@ -58,8 +58,11 @@ def display_side_info(freq_offset, csi, equalizer, waterfall_flag):
         ax_phase_csi = fig_csi.add_subplot(212)
         ax_phase_csi.set_xlabel("subcarrier idx")
         ax_phase_csi.set_ylabel("phase")
-        unwrap_phase = np.unwrap(np.angle(csi_for_plot))
-        mid_phase = unwrap_phase[len(csi_for_plot)//2-1]
+        unwrap_phase = np.zeros(csi_for_plot.shape)
+        mid_phase = np.zeros(csi_for_plot.shape[1])
+        for ci in range(csi_for_plot.shape[1]):
+            unwrap_phase[:,ci] = np.unwrap(np.angle(csi_for_plot[:,ci]))
+            mid_phase[ci] = unwrap_phase[csi_for_plot.shape[0]//2-1,ci]
         plt.plot(unwrap_phase-mid_phase)
         fig_csi.canvas.flush_events()
 
