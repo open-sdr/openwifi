@@ -68,9 +68,12 @@ for i=1:num_iq_capture
     frame_type(:,i)        = double(bitand(bitshift(b((sp+1):ep,3), -8), uint16(3)));
     
     % %------------ detect if there is an rx ack event
-%     event_base_idx = 5074; %when the trigger is 5 -- RECV_ACK_WAIT_SIG_VALID
     event_base_idx = 4096; %when the trigger is 6 -- RECV_ACK
-    idx_rx_ack_event = find(tx_control_state((event_base_idx-60):(event_base_idx+60),i)==6, 1, 'first');
+    idx_rx_ack_event = find(tx_control_state((event_base_idx-60):(event_base_idx+60),i)==6, 1, 'first');%RECV_ACK
+    if isempty(idx_rx_ack_event)
+        event_base_idx = 5074; %when the trigger is 5 -- RECV_ACK_WAIT_SIG_VALID
+        idx_rx_ack_event = find(tx_control_state((event_base_idx-60):(event_base_idx+60),i)==5, 1, 'first');%sRECV_ACK_WAIT_SIG_VALID
+    end
     if ~isempty(idx_rx_ack_event)
 %         if idx_rx_ack_event >= 5074-60 && idx <= 5074+60
             iq_sp = (event_base_idx-60-1) + idx_rx_ack_event - 585 - 320 - 585;
