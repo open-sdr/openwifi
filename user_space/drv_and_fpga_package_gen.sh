@@ -80,6 +80,15 @@ mkdir -p drv_and_fpga
 rm -rf drv_and_fpga/*
 cp system_top.bit.bin ../driver/side_ch/side_ch.ko ../driver/tx_intf/tx_intf.ko ../driver/rx_intf/rx_intf.ko ../driver/openofdm_tx/openofdm_tx.ko ../driver/openofdm_rx/openofdm_rx.ko  ../driver/xpu/xpu.ko ../driver/sdr.ko ./drv_and_fpga -f
 cp $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/git_info.txt ./drv_and_fpga -f
+# Add driver git info
+echo " " >> ./drv_and_fpga//git_info.txt
+echo "openwifi-git-branch" >> ./drv_and_fpga//git_info.txt
+git branch >> ./drv_and_fpga//git_info.txt
+echo " " >> ./drv_and_fpga//git_info.txt
+echo "openwifi-git-commit" >> ./drv_and_fpga//git_info.txt
+git log -3 >> ./drv_and_fpga//git_info.txt
+echo " " >> ./drv_and_fpga//git_info.txt
+
 tar -cvf ./drv_and_fpga/driver.tar $(git ls-files ../driver/)
 
 # dir_save=$(pwd)
