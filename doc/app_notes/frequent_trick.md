@@ -143,7 +143,11 @@ Bring it back to the automatic gain control mode
 ```
 To find out a good reference about a manual Rx gain setting for the current link/peer, you can set it to automatic mode and then run
 ```
-rx_gain_show.sh
+./stat_enable.sh
+```
+once and then
+```
+./rx_gain_show.sh
 ```
 for multiple times to check the actual AGC gain vlaue for received packet as explained in this [Access counter/statistics in driver](driver_stat.md). Then you can set the AGC gain value as argument to the **set_rx_gain_manual.sh** with the corret **offset**! For example, if **rx_gain_show.sh** reports a AGC gain value 34 for many successfully received data packets, and you want to use it as a manual gain setting, you need to set
 ```
