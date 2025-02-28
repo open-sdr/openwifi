@@ -1,5 +1,5 @@
 diff --git a/drivers/iio/adc/ad9361.c b/drivers/iio/adc/ad9361.c
-index b21e2129e27c..b53d7b7ab20d 100644
+index b21e2129e27c..4e36cb773c94 100644
 --- a/drivers/iio/adc/ad9361.c
 +++ b/drivers/iio/adc/ad9361.c
 @@ -1234,7 +1234,7 @@ static int ad9361_load_mixer_gm_subtable(struct ad9361_rf_phy *phy)
@@ -31,7 +31,16 @@ index b21e2129e27c..b53d7b7ab20d 100644
  int ad9361_tx_mute(struct ad9361_rf_phy *phy, u32 state)
  {
  	struct ad9361_rf_phy_state *st = phy->state;
-@@ -3744,7 +3744,7 @@ static int ad9361_get_auxadc(struct ad9361_rf_phy *phy)
+@@ -3449,6 +3449,8 @@ static int ad9361_gc_setup(struct ad9361_rf_phy *phy, struct gain_control *ctrl)
+ 			  AGCLL_MAX_INCREASE(~0),  reg);
+ 
+ 	/* Fast AGC - Peak Detectors and Final Settling */
++  ad9361_spi_writef(spi, REG_AGC_LOCK_LEVEL, ENABLE_DIG_SAT_OVRG, ctrl->f_agc_dig_sat_ovrg_en);
++
+ 	reg = ctrl->f_agc_lpf_final_settling_steps;
+ 	reg = clamp_t(u32, reg, 0U, 3U);
+ 	ad9361_spi_writef(spi, REG_FAST_ENERGY_LOST_THRESH,
+@@ -3744,7 +3746,7 @@ static int ad9361_get_auxadc(struct ad9361_rf_phy *phy)
    // Setup Control Outs
    //************************************************************
  
@@ -40,7 +49,7 @@ index b21e2129e27c..b53d7b7ab20d 100644
  				  struct ctrl_outs_control *ctrl)
  {
  	struct spi_device *spi = phy->spi;
-@@ -3754,6 +3754,7 @@ static int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
+@@ -3754,6 +3756,7 @@ static int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
  	ad9361_spi_write(spi, REG_CTRL_OUTPUT_POINTER, ctrl->index); // Ctrl Out index
  	return ad9361_spi_write(spi, REG_CTRL_OUTPUT_ENABLE, ctrl->en_mask); // Ctrl Out [7:0] output enable
  }
@@ -48,7 +57,7 @@ index b21e2129e27c..b53d7b7ab20d 100644
    //************************************************************
    // Setup GPO
    //************************************************************
-@@ -5235,7 +5236,7 @@ static int ad9361_setup(struct ad9361_rf_phy *phy)
+@@ -5235,7 +5238,7 @@ static int ad9361_setup(struct ad9361_rf_phy *phy)
  
  }
  
@@ -57,7 +66,7 @@ index b21e2129e27c..b53d7b7ab20d 100644
  {
  	struct ad9361_rf_phy_state *st = phy->state;
  	int ret;
-@@ -5268,7 +5269,7 @@ static int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
+@@ -5268,7 +5271,7 @@ static int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg)
  
  	return ret;
  }
@@ -66,3 +75,12 @@ index b21e2129e27c..b53d7b7ab20d 100644
  static int ad9361_update_rf_bandwidth(struct ad9361_rf_phy *phy,
  				     u32 rf_rx_bw, u32 rf_tx_bw)
  {
+@@ -8849,6 +8852,8 @@ static struct ad9361_phy_platform_data
+ 	ad9361_of_get_u32(iodev, np, "adi,fagc-lock-level-gain-increase-upper-limit", 5,
+ 			&pdata->gain_ctrl.f_agc_lock_level_gain_increase_upper_limit); /* 0x118 0..63 */
+ 		/* Fast AGC - Peak Detectors and Final Settling */
++  ad9361_of_get_bool(iodev, np, "adi,fagc-dig-sat-ovrg-enable",
++	    &pdata->gain_ctrl.f_agc_dig_sat_ovrg_en); /* 0x101:7 (full table) */
+ 	ad9361_of_get_u32(iodev, np, "adi,fagc-lpf-final-settling-steps", 1,
+ 			&pdata->gain_ctrl.f_agc_lpf_final_settling_steps); /* 0x112:6 0..3 (Post Lock Level Step)*/
+ 	ad9361_of_get_u32(iodev, np, "adi,fagc-lmt-final-settling-steps", 1,
