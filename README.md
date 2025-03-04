@@ -200,6 +200,19 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 ## Easy Access and etc
 
 - Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files without rebooting/power-cycle.
+- Update new kernel, modules and devicetree to the board
+  - Prepare in the host PC (run scripts in the user_space directory)
+    - `prepare_kernel.sh`
+    - `boot_bin_gen.sh`
+    - `transfer_kernel_image_module_to_board.sh`
+  - Run on board (in the /root/ directory)
+    - `populate_kernel_image_module_reboot.sh`
+- Update new drivers .ko files to the board
+  - Prepare in the host PC
+    - `make_all.sh` (in the driver directory)
+    - `transfer_driver_userspace_to_board.sh`
+  - Run on board (in the /root/ directory)
+    - `populate_driver_userspace.sh`
 - FPGA and driver on board update scripts
   - Setup [ftp server](https://ubuntu.com/server/docs/service-ftp) on PC, allow anonymous and change ftp root directory to the openwifi directory.
   - On board:

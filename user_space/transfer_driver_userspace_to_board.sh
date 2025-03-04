@@ -35,3 +35,4 @@ find ../driver/ -name \*.ko -exec cp {} ./openwifi/ \;
 tar -zcvf openwifi.tar.gz openwifi
 
 scp openwifi.tar.gz root@192.168.10.122:
+scp populate_driver_userspace.sh root@192.168.10.122:
