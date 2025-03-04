@@ -71,9 +71,9 @@ cd $OPENWIFI_DIR/
 git submodule update $LINUX_KERNEL_SRC_DIR_NAME
 cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
 git fetch
-git checkout 2021_r1
-git pull origin 2021_r1
-git reset --hard 2021_r1
+git checkout 2022_R2
+git pull origin 2022_R2
+git reset --hard 2022_R2
 
 export ARCH=$ARCH_NAME
 export CROSS_COMPILE=$CROSS_COMPILE_NAME
@@ -87,8 +87,8 @@ source $XILINX_DIR/Vitis/2021.1/settings64.sh
   git apply ../kernel_boot/ad9361.patch
   git apply ../kernel_boot/ad9361_private.patch
   git apply ../kernel_boot/ad9361_conv.patch
-  # Ignore warning in mac80211
-  sed -i '3692 s/^/\/\//' ../adi-linux-64/net/mac80211/util.c
+  # #Ignore warning in mac80211 -- NOT necessary for 2022_R2 kernel!
+  # sed -i '3692 s/^/\/\//' ../$LINUX_KERNEL_SRC_DIR_NAME/net/mac80211/util.c
 # else
   # make zynq_xcomm_adv7511_defconfig
 # fi
