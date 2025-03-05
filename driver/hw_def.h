@@ -240,7 +240,7 @@ enum openofdm_rx_mode {
 #define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-85) //-85 will remove lots of false alarm. the best openwifi reported sensitivity is like -90/-92 (set it manually if conductive test with wifi tester)
 #define OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT 64
 #define OPENOFDM_RX_MIN_PLATEAU_INIT 100
-#define OPENOFDM_RX_FFT_WIN_SHIFT_INIT 1
+#define OPENOFDM_RX_FFT_WIN_SHIFT_INIT 4
 #define OPENOFDM_RX_SMALL_EQ_OUT_COUNTER_TH 48
 
 #define OPENWIFI_MAX_SIGNAL_LEN_TH 1700 //Packet longer  than this threshold will result in receiver early termination. It goes to openofdm_rx/xpu/rx_intf
