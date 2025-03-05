@@ -143,6 +143,7 @@ figure; plot(tx_ack_gap_us, 'ro'); grid on; hold on;
 plot(ones(1,num_iq_capture).*mean(tx_ack_gap_us(tx_ack_gap_us~=-1)),'r'); title('Tx ACK GAP'); xlabel('Cap idx'); ylabel('us');
 
 % save(['iq_' num2str(iq_len) '_ack_timing.mat'], 'iq_capture');
+save(['iq_' num2str(iq_len) '.mat'], 'iq_capture');
 
 function [gap, gap_sp, gap_ep] = extract_gap_from_iq_of_two_pkts(iq)
 iq = iq - mean(iq);
