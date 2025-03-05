@@ -64,7 +64,9 @@ insert_check_module () {
 
 print_usage
 
-insmod ad9361_drv.ko
+# # now ad9361 driver is together with kernel. no need to load it.
+# insmod ad9361_drv.ko
+
 insmod xilinx_dma.ko
 # modprobe ad9361_drv
 # modprobe xilinx_dma
