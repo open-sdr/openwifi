@@ -36,6 +36,29 @@ def phase_offset_to_freq_offset(phase_offset):
     freq_offset = (20.0e6*phase_offset/512.0)/(2.0*3.14159265358979323846)
     return freq_offset
 
+def plot_agc_gain(agc_gain):
+    num_trans = np.shape(agc_gain)[0]
+
+    fig_agc_gain = plt.figure(2)
+    fig_agc_gain.clf()
+    plt.xlabel("sample")
+    plt.ylabel("gain/lock")
+    plt.title("AGC gain (blue) and lock status (red)")
+    
+    for i in range(num_trans):
+      agc_gain_tmp = agc_gain[i,:]
+      agc_gain_lock = np.copy(agc_gain_tmp)
+      agc_gain_lock[agc_gain_tmp>127] = 80 # agc lock
+      agc_gain_lock[agc_gain_tmp<=127] = 0 # agc not lock
+
+      agc_gain_value = np.copy(agc_gain_tmp)
+      agc_gain_value[agc_gain_tmp>127] = agc_gain_tmp[agc_gain_tmp>127] - 128
+      plt.plot(agc_gain_value)
+      plt.plot(agc_gain_lock)
+
+    plt.ylim(0, 82)
+    fig_agc_gain.canvas.flush_events()
+
 def plot_phase_offset(phase_offset_fpga, phase_offset_ltf):
     freq_offset_fpga = phase_offset_to_freq_offset(phase_offset_fpga)
     freq_offset_ltf = phase_offset_to_freq_offset(phase_offset_ltf)
@@ -53,7 +76,7 @@ def plot_phase_offset(phase_offset_fpga, phase_offset_ltf):
     plt.legend(loc='upper right')
     fig_fo_log.canvas.flush_events()
 
-def ltf_freq_offset_estimation(iq_capture):
+def ltf_freq_offset_estimation(iq_capture, start_idx_demod_is_ongoing):
     num_trans = np.shape(iq_capture)[0]
     phase_offset_ltf = np.zeros(num_trans,)
 
@@ -68,21 +91,33 @@ def ltf_freq_offset_estimation(iq_capture):
       iq_delay_conj_prod = np.multiply(np.conj(iq_delay), iq)
       iq_delay_conj_prod_mv_sum = np.convolve(iq_delay_conj_prod, np.ones(32,), 'valid')
       iq_delay_conj_prod_mv_sum_power = np.real(np.multiply(np.conj(iq_delay_conj_prod_mv_sum),iq_delay_conj_prod_mv_sum))
-      iq_delay_conj_prod_power = np.real(np.multiply(np.conj(iq_delay_conj_prod),iq_delay_conj_prod))
-      iq_delay_conj_prod_power_mv_sum = np.convolve(iq_delay_conj_prod_power, np.ones(32,), 'valid')
-      metric_normalized = iq_delay_conj_prod_mv_sum_power/iq_delay_conj_prod_power_mv_sum
 
-      max_idx_metric_normalized = np.argmax(metric_normalized)
-      phase_offset_ltf[i] = np.angle(iq_delay_conj_prod_mv_sum[max_idx_metric_normalized])*8.0
+      # # --------------- old method
+      # iq_delay_conj_prod_power = np.real(np.multiply(np.conj(iq_delay_conj_prod),iq_delay_conj_prod))
+      # iq_delay_conj_prod_power_mv_sum = np.convolve(iq_delay_conj_prod_power, np.ones(32,), 'valid')
+      # metric_normalized = iq_delay_conj_prod_mv_sum_power/iq_delay_conj_prod_power_mv_sum
 
+      # max_idx_metric_normalized = np.argmax(metric_normalized)
+      # phase_offset_ltf[i] = np.angle(iq_delay_conj_prod_mv_sum[max_idx_metric_normalized])*8.0
+
+      # # --------------- new method
+      if start_idx_demod_is_ongoing[i] > 100:
+        base_idx = start_idx_demod_is_ongoing[i]-100
+        max_idx = np.argmax(iq_delay_conj_prod_mv_sum_power[base_idx:start_idx_demod_is_ongoing[i]])
+        phase_offset_ltf[i] = np.angle(iq_delay_conj_prod_mv_sum[base_idx+max_idx])*8.0
+      else:
+        phase_offset_ltf[i] = np.inf
+        
       if metric_plot_enable:
-        plt.plot(metric_normalized)
+        # plt.plot(metric_normalized)
+        plt.plot(iq_delay_conj_prod_mv_sum_power)
 
         iq_power = np.real(np.multiply(np.conj(iq),iq))
         iq_total_power = np.sum(iq_power)
         iq_power_mv_sum = np.convolve(iq_power, np.ones(32,), 'valid')
         iq_power_normalized = 500.0*iq_power_mv_sum/iq_total_power
-        plt.plot(iq_power_normalized)
+        # plt.plot(iq_power_normalized)
+        plt.plot(iq_power*1e10)
 
     if metric_plot_enable:
       fig_metric.canvas.flush_events()
@@ -137,6 +172,7 @@ def parse_iq(iq, iq_len):
     
     timestamp = iq[:,0] + pow(2,16)*iq[:,1] + pow(2,32)*iq[:,2] + pow(2,48)*iq[:,3]
     iq_capture = np.int16(iq[:,4::4]) + np.int16(iq[:,5::4])*1j
+    agc_gain = np.bitwise_and(iq[:,6::4], np.uint16(0xFF))
     phase_offset_fpga_high4_mat = iq[:,7::4]
     demod_is_ongoing_mat = np.bitwise_and(phase_offset_fpga_high4_mat, np.uint16(0x8000))
     phase_offset_fpga_low8_mat = iq[:,6::4]
@@ -157,9 +193,13 @@ def parse_iq(iq, iq_len):
       phase_offset_fpga_tmp = phase_offset_fpga_high4 + phase_offset_fpga_low8 + sign_bit12 + sign_bit13 + sign_bit14 + sign_bit15
       phase_offset_fpga[i] = np.int16(phase_offset_fpga_tmp)
 
+      # # to avoid crash
+      # if start_idx_demod_is_ongoing[i] < 100:
+      #    start_idx_demod_is_ongoing[i] = 100
+
     # iq_capture = iq_capture.reshape([num_trans*iq_len,])
 
-    return timestamp, iq_capture, phase_offset_fpga, start_idx_demod_is_ongoing
+    return timestamp, iq_capture, phase_offset_fpga, agc_gain, start_idx_demod_is_ongoing
 
 UDP_IP = "192.168.10.1" #Local IP to listen
 UDP_PORT = 4000         #Local port to listen
@@ -204,15 +244,18 @@ while True:
         iq = np.frombuffer(data, dtype='uint16')
         # np.savetxt(iq_fd, iq)
 
-        timestamp, iq_capture, phase_offset_fpga, start_idx_demod_is_ongoing = parse_iq(iq, iq_len)
+        timestamp, iq_capture, phase_offset_fpga, agc_gain, start_idx_demod_is_ongoing = parse_iq(iq, iq_len)
         # print(timestamp)
-        phase_offset_ltf = ltf_freq_offset_estimation(iq_capture)
+        phase_offset_ltf = ltf_freq_offset_estimation(iq_capture, start_idx_demod_is_ongoing)
 
+        # plot_agc_gain(agc_gain)
         plot_phase_offset(phase_offset_fpga, phase_offset_ltf)
 
         # freq_offset_fpga = phase_offset_to_freq_offset(phase_offset_fpga)
-        # print(start_idx_demod_is_ongoing, freq_offset_fpga)
+        # print(start_idx_demod_is_ongoing)
         print(phase_offset_fpga, phase_offset_ltf)
+        
+        # input("Press Enter to continue...")
 
     except KeyboardInterrupt:
         print('User quit')
