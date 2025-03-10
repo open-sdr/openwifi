@@ -58,6 +58,9 @@ static inline void OPENOFDM_RX_REG_SOFT_DECODING_write(u32 Data) {
 static inline void OPENOFDM_RX_REG_FFT_WIN_SHIFT_write(u32 Data) {
 	reg_write(OPENOFDM_RX_REG_FFT_WIN_SHIFT_ADDR, Data);
 }
+static inline void OPENOFDM_RX_REG_PHASE_OFFSET_ABS_TH_write(u32 Data) {
+	reg_write(OPENOFDM_RX_REG_PHASE_OFFSET_ABS_TH_ADDR, Data);
+}
 static const struct of_device_id dev_of_ids[] = {
 	{ .compatible = "sdr,openofdm_rx", },
 	{}
@@ -98,6 +101,7 @@ static inline u32 hw_init(enum openofdm_rx_mode mode){
 	openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write(OPENOFDM_RX_MIN_PLATEAU_INIT);
 	openofdm_rx_api->OPENOFDM_RX_REG_SOFT_DECODING_write((OPENWIFI_MAX_SIGNAL_LEN_TH<<16)|(OPENWIFI_MIN_SIGNAL_LEN_TH<<12)|1); //bit1 enable soft decoding; bit15~12 min pkt length threshold; bit31~16 max pkt length threshold
 	openofdm_rx_api->OPENOFDM_RX_REG_FFT_WIN_SHIFT_write((OPENOFDM_RX_SMALL_EQ_OUT_COUNTER_TH<<4)|OPENOFDM_RX_FFT_WIN_SHIFT_INIT);
+  openofdm_rx_api->OPENOFDM_RX_REG_PHASE_OFFSET_ABS_TH_write(OPENOFDM_RX_PHASE_OFFSET_ABS_TH);
 
 	//rst
 	for (i=0;i<8;i++)
@@ -144,6 +148,7 @@ static int dev_probe(struct platform_device *pdev)
 	openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write=OPENOFDM_RX_REG_MIN_PLATEAU_write;
 	openofdm_rx_api->OPENOFDM_RX_REG_SOFT_DECODING_write=OPENOFDM_RX_REG_SOFT_DECODING_write;
 	openofdm_rx_api->OPENOFDM_RX_REG_FFT_WIN_SHIFT_write=OPENOFDM_RX_REG_FFT_WIN_SHIFT_write;
+	openofdm_rx_api->OPENOFDM_RX_REG_PHASE_OFFSET_ABS_TH_write=OPENOFDM_RX_REG_PHASE_OFFSET_ABS_TH_write;
 
 	/* Request and map I/O memory */
 	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
