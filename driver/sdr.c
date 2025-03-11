@@ -526,10 +526,10 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
 				rx_status.rate_idx = wifi_rate_table_mapping[rate_idx];
 				rx_status.signal = signal;
 
-				// rx_status.freq = dev->conf.chandef.chan->center_freq;
-				rx_status.freq = priv->actual_rx_lo;
-				// rx_status.band = dev->conf.chandef.chan->band;
-				rx_status.band = (rx_status.freq<2500?NL80211_BAND_2GHZ:NL80211_BAND_5GHZ);
+				rx_status.freq = dev->conf.chandef.chan->center_freq;
+				// rx_status.freq = priv->actual_rx_lo;
+				rx_status.band = dev->conf.chandef.chan->band;
+				// rx_status.band = (rx_status.freq<2500?NL80211_BAND_2GHZ:NL80211_BAND_5GHZ);
 				
 				rx_status.mactime = ( ( (u64)tsft_low ) | ( ((u64)tsft_high)<<32 ) );
 				rx_status.flag |= RX_FLAG_MACTIME_START;
