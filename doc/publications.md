@@ -79,6 +79,7 @@ Publications in category:
 - [Andreas Toftegaard Kristensen, et al. Monostatic Multi-Target Wi-Fi-Based Breathing Rate Sensing Using Openwifi, IEEE Wireless Communications and Networking Conference (WCNC) 2024](https://ieeexplore.ieee.org/document/10570912)
 - [Andreas Toftegaard Kristensen, et al. An SDR-Based Monostatic Wi-Fi System with Analog Self-Interference Cancellation for Sensing, arXiv, 11 DEC 2024](https://arxiv.org/abs/2412.08612) [[**block diagram**](AnSIC-sensing-correction.png)]
 - [Tianyang Zhang, et al. Privacy Protection in WiFi Sensing via CSI Fuzzing, 2024 IEEE/ACM Symposium on Edge Computing (SEC), 04-07 December 2024](https://ieeexplore.ieee.org/abstract/document/10818006)
+- [Xianjun Jiao, et al. Single-Input-Multiple-Output Wi-Fi Radar for Vital Signal Sensing and Device Tracking, IEEE 5th International Symposium on Joint Communications & Sensing (JC&S) 2025](https://biblio.ugent.be/publication/01JMVPSR8AR08RRW9MC15FPF58)
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
