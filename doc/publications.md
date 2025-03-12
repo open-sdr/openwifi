@@ -59,6 +59,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Unlocking Mobility for Wi-Fi-based Wireless Time-Sensitive Networks. IEEE Access, 2024](https://ieeexplore.ieee.org/document/10443947)
 - [Analog Devices, AN-2597: An OFDM-Based HDL Reference Modem Using the AD936x RF Transceivers. November, 2024](https://www.analog.com/en/resources/app-notes/an-2597.html)
 - [Louis Adriaens, High-Precision Wireless Synchronization: When Wi-Fi meets UWB. IEEE/SICE International Symposium on System Integration (SII) 2025](https://ieeexplore.ieee.org/document/10870915)
+- [Yongchao Dang, Open Radio Intelligent Controller based Wireless Time Sensitive Networking for Industry 5.0. TechRxiv 2025](https://www.techrxiv.org/doi/full/10.36227/techrxiv.173750009.95972083)
 
 ## CSI Sensing and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
