@@ -29,6 +29,7 @@ Publications in category:
 - [Trio Adiono, et al. FPGA Implementation of SFO for OFDM-based Network Enabled Li-Fi System. IEEE ISCAS 2024](https://ieeexplore.ieee.org/abstract/document/10557957)
 - [Trio Adiono, et al. A Scalable Design of A Full-Stack Real-Time OFDM Baseband Processor for Network-Enabled VLC Systems. IEEE Access 2024](https://ieeexplore.ieee.org/document/10589620)
 - [Roni Fagerholm, FPGA-based DECT-2020 New Radio Packet Detection. Master thesis, Aalto University, 30 September 2024](https://aaltodoc.aalto.fi/server/api/core/bitstreams/a5105c46-f4c6-4034-8024-96ed9e440feb/content)
+- [Thijs Havinga, et al. Wi-Fi 6 Cross-Technology Interference Detection and Mitigation by OFDMA: an Experimental Study. arXiv, Submitted to EuCNC & 6G Summit 2025](https://arxiv.org/abs/2503.05429)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
