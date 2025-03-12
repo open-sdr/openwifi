@@ -15,6 +15,7 @@
 # ./side_ch_ctl wh1h6001
 # ./side_ch_ctl wh8d25
 # ./side_ch_ctl g0
+# # (In the case of totally clean/non-standard channel, long preamble detected can also be used as trigger ./side_ch_ctl wh8d8)
 
 # On host PC
 # python3 iq_capture_freq_offset.py 1000
