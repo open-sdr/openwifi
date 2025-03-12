@@ -59,6 +59,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Impactless association methods for wi-fi based time-sensitive networks. Wireless Networks Journal, 2024](https://dl.acm.org/doi/10.1007/s11276-024-03681-w)
 - [Pablo Avila-Campos, et al. Unlocking Mobility for Wi-Fi-based Wireless Time-Sensitive Networks. IEEE Access, 2024](https://ieeexplore.ieee.org/document/10443947)
 - [Analog Devices, AN-2597: An OFDM-Based HDL Reference Modem Using the AD936x RF Transceivers. November, 2024](https://www.analog.com/en/resources/app-notes/an-2597.html)
+- [Tianyu Zhang, et al. A Survey on Industrial Internet of Things (IIoT) Testbeds for Connectivity Research. arXiv 2024](https://arxiv.org/abs/2404.17485)
 - [Louis Adriaens, High-Precision Wireless Synchronization: When Wi-Fi meets UWB. IEEE/SICE International Symposium on System Integration (SII) 2025](https://ieeexplore.ieee.org/document/10870915)
 - [Yongchao Dang, Open Radio Intelligent Controller based Wireless Time Sensitive Networking for Industry 5.0. TechRxiv 2025](https://www.techrxiv.org/doi/full/10.36227/techrxiv.173750009.95972083)
 
