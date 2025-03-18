@@ -61,7 +61,7 @@ One super power of the openwifi platform is "**Full Duplex**" which means that o
   cd openwifi/user_space/side_ch_ctl_src
   python3 side_info_display.py 8 waterfall
   ```
-  The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see figures showing run-time **CSI**, **CSI waterfall**, **Equalizer out** and **frequency offset**. The following photo shows the CSI change in the waterfall plot when I left my seat in front of two directional antennas (Tx/Rx antenna).
+  You might need to install beforehand: "sudo apt install python3-numpy python3-matplotlib python3-tk". Now you should see figures showing run-time **CSI**, **CSI waterfall**, **Equalizer out** and **frequency offset**. The following photo shows the CSI change in the waterfall plot when I left my seat in front of two directional antennas (Tx/Rx antenna).
   ![](./sensing.png)
   
   While running, all CSI data is also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do CSI analysis offline. In this case, run **test_side_info_file_display** in Matlab.

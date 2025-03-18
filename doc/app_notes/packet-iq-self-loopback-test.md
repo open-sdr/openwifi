@@ -74,7 +74,7 @@ This makes the IQ sample, WiFi packet and CSI self loopback test possible. Readi
   cd openwifi/user_space/side_ch_ctl_src
   python3 iq_capture.py 8187
   ```
-  You might need to install beforehand: "sudo apt install python3-numpy", and "sudo apt install python3-matplotlib".
+  You might need to install beforehand: "sudo apt install python3-numpy python3-matplotlib python3-tk".
   
 - Leave the above host session untouched. Let's go to the second ssh session (packet injection), and do single packet Tx again:
   ```

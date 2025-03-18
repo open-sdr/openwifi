@@ -6,6 +6,8 @@ import os
 import sys
 import socket
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 def display_side_info(freq_offset, csi, equalizer, waterfall_flag):

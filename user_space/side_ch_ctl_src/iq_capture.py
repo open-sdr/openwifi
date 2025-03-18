@@ -6,6 +6,8 @@ import os
 import sys
 import socket
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 def display_iq(iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, tx_bb):
