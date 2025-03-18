@@ -30,11 +30,14 @@ import matplotlib.pyplot as plt
 
 metric_plot_enable = True
 
+# LUT_SIZE = 512.0
+LUT_SIZE = 1024.0
+
 freq_offset_fpga_store = np.zeros(64,)
 freq_offset_ltf_store = np.zeros(64,)
 
 def phase_offset_to_freq_offset(phase_offset):
-    freq_offset = (20.0e6*phase_offset/512.0)/(2.0*3.14159265358979323846)
+    freq_offset = (20.0e6*phase_offset/LUT_SIZE)/(2.0*3.14159265358979323846)
     return freq_offset
 
 def plot_agc_gain(agc_gain):
@@ -108,7 +111,7 @@ def ltf_freq_offset_estimation(iq_capture, start_idx_demod_is_ongoing):
       if start_idx_demod_is_ongoing[i] > 100:
         base_idx = start_idx_demod_is_ongoing[i]-100
         max_idx = np.argmax(iq_delay_conj_prod_mv_sum_power[base_idx:start_idx_demod_is_ongoing[i]])
-        phase_offset_ltf[i] = np.angle(iq_delay_conj_prod_mv_sum[base_idx+max_idx])*8.0
+        phase_offset_ltf[i] = np.angle(iq_delay_conj_prod_mv_sum[base_idx+max_idx])*LUT_SIZE/64.0
       else:
         phase_offset_ltf[i] = np.inf
         
