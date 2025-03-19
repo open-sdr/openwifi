@@ -26,6 +26,9 @@ import os
 import sys
 import socket
 import numpy as np
+# import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 metric_plot_enable = True
