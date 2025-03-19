@@ -238,7 +238,8 @@ enum openofdm_rx_mode {
 // 11a/g BPSK 6m, Rx sensitivity level dmesg report -86dBm
 // priv->rssi_correction = 148; rssi_half_db/2 = 148-86=62; rssi_half_db = 124
 
-#define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-85) //-85 will remove lots of false alarm. the best openwifi reported sensitivity is like -90/-92 (set it manually if conductive test with wifi tester)
+// #define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-85) //-85 will remove lots of false alarm. the best openwifi reported sensitivity is like -90/-92 (set it manually if conductive test with wifi tester)
+#define OPENOFDM_RX_RSSI_DBM_TH_DEFAULT (-95) //due to performance is much better (can work around -90dBm), lower it from -85dBm to -95dBm
 #define OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT 64
 #define OPENOFDM_RX_MIN_PLATEAU_INIT 100
 #define OPENOFDM_RX_FFT_WIN_SHIFT_INIT 4
