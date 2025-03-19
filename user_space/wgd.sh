@@ -172,6 +172,8 @@ done
 # [ -e /tmp/check_calib_inf.pid ] && kill -0 $(</tmp/check_calib_inf.pid)
 # ./check_calib_inf.sh
 
+./agc_settings.sh 1
+
 echo the end
 # dmesg
 # lsmod
