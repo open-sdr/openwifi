@@ -31,6 +31,7 @@ Publications in category:
 - [Roni Fagerholm, FPGA-based DECT-2020 New Radio Packet Detection. Master thesis, Aalto University, 30 September 2024](https://aaltodoc.aalto.fi/server/api/core/bitstreams/a5105c46-f4c6-4034-8024-96ed9e440feb/content)
 - [Hao Zhou, et al. Large Language Model (LLM) for Telecommunications: A Comprehensive Survey on Principles, Key Techniques, and Opportunities. IEEE Communications Surveys & Tutorials 2024](https://ieeexplore.ieee.org/document/10685369)
 - [Thijs Havinga, et al. Wi-Fi 6 Cross-Technology Interference Detection and Mitigation by OFDMA: an Experimental Study. arXiv, Submitted to EuCNC & 6G Summit 2025](https://arxiv.org/abs/2503.05429)
+- [Shyam Krishnan Venkateswaran, et al. Target wake time in IEEE 802.11 WLANs: Survey, challenges, and opportunities. Computer Communications, 2025](https://www.sciencedirect.com/science/article/pii/S0140366425000842)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
