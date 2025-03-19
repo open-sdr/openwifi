@@ -37,11 +37,14 @@ if [ $1 == "0" ]; then
   echo 0x10A 0x58 > direct_reg_access
   echo "Applied default AGC settings"
 elif [ $1 == "1" ]; then
-  echo 0x15C 0x70 > direct_reg_access 
+  echo 0x15C 0x71 > direct_reg_access 
   echo 0x106 0x77 > direct_reg_access
   echo 0x103 0x1C > direct_reg_access
-  echo 0x101 0x8A > direct_reg_access
+  echo 0x101 0x0C > direct_reg_access
   echo 0x110 0x48 > direct_reg_access
+# DO NOT change 0x48 to 0x4A! Otherwise: did not acknowledge authentication response
+  echo 0x114 0xb0 > direct_reg_access
+#  0x30 is the original value for register 0x114
   echo 0x115 0x80 > direct_reg_access
   echo 0x10A 0x18 > direct_reg_access
   echo "Applied optimized AGC settings"
