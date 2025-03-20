@@ -37,7 +37,7 @@ if [ $1 == "0" ]; then
   echo 0x10A 0x58 > direct_reg_access
   echo "Applied default AGC settings"
 elif [ $1 == "1" ]; then
-  echo 0x15C 0x71 > direct_reg_access 
+  echo 0x15C 0x70 > direct_reg_access 
   echo 0x106 0x77 > direct_reg_access
   echo 0x103 0x1C > direct_reg_access
   echo 0x101 0x0C > direct_reg_access
