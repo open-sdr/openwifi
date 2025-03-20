@@ -49,3 +49,7 @@ elif [ $1 == "1" ]; then
   echo 0x10A 0x18 > direct_reg_access
   echo "Applied optimized AGC settings"
 fi
+
+# #Due to https://github.ugent.be/xjiao/openwifi/issues/148
+echo 0x0fa 0x5 > direct_reg_access
+echo 0x0fa 0xE5 > direct_reg_access
