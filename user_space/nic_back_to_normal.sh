@@ -21,3 +21,4 @@ sudo ip link set $nic_name up
 ifconfig
 iwconfig $nic_name
 
+./agc_settings.sh 1
