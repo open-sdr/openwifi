@@ -73,7 +73,8 @@ cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
 git fetch
 git checkout 2022_R2
 git pull origin 2022_R2
-git reset --hard 2022_R2
+# git reset --hard 2022_R2
+git reset --hard c2f371e014f0704be4db02e5014c51ae99477c13 # save this commit for tsn
 
 export ARCH=$ARCH_NAME
 export CROSS_COMPILE=$CROSS_COMPILE_NAME
