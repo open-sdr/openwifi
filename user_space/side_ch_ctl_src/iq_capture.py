@@ -10,7 +10,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-def display_iq(iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, tx_bb):
+def display_iq(iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, fcs_ok):
    
     fig_iq_capture = plt.figure(0)
     fig_iq_capture.clf()
@@ -21,7 +21,7 @@ def display_iq(iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, tx_bb)
     plt.plot(iq_capture.imag, 'r')
     plt.plot(-32000+ch_idle*3000, 'b--', label='ch_idle')
     plt.plot(-28000+demod*3000, 'r--', label='demod')
-    plt.plot(29000+tx_bb*3000, 'k-', label='tx_bb')
+    plt.plot(29000+fcs_ok*3000, 'k-', label='fcs_ok')
     plt.plot(25000+tx_rf*3000, 'g-', label='tx_rf')
     plt.ylim(-32767, 32767)
     plt.legend(loc='upper right')
@@ -71,13 +71,13 @@ def parse_iq(iq, iq_len):
     ch_idle = np.right_shift(np.bitwise_and(iq[:,6::4], np.uint16(0x8000)), 15)
     demod = np.right_shift(np.bitwise_and(iq[:,7::4], np.uint16(0x8000)), 15)
     tx_rf = np.right_shift(np.bitwise_and(iq[:,7::4], np.uint16(0x4000)), 14)
-    tx_bb = np.right_shift(np.bitwise_and(iq[:,7::4], np.uint16(0x2000)), 13)
+    fcs_ok = np.right_shift(np.bitwise_and(iq[:,7::4], np.uint16(0x2000)), 13)
 
     # iq_capture = iq_capture.reshape([num_trans*iq_len,])
     # agc_gain = agc_gain.reshape([num_trans*iq_len,])
     # rssi_half_db = rssi_half_db.reshape([num_trans*iq_len,])
 
-    return timestamp, iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, tx_bb
+    return timestamp, iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, fcs_ok
 
 UDP_IP = "192.168.10.1" #Local IP to listen
 UDP_PORT = 4000         #Local port to listen
@@ -122,9 +122,9 @@ while True:
         iq = np.frombuffer(data, dtype='uint16')
         np.savetxt(iq_fd, iq)
 
-        timestamp, iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, tx_bb = parse_iq(iq, iq_len)
+        timestamp, iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, fcs_ok = parse_iq(iq, iq_len)
         print(timestamp)
-        display_iq(iq_capture[0,:], agc_gain[0,:], rssi_half_db[0,:], ch_idle[0,:], demod[0,:], tx_rf[0,:], tx_bb[0,:])
+        display_iq(iq_capture[0,:], agc_gain[0,:], rssi_half_db[0,:], ch_idle[0,:], demod[0,:], tx_rf[0,:], fcs_ok[0,:])
         # plt.waitforbuttonpress()
 
     except KeyboardInterrupt:
