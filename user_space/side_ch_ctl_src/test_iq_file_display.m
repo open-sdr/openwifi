@@ -30,6 +30,7 @@ iq_capture =   zeros(iq_len, num_iq_capture);
 timestamp =    zeros(1, num_iq_capture);
 agc_gain =     zeros(iq_len, num_iq_capture);
 rssi_half_db = zeros(iq_len, num_iq_capture);
+fcs_ok_happen= zeros(1, num_iq_capture);
 
 b = uint16(b);
 for i=1:num_iq_capture
@@ -39,6 +40,12 @@ for i=1:num_iq_capture
     iq_capture(:,i) = double(typecast(b((sp+1):ep,1),'int16')) + 1i.*double(typecast(b((sp+1):ep,2),'int16'));
     agc_gain(:,i) = double(bitand(b((sp+1):ep,3), uint16(255)));
     rssi_half_db(:,i) = double(bitand(b((sp+1):ep,4), uint16(2047)));
+    tmp = double(bitand(b((sp+1):ep,4), uint16(2^13)));
+    tmp = (tmp ~= 0);
+    fcs_ok_happen(:,i) = (sum(diff(tmp) == 1) == 1);
+    if fcs_ok_happen(:,i) > 1
+        disp(['fcs ok happens more than once for capture ' num2str(i)]);
+    end
 end
 save(['iq_' num2str(iq_len) '.mat'], 'iq_capture');
 
@@ -48,7 +55,8 @@ agc_gain_lock(agc_gain(:)>127) = 1;
 agc_gain_value = agc_gain(:);
 agc_gain_value(agc_gain_value>127) = agc_gain_value(agc_gain_value>127) - 128;
 
-figure; plot(timestamp,'b+-'); title('time stamp (TSF value)'); ylabel('us'); xlabel('packet');  grid on;
+figure; plot(timestamp,'b+-'); title('time stamp (TSF value)'); ylabel('us'); xlabel('capture idx');  grid on;
+figure; stem(fcs_ok_happen,'b+-'); title('FCS OK happen'); ylabel('OK flag'); xlabel('capture idx');  grid on;
 figure; plot(rssi_half_db(:)); title('RSSI half dB (uncalibrated)'); xlabel('sample'); ylabel('dB'); grid on;
 
 figure;
