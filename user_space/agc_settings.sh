@@ -7,7 +7,7 @@ fi
 
 set -x
 if test -f "/sys/kernel/debug/iio/iio:device0/direct_reg_access"; then
-  cd /sys/kernel/debug/iio/device0/
+  cd /sys/kernel/debug/iio/iio:device0/
 else if test -f "/sys/kernel/debug/iio/iio:device1/direct_reg_access"; then
        cd /sys/kernel/debug/iio/iio:device1/
      else if test -f "/sys/kernel/debug/iio/iio:device2/direct_reg_access"; then
