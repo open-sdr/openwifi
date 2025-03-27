@@ -26,11 +26,17 @@ b = reshape(a, [4, length(a)/4])';
 num_data_in_each_iq_capture = 1 + iq_len;
 num_iq_capture = floor(size(b,1)/num_data_in_each_iq_capture);
 
-iq_capture =   zeros(iq_len, num_iq_capture);
-timestamp =    zeros(1, num_iq_capture);
-agc_gain =     zeros(iq_len, num_iq_capture);
-rssi_half_db = zeros(iq_len, num_iq_capture);
-fcs_ok_happen= zeros(1, num_iq_capture);
+iq_capture =         zeros(iq_len, num_iq_capture);
+timestamp =          zeros(1, num_iq_capture);
+agc_gain =           zeros(iq_len, num_iq_capture);
+rssi_half_db =       zeros(iq_len, num_iq_capture);
+phase_offset_taken = zeros(iq_len, num_iq_capture);
+ch_idle_final =      zeros(iq_len, num_iq_capture);
+ltf_low_fcs_high =   zeros(iq_len, num_iq_capture);
+tx_rf_is_ongoing =   zeros(iq_len, num_iq_capture);
+demod_is_ongoing =   zeros(iq_len, num_iq_capture);
+
+fcs_ok_happen =      zeros(1, num_iq_capture);
 
 b = uint16(b);
 for i=1:num_iq_capture
@@ -40,14 +46,17 @@ for i=1:num_iq_capture
     iq_capture(:,i) = double(typecast(b((sp+1):ep,1),'int16')) + 1i.*double(typecast(b((sp+1):ep,2),'int16'));
     agc_gain(:,i) = double(bitand(b((sp+1):ep,3), uint16(255)));
     rssi_half_db(:,i) = double(bitand(b((sp+1):ep,4), uint16(2047)));
-    tmp = double(bitand(b((sp+1):ep,4), uint16(2^13)));
-    tmp = (tmp ~= 0);
-    fcs_ok_happen(:,i) = (sum(diff(tmp) == 1) == 1);
-    if fcs_ok_happen(:,i) > 1
-        disp(['fcs ok happens more than once for capture ' num2str(i)]);
-    end
+    phase_offset_taken_6to0 = double(bitand(b((sp+1):ep,3), uint16(32512)))./256;
+    phase_offset_taken_8to7 = double(bitand(b((sp+1):ep,4), uint16(6144)))./2048;
+    phase_offset_taken(:,i) = phase_offset_taken_6to0 + phase_offset_taken_8to7.*128;
+    ch_idle_final(:,i) = double(bitand(b((sp+1):ep,3), uint16(2^15)))./(2^15);
+    ltf_low_fcs_high(:,i) = double(bitand(b((sp+1):ep,4), uint16(2^13)))./(2^13);
+    tx_rf_is_ongoing(:,i) = double(bitand(b((sp+1):ep,4), uint16(2^14)))./(2^14);
+    demod_is_ongoing(:,i) = double(bitand(b((sp+1):ep,4), uint16(2^15)))./(2^15);
+
+    fcs_ok_happen(i) = (sum(diff(ltf_low_fcs_high(:,i)) == 1) > 0);
 end
-save(['iq_' num2str(iq_len) '.mat'], 'iq_capture');
+save([iq_cap_filename(1:(end-4)) '_' num2str(iq_len) '.mat'], 'iq_capture');
 
 agc_gain_lock = zeros(iq_len*num_iq_capture,1);
 agc_gain_lock(agc_gain(:)>127) = 1;
@@ -56,7 +65,7 @@ agc_gain_value = agc_gain(:);
 agc_gain_value(agc_gain_value>127) = agc_gain_value(agc_gain_value>127) - 128;
 
 figure; plot(timestamp,'b+-'); title('time stamp (TSF value)'); ylabel('us'); xlabel('capture idx');  grid on;
-figure; stem(fcs_ok_happen,'b+-'); title('FCS OK happen'); ylabel('OK flag'); xlabel('capture idx');  grid on;
+figure; plot(fcs_ok_happen,'b+'); title('FCS OK happen'); ylabel('flag'); xlabel('capture idx');  grid on;
 figure; plot(rssi_half_db(:)); title('RSSI half dB (uncalibrated)'); xlabel('sample'); ylabel('dB'); grid on;
 
 figure;
@@ -71,5 +80,16 @@ agc_gain_value = reshape(agc_gain_value, [iq_len, num_iq_capture]);
 agc_gain_lock  = reshape(agc_gain_lock, [iq_len, num_iq_capture]);
 subplot(4,1,1); plot(real(iq_capture(:,idx_to_check))); hold on; plot(imag(iq_capture(:,idx_to_check)),'r'); title(['Capture idx ' num2str(idx_to_check) ' timestamp ' num2str(timestamp(idx_to_check))]); xlabel('sample'); ylabel('amplitude'); legend('I', 'Q'); grid on;
 subplot(4,1,2); plot(rssi_half_db(:,idx_to_check)); title('RSSI half dB (uncalibrated)'); xlabel('sample'); ylabel('dB'); grid on;
-subplot(4,1,3); plot(agc_gain_lock(:,idx_to_check)); title('AGC lock status from AD9361'); xlabel('sample'); ylabel('status'); grid on;
-subplot(4,1,4); plot(agc_gain_value(:,idx_to_check)); title('AGC gain from AD9361'); xlabel('sample'); ylabel('gain'); grid on;
+subplot(4,1,3); plot(agc_gain_lock(:,idx_to_check), 'b+-'); title('AGC lock status from AD9361'); xlabel('sample'); ylabel('status'); grid on;
+subplot(4,1,4); plot(agc_gain_value(:,idx_to_check), 'b+-'); title('AGC gain from AD9361'); xlabel('sample'); ylabel('gain'); grid on;
+
+figure;
+subplot(4,1,1); plot(real(iq_capture(:,idx_to_check))); hold on; plot(imag(iq_capture(:,idx_to_check)),'r'); title(['Capture idx ' num2str(idx_to_check) ' timestamp ' num2str(timestamp(idx_to_check))]); xlabel('sample'); ylabel('amplitude'); legend('I', 'Q'); grid on;
+subplot(4,1,2); plot(phase_offset_taken(:,idx_to_check),'b+-'); title('phase offset taken'); xlabel('sample'); grid on;
+subplot(4,1,3); plot(ltf_low_fcs_high(:,idx_to_check), 'b+'); title('LTF low FCS OK high'); xlabel('sample'); grid on;
+subplot(4,1,4);
+plot(4+ch_idle_final(:,idx_to_check), 'b+'); hold on; grid on;
+plot(2+tx_rf_is_ongoing(:,idx_to_check), 'r+'); 
+plot(demod_is_ongoing(:,idx_to_check), 'k+');
+legend('ch idle', 'tx rf', 'demod');
+title('ch idle, tx rf and demod'); xlabel('sample'); grid on;
