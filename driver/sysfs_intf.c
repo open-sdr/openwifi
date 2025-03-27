@@ -971,10 +971,18 @@ static ssize_t restrict_freq_mhz_store(struct device *input_dev, struct device_a
 	struct ieee80211_hw *dev = platform_get_drvdata(pdev);
 	struct openwifi_priv *priv = dev->priv;
 
-	long readin;
+  static struct ieee80211_conf channel_conf_tmp;
+  static struct ieee80211_channel channel_tmp;
+
+  long readin;
 	u32 ret = kstrtol(buf, 10, &readin);
 
+  channel_conf_tmp.chandef.chan = (&channel_tmp);
+
 	priv->stat.restrict_freq_mhz = readin;
+
+  channel_conf_tmp.chandef.chan->center_freq = priv->stat.restrict_freq_mhz;
+  ad9361_rf_set_channel(dev, &channel_conf_tmp);
 
 	return ret ? ret : len;
 }

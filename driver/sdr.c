@@ -81,6 +81,7 @@ int rssi_dbm_to_rssi_half_db(int rssi_dbm, int rssi_correction);
 int rssi_correction_lookup_table(u32 freq_MHz);
 void ad9361_tx_calibration(struct openwifi_priv *priv, u32 actual_tx_lo);
 void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 actual_rx_lo);
+static void ad9361_rf_set_channel(struct ieee80211_hw *dev, struct ieee80211_conf *conf);
 
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
@@ -236,15 +237,26 @@ inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 a
 static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 				  struct ieee80211_conf *conf)
 {
+
 	struct openwifi_priv *priv = dev->priv;
-	u32 actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz;
+  u32 actual_rx_lo;
 	u32 actual_tx_lo;
 	u32 diff_tx_lo; 
-	bool change_flag = (actual_rx_lo != priv->actual_rx_lo);
+	bool change_flag;
 
-	if (change_flag && priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]==0 && priv->rf_reg_val[RF_RX_REG_IDX_FREQ_MHZ]==0) {
+  actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz;
+  change_flag = (actual_rx_lo != priv->actual_rx_lo);
+
+	printk("%s ad9361_rf_set_channel target %dMHz rx offset %dMHz current %dMHz change flag %d\n", sdr_compatible_str, 
+  conf->chandef.chan->center_freq, priv->rx_freq_offset_to_lo_MHz, priv->actual_rx_lo, change_flag);
+
+	// if (change_flag && priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]==0 && priv->rf_reg_val[RF_RX_REG_IDX_FREQ_MHZ]==0) {
+  if (change_flag) {
 		actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
 		diff_tx_lo = priv->last_tx_quad_cal_lo > actual_tx_lo ? priv->last_tx_quad_cal_lo - actual_tx_lo : actual_tx_lo - priv->last_tx_quad_cal_lo;
+
+    printk("%s ad9361_rf_set_channel target %dMHz tx offset %dMHz current %dMHz diff_tx_lo %dMHz\n", sdr_compatible_str, 
+    conf->chandef.chan->center_freq, priv->tx_freq_offset_to_lo_MHz, priv->actual_tx_lo, diff_tx_lo);
 
 		// -------------------Tx Lo tuning-------------------
 		clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)actual_tx_lo) )>>1);
@@ -697,8 +709,8 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
 
 				if (seq_no == 0xffff) {// it has been forced cleared by the openwifi_tx (due to out-of-order Tx of different queues to the air?)
 					printk("%s openwifi_tx_interrupt: WARNING wr%d rd%d last_bd_rd_idx%d i%d pkt_cnt%d prio%d fpga q%d hwq len%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%u\n", sdr_compatible_str,
-					ring->bd_wr_idx, ring->bd_rd_idx, last_bd_rd_idx, i, pkt_cnt, prio, queue_idx, hw_queue_len, ring->bds[ring->bd_rd_idx].prio, ring->bds[ring->bd_rd_idx].len_mpdu, seq_no, ring->bds[ring->bd_rd_idx].skb_linked, ring->bds[ring->bd_rd_idx].dma_mapping_addr);
-					continue;
+            ring->bd_wr_idx, ring->bd_rd_idx, last_bd_rd_idx, i, pkt_cnt, prio, queue_idx, hw_queue_len, ring->bds[ring->bd_rd_idx].prio, ring->bds[ring->bd_rd_idx].len_mpdu, seq_no, ring->bds[ring->bd_rd_idx].skb_linked, (long long int)(ring->bds[ring->bd_rd_idx].dma_mapping_addr));
+            continue;
 				}
 
 				skb = ring->bds[ring->bd_rd_idx].skb_linked;
@@ -1016,8 +1028,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 			for (i=0; i<empty_bd_idx; i++) {
 				j = ( (ring->bd_wr_idx+i)&(NUM_TX_BD-1) );
 				printk("%s openwifi_tx: WARNING fake stop queue empty_bd_idx%d i%d lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%u\n", sdr_compatible_str,
-				empty_bd_idx, i, prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked, ring->bds[j].dma_mapping_addr);
-				// tell Linux this skb failed
+        empty_bd_idx, i, prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked,(long long int)(ring->bds[j].dma_mapping_addr));
+        // tell Linux this skb failed
 				skb_new = ring->bds[j].skb_linked;
 				dma_unmap_single(priv->tx_chan->device->dev,ring->bds[j].dma_mapping_addr,
 							skb_new->len, DMA_MEM_TO_DEV);
@@ -1042,8 +1054,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 		} else {
 			j = ring->bd_wr_idx;
 			printk("%s openwifi_tx: WARNING real stop queue lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%u\n", sdr_compatible_str,
-			prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked, ring->bds[j].dma_mapping_addr);
-	
+      prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked, (long long int)(ring->bds[j].dma_mapping_addr));
+
 			ieee80211_stop_queue(dev, prio); // here we should stop those prio related to the queue idx flag set in TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read
 			ring->stop_flag = prio;
 			if (priv->stat.stat_enable) {
@@ -1852,14 +1864,20 @@ static int openwifi_config(struct ieee80211_hw *dev, u32 changed)
 {
 	struct openwifi_priv *priv = dev->priv;
 	struct ieee80211_conf *conf = &dev->conf;
+  static struct ieee80211_conf channel_conf_tmp;
+  static struct ieee80211_channel channel_tmp;
 
+  channel_conf_tmp.chandef.chan = (&channel_tmp);
 	if (changed & IEEE80211_CONF_CHANGE_CHANNEL) {
 		if ( priv->stat.restrict_freq_mhz>0 && (conf->chandef.chan->center_freq != priv->stat.restrict_freq_mhz) ) {
 			printk("%s openwifi_config avoid Linux requested freq %dMHz (restrict freq %dMHz)\n", sdr_compatible_str, 
 			conf->chandef.chan->center_freq, priv->stat.restrict_freq_mhz);
-			return -EINVAL;
-		}
-		priv->rf->set_chan(dev, conf);
+
+			channel_conf_tmp.chandef.chan->center_freq = priv->stat.restrict_freq_mhz;
+      priv->rf->set_chan(dev, &channel_conf_tmp);
+		} else {
+		  priv->rf->set_chan(dev, conf);
+    }
 	} else
 		printk("%s openwifi_config changed flag %08x\n", sdr_compatible_str, changed);
 		
