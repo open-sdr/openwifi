@@ -56,7 +56,9 @@ for i=1:num_iq_capture
 
     fcs_ok_happen(i) = (sum(diff(ltf_low_fcs_high(:,i)) == 1) > 0);
 end
-save([iq_cap_filename(1:(end-4)) '_' num2str(iq_len) '.mat'], 'iq_capture');
+mat_filename = [iq_cap_filename(1:(end-4)) '_' num2str(iq_len) '.mat'];
+save(mat_filename, 'iq_capture');
+disp(mat_filename);
 
 agc_gain_lock = zeros(iq_len*num_iq_capture,1);
 agc_gain_lock(agc_gain(:)>127) = 1;
