@@ -33,8 +33,10 @@ import matplotlib.pyplot as plt
 
 metric_plot_enable = True
 
-# LUT_SIZE = 512.0
-LUT_SIZE = 1024.0
+# Decided by ATAN_LUT_SCALE_SHIFT in common_defs.v
+# Different for master(11a/g/n) and 80211ax!!!
+LUT_SIZE = 512.0 # master(11a/g/n)
+# LUT_SIZE = 4096.0 # 80211ax
 
 freq_offset_fpga_store = np.zeros(64,)
 freq_offset_ltf_store = np.zeros(64,)
