@@ -41,6 +41,7 @@ end
 
 mat_filename = [iq_cap_filename(1:end-4) '_' num2str(iq_len) '.mat'];
 save(mat_filename, 'iq0_capture', 'iq1_capture');
+disp(mat_filename);
 
 figure; plot(timestamp,'b+-'); title('time stamp (TSF value)'); ylabel('us'); xlabel('packet');  grid on;
 
