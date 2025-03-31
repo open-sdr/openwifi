@@ -642,12 +642,12 @@ static int dev_remove(struct platform_device *pdev)
 	printk("%s dev_remove: release nl_sk\n", side_ch_compatible_str);
 	netlink_kernel_release(nl_sk);
 
-	pr_info("%s dev_remove: dropped chan_to_pl 0x%p\n", side_ch_compatible_str, chan_to_pl);
-	if (chan_to_pl != NULL) {
-		pr_info("%s dev_remove: dropped channel %s\n", side_ch_compatible_str, dma_chan_name(chan_to_pl));
-		// dmaengine_terminate_all(chan_to_pl); //this also terminate sdr.ko. do not use
-		dma_release_channel(chan_to_pl);
-	}
+	// pr_info("%s dev_remove: dropped chan_to_pl 0x%p\n", side_ch_compatible_str, chan_to_pl);
+	// if (chan_to_pl != NULL) {
+	// 	pr_info("%s dev_remove: dropped channel %s\n", side_ch_compatible_str, dma_chan_name(chan_to_pl));
+	// 	// dmaengine_terminate_all(chan_to_pl); //this also terminate sdr.ko. do not use
+	// 	dma_release_channel(chan_to_pl);
+	// }
 
 	pr_info("%s dev_remove: dropped chan_to_ps 0x%p\n", side_ch_compatible_str, chan_to_ps);
 	if (chan_to_pl != NULL) {
