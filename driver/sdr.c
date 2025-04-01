@@ -166,7 +166,8 @@ inline int rssi_correction_lookup_table(u32 freq_MHz)
 		rssi_correction = 153;
 	} else if (freq_MHz<=2484) {
 		rssi_correction = 153;
-	} else if (freq_MHz<5160) {
+	// } else if (freq_MHz<5160) {
+  } else if (freq_MHz<3822) { //use middle point (5160+2484)/2 for calibration to avoid treating 5140 as 2.4GHz
 		rssi_correction = 153;
 	} else if (freq_MHz<=5240) {
 		rssi_correction = 145;
@@ -219,7 +220,8 @@ inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 a
 	receiver_rssi_th = rssi_dbm_to_rssi_half_db(receiver_rssi_dbm_th, priv->rssi_correction);
 	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write((OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT<<16)|receiver_rssi_th);
 
-	if (actual_rx_lo < 2500) {
+	// if (actual_rx_lo < 2500) {
+  if (actual_rx_lo < 3822) { //use middle point (5160+2484)/2 for calibration to avoid treating 5140 as 2.4GHz
 		if (priv->band != BAND_2_4GHZ) {
 			priv->band = BAND_2_4GHZ;
 			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|actual_rx_lo );
