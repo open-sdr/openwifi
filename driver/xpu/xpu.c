@@ -359,7 +359,11 @@ static inline u32 hw_init(enum xpu_mode mode){
 			printk("%s hw_init mode %d is wrong!\n", xpu_compatible_str, mode);
 			err=1;
 	}
-	xpu_api->XPU_REG_BAND_CHANNEL_write((false<<24)|(BAND_5_8GHZ<<16)|44);//use_short_slot==false; 5.8GHz; channel 44 -- default setting to sync with priv->band/channel/use_short_slot
+  // Remove this XPU_REG_BAND_CHANNEL_write, because
+  // 1. the 44 for channel field is out dated. Now the channel actually should be frequency in MHz
+  // 2. PROBLEM! this call in openwifi_start will cause lossing consistency between XPU register and
+  // (priv->use_short_slot<<24)|(priv->band<<16)|(priv->actual_rx_lo)
+	// xpu_api->XPU_REG_BAND_CHANNEL_write((false<<24)|(BAND_5_8GHZ<<16)|44);//use_short_slot==false; 5.8GHz; channel 44 -- default setting to sync with priv->band/channel/use_short_slot
 
 	agc_gain_delay = 39; //samples
 	rssi_half_db_offset = 75<<1;
