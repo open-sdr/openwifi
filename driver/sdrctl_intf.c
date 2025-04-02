@@ -270,6 +270,7 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
         } else if (reg_addr_idx==RF_TX_REG_IDX_FREQ_MHZ || reg_addr_idx==RF_RX_REG_IDX_FREQ_MHZ) { // apply the tx and rx fo
           channel_conf_tmp.chandef.chan->center_freq = reg_val;
           ad9361_rf_set_channel(hw, &channel_conf_tmp);
+          priv->stat.restrict_freq_mhz = reg_val;
 					// clk_set_rate(priv->ad9361_phy->clks[TX_RFPLL], ( ((u64)1000000ull)*((u64)priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]) )>>1 );
 					// ad9361_tx_calibration(priv, priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]);
 					// printk("%s clk_set_rate TX_RFPLL %dMHz done\n",sdr_compatible_str, priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]);
