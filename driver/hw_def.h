@@ -11,11 +11,15 @@ enum openwifi_fpga_type {
 	LARGE_FPGA = 1,
 };
 
+//we choose 3822=(5160+2484)/2 for calibration to avoid treating 5140 as 2.4GHz
+#define OPENWIFI_FREQ_MHz_TH_FOR_2_4GHZ_5GHZ 3822
+
 enum openwifi_band {
 	BAND_900M = 0,
 	BAND_2_4GHZ,
 	BAND_3_65GHZ,
 	BAND_5_0GHZ,
+  //use this BAND_5_8GHZ to represent all frequencies above OPENWIFI_FREQ_TH_FOR_2_4GHZ_5GHZ
 	BAND_5_8GHZ,
 	BAND_5_9GHZ,
 	BAND_60GHZ,

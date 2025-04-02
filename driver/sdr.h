@@ -506,7 +506,6 @@ struct openwifi_priv {
 
 	bool use_short_slot;
 	u8   band;
-	u16  channel;
 
 	u32 ampdu_reference;
 

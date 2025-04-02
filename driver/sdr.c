@@ -158,6 +158,16 @@ inline int rssi_dbm_to_rssi_half_db(int rssi_dbm, int rssi_correction)
 	return ((rssi_correction+rssi_dbm)<<1);
 }
 
+inline u8 freq_MHz_to_band(u32 freq_MHz)
+{
+  //we choose 3822=(5160+2484)/2 for calibration to avoid treating 5140 as 2.4GHz
+  if (freq_MHz < OPENWIFI_FREQ_MHz_TH_FOR_2_4GHZ_5GHZ) {
+    return(BAND_2_4GHZ);
+	} else {//use this BAND_5_8GHZ to represent all frequencies above OPENWIFI_FREQ_TH_FOR_2_4GHZ_5GHZ
+		return(BAND_5_8GHZ);
+	}
+}
+
 inline int rssi_correction_lookup_table(u32 freq_MHz)
 {
 	int rssi_correction;
@@ -167,7 +177,7 @@ inline int rssi_correction_lookup_table(u32 freq_MHz)
 	} else if (freq_MHz<=2484) {
 		rssi_correction = 153;
 	// } else if (freq_MHz<5160) {
-  } else if (freq_MHz<3822) { //use middle point (5160+2484)/2 for calibration to avoid treating 5140 as 2.4GHz
+  } else if (freq_MHz<OPENWIFI_FREQ_MHz_TH_FOR_2_4GHZ_5GHZ) { //use middle point (5160+2484)/2 for calibration to avoid treating 5140 as 2.4GHz
 		rssi_correction = 153;
 	} else if (freq_MHz<=5240) {
 		rssi_correction = 145;
@@ -220,18 +230,8 @@ inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 a
 	receiver_rssi_th = rssi_dbm_to_rssi_half_db(receiver_rssi_dbm_th, priv->rssi_correction);
 	openofdm_rx_api->OPENOFDM_RX_REG_POWER_THRES_write((OPENOFDM_RX_DC_RUNNING_SUM_TH_INIT<<16)|receiver_rssi_th);
 
-	// if (actual_rx_lo < 2500) {
-  if (actual_rx_lo < 3822) { //use middle point (5160+2484)/2 for calibration to avoid treating 5140 as 2.4GHz
-		if (priv->band != BAND_2_4GHZ) {
-			priv->band = BAND_2_4GHZ;
-			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|actual_rx_lo );
-		}
-	} else {
-		if (priv->band != BAND_5_8GHZ) {
-			priv->band = BAND_5_8GHZ;
-			xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|actual_rx_lo );
-		}
-	}
+	xpu_api->XPU_REG_BAND_CHANNEL_write( (priv->use_short_slot<<24)|(priv->band<<16)|actual_rx_lo );
+
 	printk("%s openwifi_rf_rx_update_after_tuning %dMHz rssi_correction %d fpga_lbt_th %d(%ddBm) auto %d static %d receiver th %d(%ddBm)\n", sdr_compatible_str,
 	actual_rx_lo, priv->rssi_correction, fpga_lbt_th, rssi_half_db_to_rssi_dbm(fpga_lbt_th, priv->rssi_correction), auto_lbt_th, static_lbt_th, receiver_rssi_th, receiver_rssi_dbm_th);
 }
@@ -267,6 +267,8 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
 		// -------------------Rx Lo tuning-------------------
 		clk_set_rate(priv->ad9361_phy->clks[RX_RFPLL], ( ((u64)1000000ull)*((u64)actual_rx_lo) )>>1);
 		priv->actual_rx_lo = actual_rx_lo;
+
+    priv->band = freq_MHz_to_band(actual_rx_lo);
 		
 		// call Tx Quadrature calibration if frequency change is more than 100MHz 
 		if (diff_tx_lo > 100)
@@ -2197,7 +2199,10 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	// //-------------find ad9361-phy driver for lo/channel control---------------
 	priv->actual_rx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
 	priv->actual_tx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
-	priv->last_tx_quad_cal_lo = 1000;
+	priv->band = freq_MHz_to_band(priv->actual_rx_lo);
+	priv->use_short_slot = false; //this can be changed by openwifi_bss_info_changed: BSS_CHANGED_ERP_SLOT
+	priv->ampdu_reference = 0;
+  priv->last_tx_quad_cal_lo = 1000;
 	tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
 	if (tmp_dev == NULL) {
 		printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);
@@ -2383,11 +2388,6 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 	memcpy(priv->rates_5GHz, openwifi_5GHz_rates, sizeof(openwifi_5GHz_rates));
 	memcpy(priv->channels_2GHz, openwifi_2GHz_channels, sizeof(openwifi_2GHz_channels));
 	memcpy(priv->channels_5GHz, openwifi_5GHz_channels, sizeof(openwifi_5GHz_channels));
-
-	priv->band = BAND_5_8GHZ; //this can be changed by band _rf_set_channel() (2.4GHz ERP(OFDM)) (5GHz OFDM)
-	priv->channel = 44;  //currently useless. this can be changed by band _rf_set_channel()
-	priv->use_short_slot = false; //this can be changed by openwifi_bss_info_changed: BSS_CHANGED_ERP_SLOT
-	priv->ampdu_reference = 0;
 
 	priv->band_2GHz.band = NL80211_BAND_2GHZ;
 	priv->band_2GHz.channels = priv->channels_2GHz;
