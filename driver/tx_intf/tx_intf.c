@@ -313,7 +313,9 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 		tx_intf_api->TX_INTF_REG_CSI_FUZZER_write(0);
 		tx_intf_api->TX_INTF_REG_CTS_TOSELF_WAIT_SIFS_TOP_write( ((16*10)<<16)|(16*10) );//high 16bit 5GHz; low 16 bit 2.4GHz. counter speed 10MHz is assumed
 	
-		tx_intf_api->TX_INTF_REG_TX_CONFIG_write(tx_config);
+    // Remove TX_INTF_REG_TX_CONFIG_write to avoid hw_init call in openwifi_start causing inconsistency
+		// tx_intf_api->TX_INTF_REG_TX_CONFIG_write(tx_config);
+
 		tx_intf_api->TX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		tx_intf_api->TX_INTF_REG_CFG_DATA_TO_ANT_write(0);
 		tx_intf_api->TX_INTF_REG_TX_HOLD_THRESHOLD_write(420);
@@ -344,7 +346,9 @@ static inline u32 hw_init(enum tx_intf_mode mode, u32 tx_config, u32 num_dma_sym
 		// So, a conservative bb_gain 250 should be used
 		tx_intf_api->TX_INTF_REG_BB_GAIN_write(250);
 
-		tx_intf_api->TX_INTF_REG_ANT_SEL_write(ant_sel);
+    // Remove TX_INTF_REG_ANT_SEL_write to avoid hw_init call in openwifi_start causing inconsistency
+		// tx_intf_api->TX_INTF_REG_ANT_SEL_write(ant_sel);
+
 		tx_intf_api->TX_INTF_REG_WIFI_TX_MODE_write((1<<3)|(2<<4));
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0x434);
 		tx_intf_api->TX_INTF_REG_MULTI_RST_write(0);

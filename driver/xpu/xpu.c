@@ -276,7 +276,7 @@ EXPORT_SYMBOL(xpu_api);
 
 static inline u32 hw_init(enum xpu_mode mode){
 	int err=0, i, rssi_half_db_th, rssi_half_db_offset, agc_gain_delay;
-	u32 filter_flag = 0;
+	// u32 filter_flag = 0;
 
 	printk("%s hw_init mode %d\n", xpu_compatible_str, mode);
 
@@ -321,8 +321,11 @@ static inline u32 hw_init(enum xpu_mode mode){
                         MY_BEACON          =     14b01000000000000,
                         MONITOR_ALL =            14b10000000000000;
 	#endif
-	filter_flag = (FIF_ALLMULTI|FIF_FCSFAIL|FIF_PLCPFAIL|FIF_BCN_PRBRESP_PROMISC|FIF_CONTROL|FIF_OTHER_BSS|FIF_PSPOLL|FIF_PROBE_REQ|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|MY_BEACON|MONITOR_ALL);
-	xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag);
+	
+  // Remove XPU_REG_FILTER_FLAG_write to avoid hw_init call in openwifi_start causing inconsistency
+  // filter_flag = (FIF_ALLMULTI|FIF_FCSFAIL|FIF_PLCPFAIL|FIF_BCN_PRBRESP_PROMISC|FIF_CONTROL|FIF_OTHER_BSS|FIF_PSPOLL|FIF_PROBE_REQ|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|MY_BEACON|MONITOR_ALL);
+	// xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag);
+
 	xpu_api->XPU_REG_CTS_TO_RTS_CONFIG_write(0xB<<16);//6M 1011:0xB
 
 	// after send data frame wait for ACK, this will be set in real time in function ad9361_rf_set_channel
@@ -359,9 +362,9 @@ static inline u32 hw_init(enum xpu_mode mode){
 			printk("%s hw_init mode %d is wrong!\n", xpu_compatible_str, mode);
 			err=1;
 	}
-  // Remove this XPU_REG_BAND_CHANNEL_write, because
+  // Remove this XPU_REG_BAND_CHANNEL_write in xpu.c, because
   // 1. the 44 for channel field is out dated. Now the channel actually should be frequency in MHz
-  // 2. PROBLEM! this call in openwifi_start will cause lossing consistency between XPU register and
+  // 2. PROBLEM! this hw_init call in openwifi_start will cause lossing consistency between XPU register and
   // (priv->use_short_slot<<24)|(priv->band<<16)|(priv->actual_rx_lo)
 	// xpu_api->XPU_REG_BAND_CHANNEL_write((false<<24)|(BAND_5_8GHZ<<16)|44);//use_short_slot==false; 5.8GHz; channel 44 -- default setting to sync with priv->band/channel/use_short_slot
 

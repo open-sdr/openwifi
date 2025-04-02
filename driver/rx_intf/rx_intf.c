@@ -324,7 +324,9 @@ static inline u32 hw_init(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 
 		rx_intf_api->RX_INTF_REG_NUM_DMA_SYMBOL_TO_PS_write(num_dma_symbol_to_ps);
 		rx_intf_api->RX_INTF_REG_CFG_DATA_TO_ANT_write(1<<8);
 		rx_intf_api->RX_INTF_REG_BB_GAIN_write(4);
-		rx_intf_api->RX_INTF_REG_ANT_SEL_write(ant_sel);
+
+    // Remove RX_INTF_REG_ANT_SEL_write to avoid hw_init call in openwifi_start causing inconsistency
+		// rx_intf_api->RX_INTF_REG_ANT_SEL_write(ant_sel);
 
 		rx_intf_api->RX_INTF_REG_MULTI_RST_write(0x14);//rst m/s axis
 		rx_intf_api->RX_INTF_REG_MULTI_RST_write(0);
