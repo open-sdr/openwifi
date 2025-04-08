@@ -50,19 +50,34 @@
 #include <../../drivers/iio/adc/ad9361_regs.h>
 #include <../../drivers/iio/adc/ad9361.h>
 #include <../../drivers/iio/adc/ad9361_private.h>
-
 #include <../../drivers/iio/frequency/cf_axi_dds.h>
-extern int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num);
-extern int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb,
-             bool tx1, bool tx2, bool immed);
-extern int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy,
-          struct ctrl_outs_control *ctrl);
-extern int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg); 
 
 #include "../user_space/sdrctl_src/nl80211_testmode_def.h"
 #include "hw_def.h"
 #include "sdr.h"
 #include "git_rev.h"
+
+#ifndef RFSoC4x2
+extern int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg); 
+extern int cf_axi_dds_datasel(struct cf_axi_dds_state *st, int channel, enum dds_data_select sel);
+extern struct ad9361_rf_phy* ad9361_spi_to_phy(struct spi_device *spi);
+extern int ad9361_tx_mute(struct ad9361_rf_phy *phy, u32 state);
+extern int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy, struct ctrl_outs_control *ctrl);
+extern int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb, bool tx1, bool tx2, bool immed);
+extern int ad9361_spi_read(struct spi_device *spi, u32 reg);
+extern int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num);
+#else
+int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg){return(0);}; 
+int cf_axi_dds_datasel(struct cf_axi_dds_state *st, int channel, enum dds_data_select sel){return(0);}; 
+struct ad9361_rf_phy* ad9361_spi_to_phy(struct spi_device *spi){return(0);}; 
+int ad9361_tx_mute(struct ad9361_rf_phy *phy, u32 state){return(0);}; 
+int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy, struct ctrl_outs_control *ctrl){return(0);}; 
+int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb, bool tx1, bool tx2, bool immed){return(0);}; 
+int ad9361_spi_read(struct spi_device *spi, u32 reg){return(0);}; 
+int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num){return(0);};
+#endif
+static struct ad9361_rf_phy ad9361_phy_fake;
+static struct ad9361_rf_phy_state ad9361_phy_state_fake;
 
 // driver API of component driver
 extern struct tx_intf_driver_api *tx_intf_api;
@@ -82,6 +97,7 @@ int rssi_correction_lookup_table(u32 freq_MHz);
 void ad9361_tx_calibration(struct openwifi_priv *priv, u32 actual_tx_lo);
 void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 actual_rx_lo);
 static void ad9361_rf_set_channel(struct ieee80211_hw *dev, struct ieee80211_conf *conf);
+static void rfsoc_rf_set_channel(struct ieee80211_hw *dev, struct ieee80211_conf *conf);
 
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
@@ -236,6 +252,12 @@ inline void openwifi_rf_rx_update_after_tuning(struct openwifi_priv *priv, u32 a
   actual_rx_lo, priv->rssi_correction, fpga_lbt_th, rssi_half_db_to_rssi_dbm(fpga_lbt_th, priv->rssi_correction), auto_lbt_th, static_lbt_th, receiver_rssi_th, receiver_rssi_dbm_th);
 }
 
+static void rfsoc_rf_set_channel(struct ieee80211_hw *dev,
+          struct ieee80211_conf *conf)
+{
+
+}
+
 static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
           struct ieee80211_conf *conf)
 {
@@ -284,6 +306,14 @@ const struct openwifi_rf_ops ad9361_rf_ops = {
 //  .init    = ad9361_rf_init,
 //  .stop    = ad9361_rf_stop,
   .set_chan  = ad9361_rf_set_channel,
+//  .calc_rssi  = ad9361_rf_calc_rssi,
+};
+
+const struct openwifi_rf_ops rfsoc4x2_rf_ops = {
+  .name    = "rfsoc4x2",
+//  .init    = ad9361_rf_init,
+//  .stop    = ad9361_rf_stop,
+  .set_chan  = rfsoc_rf_set_channel,
 //  .calc_rssi  = ad9361_rf_calc_rssi,
 };
 
@@ -2146,8 +2176,9 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 {
   struct ieee80211_hw *dev;
   struct openwifi_priv *priv;
+  struct device_node *dt_node;
   int err=1, rand_val;
-  const char *chip_name, *fpga_model;
+  const char *fpga_model;
   u32 reg, i;//, reg1;
 
   struct device_node *np = pdev->dev.of_node;
@@ -2184,9 +2215,25 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
   err = of_property_read_string(of_find_node_by_path("/"), "model", &fpga_model);
   if(err < 0) {
-    printk("%s openwifi_dev_probe: WARNING unknown openwifi FPGA model %d\n",sdr_compatible_str, err);
+    priv->hardware_type = UNKNOWN_HARDWARE;
     priv->fpga_type = SMALL_FPGA;
+    printk("%s openwifi_dev_probe: WARNING unknown openwifi FPGA model %d\n",sdr_compatible_str, err);
+    printk("%s openwifi_dev_probe: Try to detect TI lmk04828. If it exist, treate the board as RFSoC4x2\n",sdr_compatible_str);
+    dt_node = of_find_node_by_name(NULL, "lmk");
+    if (dt_node != NULL) {
+      printk("%s openwifi_dev_probe: found device tree node name %s\n",sdr_compatible_str, dt_node->name);
+      priv->hardware_type = RFSOC4X2;
+      priv->fpga_type = LARGE_FPGA;
+    } else {
+      printk("%s openwifi_dev_probe: WARNING device tree lmk node is not detected! %d\n",sdr_compatible_str, err);
+    }
   } else {
+    if(strstr(fpga_model, "ZCU102") != NULL) {
+      priv->hardware_type = ZYNQMP_AD9361;
+    } else {
+      priv->hardware_type = ZYNQ_AD9361;
+    }
+
     // LARGE FPGAs (i.e. ZCU102, Z7035, ZC706)
     if(strstr(fpga_model, "ZCU102") != NULL || strstr(fpga_model, "Z7035") != NULL || strstr(fpga_model, "ZC706") != NULL) {
       priv->fpga_type = LARGE_FPGA;
@@ -2197,77 +2244,83 @@ static int openwifi_dev_probe(struct platform_device *pdev)
     }
   }
 
-  // //-------------find ad9361-phy driver for lo/channel control---------------
   priv->actual_rx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
   priv->actual_tx_lo = 1000; //Some value aligned with rf_init/rf_init_11n.sh that is not WiFi channel to force ad9361_rf_set_channel execution triggered by Linux
   priv->band = freq_MHz_to_band(priv->actual_rx_lo);
   priv->use_short_slot = false; //this can be changed by openwifi_bss_info_changed: BSS_CHANGED_ERP_SLOT
   priv->ampdu_reference = 0;
   priv->last_tx_quad_cal_lo = 1000;
-  tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
-  if (tmp_dev == NULL) {
-    printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);
-    err = -ENODEV;
-    goto err_free_dev;
-  }
-  printk("%s bus_find_device ad9361-phy: %s. driver_data pointer %p\n", sdr_compatible_str, ((struct spi_device*)tmp_dev)->modalias, (void*)(((struct spi_device*)tmp_dev)->dev.driver_data));
-  if (((struct spi_device*)tmp_dev)->dev.driver_data == NULL) {
-    printk(KERN_ERR "%s find_dev ad9361-phy failed. dev.driver_data == NULL\n",sdr_compatible_str);
-    err = -ENODEV;
-    goto err_free_dev;
-  }
-  
-  priv->ad9361_phy = ad9361_spi_to_phy((struct spi_device*)tmp_dev);
-  if (!(priv->ad9361_phy)) {
-    printk(KERN_ERR "%s ad9361_spi_to_phy failed\n",sdr_compatible_str);
-    err = -ENODEV;
-    goto err_free_dev;
-  }
-  printk("%s ad9361_spi_to_phy ad9361-phy: %s\n", sdr_compatible_str, priv->ad9361_phy->spi->modalias);
 
-  // //-------------find driver: axi_ad9361 hdl ref design module, dac channel---------------
-  tmp_dev = bus_find_device( &platform_bus_type, NULL, "cf-ad9361-dds-core-lpc", custom_match_platform_dev );
-  if (!tmp_dev) {
-    printk(KERN_ERR "%s bus_find_device platform_bus_type cf-ad9361-dds-core-lpc failed\n",sdr_compatible_str);
-    err = -ENODEV;
-    goto err_free_dev;
-  }
+  if (priv->hardware_type != RFSOC4X2) {
+    // //-------------find ad9361-phy driver for lo/channel control---------------
+    tmp_dev = bus_find_device( &spi_bus_type, NULL, "ad9361-phy", custom_match_spi_dev );
+    if (tmp_dev == NULL) {
+      printk(KERN_ERR "%s find_dev ad9361-phy failed\n",sdr_compatible_str);
+      err = -ENODEV;
+      goto err_free_dev;
+    }
+    printk("%s bus_find_device ad9361-phy: %s. driver_data pointer %p\n", sdr_compatible_str, ((struct spi_device*)tmp_dev)->modalias, (void*)(((struct spi_device*)tmp_dev)->dev.driver_data));
+    if (((struct spi_device*)tmp_dev)->dev.driver_data == NULL) {
+      printk(KERN_ERR "%s find_dev ad9361-phy failed. dev.driver_data == NULL\n",sdr_compatible_str);
+      err = -ENODEV;
+      goto err_free_dev;
+    }
+    
+    priv->ad9361_phy = ad9361_spi_to_phy((struct spi_device*)tmp_dev);
+    if (!(priv->ad9361_phy)) {
+      printk(KERN_ERR "%s ad9361_spi_to_phy failed\n",sdr_compatible_str);
+      err = -ENODEV;
+      goto err_free_dev;
+    }
+    printk("%s ad9361_spi_to_phy ad9361-phy: %s\n", sdr_compatible_str, priv->ad9361_phy->spi->modalias);
 
-  tmp_pdev = to_platform_device(tmp_dev);
-  if (!tmp_pdev) {
-    printk(KERN_ERR "%s to_platform_device failed\n",sdr_compatible_str);
-    err = -ENODEV;
-    goto err_free_dev;
-  }
+    // //-------------find driver: axi_ad9361 hdl ref design module, dac channel---------------
+    tmp_dev = bus_find_device( &platform_bus_type, NULL, "cf-ad9361-dds-core-lpc", custom_match_platform_dev );
+    if (!tmp_dev) {
+      printk(KERN_ERR "%s bus_find_device platform_bus_type cf-ad9361-dds-core-lpc failed\n",sdr_compatible_str);
+      err = -ENODEV;
+      goto err_free_dev;
+    }
 
-  tmp_indio_dev = platform_get_drvdata(tmp_pdev);
-  if (!tmp_indio_dev) {
-    printk(KERN_ERR "%s platform_get_drvdata failed\n",sdr_compatible_str);
-    err = -ENODEV;
-    goto err_free_dev;
-  }
+    tmp_pdev = to_platform_device(tmp_dev);
+    if (!tmp_pdev) {
+      printk(KERN_ERR "%s to_platform_device failed\n",sdr_compatible_str);
+      err = -ENODEV;
+      goto err_free_dev;
+    }
 
-  priv->dds_st = iio_priv(tmp_indio_dev);
-  if (!(priv->dds_st)) {
-    printk(KERN_ERR "%s iio_priv failed\n",sdr_compatible_str);
-    err = -ENODEV;
-    goto err_free_dev;
-  }
-  printk("%s openwifi_dev_probe: cf-ad9361-dds-core-lpc dds_st->version %08x chip_info->name %s\n",sdr_compatible_str,priv->dds_st->version,priv->dds_st->chip_info->name);
-  cf_axi_dds_datasel(priv->dds_st, -1, DATA_SEL_DMA);
-  printk("%s openwifi_dev_probe: cf_axi_dds_datasel DATA_SEL_DMA\n",sdr_compatible_str);
+    tmp_indio_dev = platform_get_drvdata(tmp_pdev);
+    if (!tmp_indio_dev) {
+      printk(KERN_ERR "%s platform_get_drvdata failed\n",sdr_compatible_str);
+      err = -ENODEV;
+      goto err_free_dev;
+    }
 
-  // //-------------find driver: axi_ad9361 hdl ref design module, adc channel---------------
-  // turn off radio by muting tx
-  // ad9361_tx_mute(priv->ad9361_phy, 1);
-  // reg = ad9361_get_tx_atten(priv->ad9361_phy, 2);
-  // reg1 = ad9361_get_tx_atten(priv->ad9361_phy, 1);
-  // if (reg == AD9361_RADIO_OFF_TX_ATT && reg1 == AD9361_RADIO_OFF_TX_ATT ) {
-  //   priv->rfkill_off = 0;// 0 off, 1 on
-  //   printk("%s openwifi_dev_probe: rfkill radio off\n",sdr_compatible_str);
-  // }
-  // else
-  //   printk("%s openwifi_dev_probe: WARNING rfkill radio off failed. tx att read %d %d require %d\n",sdr_compatible_str, reg, reg1, AD9361_RADIO_OFF_TX_ATT);
+    priv->dds_st = iio_priv(tmp_indio_dev);
+    if (!(priv->dds_st)) {
+      printk(KERN_ERR "%s iio_priv failed\n",sdr_compatible_str);
+      err = -ENODEV;
+      goto err_free_dev;
+    }
+    printk("%s openwifi_dev_probe: cf-ad9361-dds-core-lpc dds_st->version %08x chip_info->name %s\n",sdr_compatible_str,priv->dds_st->version,priv->dds_st->chip_info->name);
+    cf_axi_dds_datasel(priv->dds_st, -1, DATA_SEL_DMA);
+    printk("%s openwifi_dev_probe: cf_axi_dds_datasel DATA_SEL_DMA\n",sdr_compatible_str);
+
+    // //-------------find driver: axi_ad9361 hdl ref design module, adc channel---------------
+    // turn off radio by muting tx
+    // ad9361_tx_mute(priv->ad9361_phy, 1);
+    // reg = ad9361_get_tx_atten(priv->ad9361_phy, 2);
+    // reg1 = ad9361_get_tx_atten(priv->ad9361_phy, 1);
+    // if (reg == AD9361_RADIO_OFF_TX_ATT && reg1 == AD9361_RADIO_OFF_TX_ATT ) {
+    //   priv->rfkill_off = 0;// 0 off, 1 on
+    //   printk("%s openwifi_dev_probe: rfkill radio off\n",sdr_compatible_str);
+    // }
+    // else
+    //   printk("%s openwifi_dev_probe: WARNING rfkill radio off failed. tx att read %d %d require %d\n",sdr_compatible_str, reg, reg1, AD9361_RADIO_OFF_TX_ATT);
+  } else { //construct a fake ad9361_phy as a temporary solution
+    priv->ad9361_phy = &ad9361_phy_fake;
+    priv->ad9361_phy->state = &ad9361_phy_state_fake;
+  }
 
   // //-----------------------------parse the test_mode input--------------------------------
   if (test_mode&1)
@@ -2471,8 +2524,6 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   //dev->wiphy->regulatory_flags = REGULATORY_CUSTOM_REG; // use our own config
   wiphy_apply_custom_regulatory(dev->wiphy, &sdr_regd);
 
-  chip_name = "ZYNQ";
-
   /* we declare to MAC80211 all the queues except for beacon queue
    * that will be eventually handled by DRV.
    * TX rings are arranged in such a way that lower is the IDX,
@@ -2486,7 +2537,11 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
   wiphy_ext_feature_set(dev->wiphy, NL80211_EXT_FEATURE_CQM_RSSI_LIST);
 
-  priv->rf = &ad9361_rf_ops;
+  if (priv->hardware_type == RFSOC4X2) {
+    priv->rf = &rfsoc4x2_rf_ops;
+  } else {
+    priv->rf = &ad9361_rf_ops;
+  }
 
   memset(priv->dest_mac_addr_queue_map,0,sizeof(priv->dest_mac_addr_queue_map));
   priv->slice_idx = 0xFFFFFFFF;
@@ -2652,8 +2707,8 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   // snprintf(priv->led_name[2], OPENWIFI_LED_MAX_NAME_LEN, "openwifi-%s::tx", wiphy_name(dev->wiphy));
   // snprintf(priv->led_name[3], OPENWIFI_LED_MAX_NAME_LEN, "openwifi-%s::rx", wiphy_name(dev->wiphy));
   
-  wiphy_info(dev->wiphy, "hwaddr %pm, %s + %s\n",
-       priv->mac_addr, chip_name, priv->rf->name);
+  wiphy_info(dev->wiphy, "hwaddr %pm, FPGA %s\n",
+       priv->mac_addr, priv->rf->name);
 
   openwifi_rfkill_init(dev);
   return 0;

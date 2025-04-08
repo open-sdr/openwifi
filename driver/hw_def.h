@@ -6,6 +6,13 @@
 // #define __HW_DEF_H_FILE__
 const char *sdr_compatible_str = "sdr,sdr";
 
+enum openwifi_hardware_type {
+  ZYNQ_AD9361 = 0,
+  ZYNQMP_AD9361 = 1,
+  RFSOC4X2 = 2,
+  UNKNOWN_HARDWARE,
+};
+
 enum openwifi_fpga_type {
   SMALL_FPGA = 0,
   LARGE_FPGA = 1,
