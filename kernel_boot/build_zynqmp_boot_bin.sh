@@ -8,7 +8,7 @@ BUILD_DIR=build_boot_bin
 OUTPUT_DIR=output_boot_bin
 
 usage () {
-	echo "usage: $0 system_top.xsa u-boot.elf  (download | bl31.elf | <path-to-arm-trusted-firmware-source>) [output-archive]"
+	echo "usage: $0 filename.xsa u-boot.elf  (download | bl31.elf | <path-to-arm-trusted-firmware-source>) [output-archive]"
 	exit 1
 }
 
@@ -95,15 +95,19 @@ cp "$XSA_FILE" "$BUILD_DIR/"
 cp "$UBOOT_FILE" "$OUTPUT_DIR/u-boot.elf"
 cp "$XSA_FILE" "$OUTPUT_DIR/"
 
+### Get basename of xsa and bit file
+XSA_FILE_BASENAME="$(basename $XSA_FILE)"
+XSA_FILE_BASENAME_WO_EXT="$(basename $XSA_FILE .xsa)"
+BIT_FILE_BASENAME="$XSA_FILE_BASENAME_WO_EXT.bit"
 
 ### Create create_fsbl_project.tcl file used by xsct to create the fsbl.
-echo "hsi open_hw_design `basename $XSA_FILE`" > $BUILD_DIR/create_fsbl_project.tcl
+echo "hsi open_hw_design $XSA_FILE_BASENAME" > $BUILD_DIR/create_fsbl_project.tcl
 echo 'set cpu_name [lindex [hsi get_cells -filter {IP_TYPE==PROCESSOR}] 0]' >> $BUILD_DIR/create_fsbl_project.tcl
-echo 'platform create -name hw0 -hw system_top.xsa -os standalone -out ./build/sdk -proc $cpu_name' >> $BUILD_DIR/create_fsbl_project.tcl
+echo "platform create -name hw0 -hw $XSA_FILE_BASENAME -os standalone -out ./build/sdk -proc \$cpu_name" >> $BUILD_DIR/create_fsbl_project.tcl
 echo 'platform generate' >> $BUILD_DIR/create_fsbl_project.tcl
 
 FSBL_PATH="$BUILD_DIR/build/sdk/hw0/export/hw0/sw/hw0/boot/fsbl.elf"
-SYSTEM_TOP_BIT_PATH="$BUILD_DIR/build/sdk/hw0/hw/system_top.bit"
+SYSTEM_TOP_BIT_PATH="$BUILD_DIR/build/sdk/hw0/hw/$BIT_FILE_BASENAME"
 PMUFW_PATH="$BUILD_DIR/build/sdk/hw0/export/hw0/sw/hw0/boot/pmufw.elf"
 
 ### Create zynq.bif file used by bootgen
@@ -111,7 +115,7 @@ echo "the_ROM_image:" > $OUTPUT_DIR/zynq.bif
 echo "{" >> $OUTPUT_DIR/zynq.bif
 echo "[bootloader,destination_cpu=a53-0] fsbl.elf" >> $OUTPUT_DIR/zynq.bif
 echo "[pmufw_image] pmufw.elf" >> $OUTPUT_DIR/zynq.bif
-echo "[destination_device=pl] system_top.bit" >> $OUTPUT_DIR/zynq.bif
+echo "[destination_device=pl] $BIT_FILE_BASENAME" >> $OUTPUT_DIR/zynq.bif
 echo "[destination_cpu=a53-0,exception_level=el-3,trustzone] bl31.elf" >> $OUTPUT_DIR/zynq.bif
 echo "[destination_cpu=a53-0, exception_level=el-2] u-boot.elf" >> $OUTPUT_DIR/zynq.bif
 echo "}" >> $OUTPUT_DIR/zynq.bif
@@ -121,9 +125,9 @@ echo "}" >> $OUTPUT_DIR/zynq.bif
 	cd $BUILD_DIR
 	xsct create_fsbl_project.tcl
 )
-### Copy fsbl and system_top.bit into the output folder
+### Copy fsbl and $BIT_FILE_BASENAME into the output folder
 cp "$FSBL_PATH" "$OUTPUT_DIR/fsbl.elf"
-cp "$SYSTEM_TOP_BIT_PATH" "$OUTPUT_DIR/system_top.bit"
+cp "$SYSTEM_TOP_BIT_PATH" "$OUTPUT_DIR/$BIT_FILE_BASENAME"
 cp "$PMUFW_PATH" "$OUTPUT_DIR/pmufw.elf"
 
 ### Build BOOT.BIN
