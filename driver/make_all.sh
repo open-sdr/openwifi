@@ -45,6 +45,16 @@ else
     echo "\$ARCH_OPTION is valid!"
 fi
 
+XILINX_ENV_FILE=$XILINX_DIR/Vitis/2022.2/settings64.sh
+echo "Expect env file $XILINX_ENV_FILE"
+
+if [ -f "$XILINX_ENV_FILE" ]; then
+    echo "$XILINX_ENV_FILE is found!"
+else
+    echo "$XILINX_ENV_FILE is not correct. Please check!"
+    exit 1
+fi
+
 echo "#define USE_NEW_RX_INTERRUPT 1" > pre_def.h
 if [[ -n $3 ]]; then
     DEFINE1=$3
@@ -72,7 +82,8 @@ if [[ -n $7 ]]; then
     echo "#define $DEFINE5" >> pre_def.h
 fi
 
-source $XILINX_DIR/Vitis/2021.1/settings64.sh
+source $XILINX_ENV_FILE
+
 if [ "$ARCH_OPTION" == "64" ]; then
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux-64/
     ARCH="arm64"
