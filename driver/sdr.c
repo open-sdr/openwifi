@@ -991,6 +991,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
   bool drv_seqno=false, use_rts_cts, use_cts_protect, ht_aggr_start=false, use_ht_rate, use_ht_aggr, cts_use_traffic_rate=false, force_use_cts_protect=false;
   __le16 frame_control,duration_id;
   u32 dma_fifo_no_room_flag, hw_queue_len, delay_count=0;
+  u16 aid = 0;
   enum dma_status status;
 
   static u32 addr1_low32_prev = -1;
@@ -1150,9 +1151,15 @@ static void openwifi_tx(struct ieee80211_hw *dev,
   // sifs = (priv->actual_rx_lo<2500?10:16);
   sifs = 16; // for ofdm, sifs is always 16
 
+  if (control != NULL) { // get aid for gen_ht_duration_id only when control->sta is not NULL
+    if (control->sta != NULL) {
+      aid = control->sta->aid;
+    }
+  }
+
   if (use_ht_rate) {
     // printk("%s openwifi_tx: rate_hw_value %d aggr %d sifs %d\n", sdr_compatible_str, rate_hw_value, use_ht_aggr, sifs);
-    hdr->duration_id = gen_ht_duration_id(frame_control, control->sta->aid, qos_hdr, use_ht_aggr, rate_hw_value, sifs); //linux only do it for 11a/g, not for 11n and later
+    hdr->duration_id = gen_ht_duration_id(frame_control, aid, qos_hdr, use_ht_aggr, rate_hw_value, sifs); //linux only do it for 11a/g, not for 11n and later
   }
   duration_id = hdr->duration_id;
 
