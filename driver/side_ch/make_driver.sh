@@ -34,7 +34,10 @@ else
     echo "\$ARCH_OPTION is valid!"
 fi
 
-source $XILINX_DIR/Vitis/2021.1/settings64.sh
+XILINX_ENV_FILE=$XILINX_DIR/Vitis/2022.2/settings64.sh
+echo "Expect env file $XILINX_ENV_FILE"
+
+source $XILINX_ENV_FILE
 if [ "$ARCH_OPTION" == "64" ]; then
     LINUX_KERNEL_SRC_DIR=$OPENWIFI_DIR/adi-linux-64/
     ARCH="arm64"
