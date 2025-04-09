@@ -15,24 +15,27 @@ OPENWIFI_HW_IMG_DIR=$1
 XILINX_DIR=$2
 BOARD_NAME=$3
 
-if [ -d "$XILINX_DIR/Vitis" ]; then
-    echo "\$XILINX_DIR is found!"
+XILINX_ENV_FILE=$XILINX_DIR/Vitis/2022.2/settings64.sh
+echo "Expect env file $XILINX_ENV_FILE"
+
+if [ -f "$XILINX_ENV_FILE" ]; then
+    echo "$XILINX_ENV_FILE is found!"
 else
-    echo "\$XILINX_DIR is not correct. Please check!"
+    echo "$XILINX_ENV_FILE is not correct. Please check!"
     exit 1
 fi
 
 if [ "$BOARD_NAME" != "neptunesdr" ] && [ "$BOARD_NAME" != "antsdr" ] && [ "$BOARD_NAME" != "antsdr_e200" ] && [ "$BOARD_NAME" != "e310v2" ]  && [ "$BOARD_NAME" != "sdrpi" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
-    echo "\$BOARD_NAME is not correct. Please check!"
+    echo "$BOARD_NAME is not correct. Please check!"
     exit 1
 else
-    echo "\$BOARD_NAME is found!"
+    echo "$BOARD_NAME is found!"
 fi
 
 if [ -d "$OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME" ]; then
-    echo "\$OPENWIFI_HW_IMG_DIR is found!"
+    echo "$OPENWIFI_HW_IMG_DIR is found!"
 else
-    echo "\$OPENWIFI_HW_IMG_DIR is not correct. Please check!"
+    echo "$OPENWIFI_HW_IMG_DIR is not correct. Please check!"
     exit 1
 fi
 
@@ -47,9 +50,9 @@ unzip $OPENWIFI_HW_IMG_DIR/boards/$BOARD_NAME/sdk/system_top.xsa -d ./hdf_and_bi
 BIT_FILENAME=./hdf_and_bit/system_top.bit
 
 if [ -f "$BIT_FILENAME" ]; then
-    echo "\$BIT_FILENAME is found!"
+    echo "$BIT_FILENAME is found!"
 else
-    echo "\$BIT_FILENAME does NOT exist. Please check!"
+    echo "$BIT_FILENAME does NOT exist. Please check!"
     exit 1
 fi
 
@@ -63,9 +66,9 @@ fi
 
 # FINAL_BIT_FILENAME=$BOARD_NAME\_system_top_reload.bit.bin
 
-source $XILINX_DIR/Vitis/2021.1/settings64.sh
-
 set -x
+
+source $XILINX_ENV_FILE
 
 cp $BIT_FILENAME ./
 bootgen -image system_top.bif -arch $ARCH -process_bitstream bin -w
