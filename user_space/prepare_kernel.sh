@@ -45,6 +45,16 @@ else
     echo "\$ARCH_OPTION is valid!"
 fi
 
+XILINX_ENV_FILE=$XILINX_DIR/Vitis/2022.2/settings64.sh
+echo "Expect env file $XILINX_ENV_FILE"
+
+if [ -f "$XILINX_ENV_FILE" ]; then
+    echo "$XILINX_ENV_FILE is found!"
+else
+    echo "$XILINX_ENV_FILE is not correct. Please check!"
+    exit 1
+fi
+
 if [ "$ARCH_OPTION" == "64" ]; then
     LINUX_KERNEL_SRC_DIR_NAME=adi-linux-64
     LINUX_KERNEL_CONFIG_FILE=$OPENWIFI_DIR/kernel_boot/kernel_config_zynqmp
@@ -76,9 +86,9 @@ git pull origin 2022_R2
 # git reset --hard 2022_R2
 git reset --hard c2f371e014f0704be4db02e5014c51ae99477c13 # save this commit for tsn
 
+source $XILINX_ENV_FILE
 export ARCH=$ARCH_NAME
 export CROSS_COMPILE=$CROSS_COMPILE_NAME
-source $XILINX_DIR/Vitis/2021.1/settings64.sh
 
 # if [ "$ARCH_OPTION" == "64" ]; then
   cp $LINUX_KERNEL_CONFIG_FILE ./.config
