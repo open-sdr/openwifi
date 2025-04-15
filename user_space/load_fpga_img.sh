@@ -40,7 +40,7 @@ if [ -f "$fpga_img_filename" ]; then
   echo $fpga_img_filename_core > /sys/class/fpga_manager/fpga0/firmware
 fi
 
-if 1; then # only AD9361 RF need reset/re-connect currently
+if true; then # only AD9361 RF need reset/re-connect currently
 
   # insmod ad9361_drv.ko
   # sleep 1
