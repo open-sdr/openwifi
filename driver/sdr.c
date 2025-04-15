@@ -473,7 +473,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
   // u32 dma_driver_buf_idx_mod;
   u8 *pdata_tmp;
   u8 fcs_ok;//, target_buf_idx;//, phy_rx_sn_hw;
-  s8 signal;
+  s8 signal, phase_offset;
   u16 agc_status_and_pkt_exist_flag, rssi_half_db, addr1_high16, addr2_high16=0, addr3_high16=0, seq_no=0;
   bool content_ok, len_overflow, is_unicast;
 
@@ -507,6 +507,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
     short_gi =     ((rate_idx&0x20)!=0);
     ht_aggr  =     (ht_flag & ((rate_idx&0x40)!=0));
     ht_aggr_last = (ht_flag & ((rate_idx&0x80)!=0));
+    phase_offset = (rate_idx>>8);
     rate_idx =     (rate_idx&0x1F);
 
     fcs_ok = ( len_overflow?0:(*(( u8*)(pdata_tmp+16+len-1))) );
@@ -551,13 +552,13 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
       if ( (( is_unicast)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_UNICAST))   ||
            ((!is_unicast)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_BROADCAST)) ||
          ((  fcs_ok==0)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_ERROR)) )
-        printk("%s openwifi_rx: %dB ht%daggr%d/%d sgi%d %dM FC%04x DI%04x ADDR%04x%08x/%04x%08x/%04x%08x SC%d fcs%d buf_idx%d %ddBm\n", sdr_compatible_str,
+        printk("%s openwifi_rx: %dB ht%daggr%d/%d sgi%d %dM FC%04x DI%04x ADDR%04x%08x/%04x%08x/%04x%08x SC%d fcs%d buf_idx%d %ddBm fo %d\n", sdr_compatible_str,
           len, ht_flag, ht_aggr, ht_aggr_last, short_gi, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
           reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
 #ifdef USE_NEW_RX_INTERRUPT
-          seq_no, fcs_ok, i, signal);
+          seq_no, fcs_ok, i, signal, phase_offset);
 #else
-          seq_no, fcs_ok, target_buf_idx_old, signal);
+          seq_no, fcs_ok, target_buf_idx_old, signal, phase_offset);
 #endif
     }
     
