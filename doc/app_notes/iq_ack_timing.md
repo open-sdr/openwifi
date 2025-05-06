@@ -29,10 +29,19 @@ Thsi app note show how to measure the ACK timing based on [**IQ sample capture**
   The 1st command keeps the receiver always ON to monitor incoming packet and ACK sent by its own. The second and the 3rd command set the capture length and pre trigger length. 
   
   The 4th command sets the target tx_control_state to SEND_DFL_ACK (check tx_control.v) -- the value is defined at bit 7~4, so 0x2 becomes 0x20. 
-  Other useful state values: SEND_BLK_ACK 0x30, RECV_ACK 0x60. Other state, such as RECV_ACK_WAIT_SIG_VALID/0x50, is not recommended, otherwise the Matlab analysis script needs to
-  be changed accordingly.
+  Other useful state values: SEND_BLK_ACK 0x30, RECV_ACK 0x60. Other state, such as RECV_ACK_WAIT_SIG_VALID/0x50, is not recommended, otherwise the Matlab analysis script needs to be changed accordingly.
   
-  The next command sets the trigger condition to the tx_control_state_hit (index 16. check side_ch_control.v).
+  The next command sets the trigger condition to the tx_control_state_hit (index 16. check side_ch_control.v), which means that when the real-time tx_control_state is equal 
+  to the target set by previous command, IQ capture will be performed once.
+
+  The trigger condition could also be the combination of tx_control_state and PHY type (0 - Legacy; 1 - HT; 2 - HE) of the received packet. This allows us to monitor 
+  the specific ACK Tx GAP after receiving the packet with the specific PHY type. To use this, PHY type should be put into the position of "x", and trigger condition index 
+  should be 24 instead of 16.
+  ```
+  ./side_ch_ctl wh5hx20
+  ./side_ch_ctl wh8d24
+  ```
+
 - You should see on board outputs like (Be sure running traffics to trigger ACK event!):
   ```
   loop 64 side info count 3
@@ -61,7 +70,10 @@ Thsi app note show how to measure the ACK timing based on [**IQ sample capture**
   ```
   for nbyte in {20..60}; do ping 192.168.13.1 -s $nbyte -c 1; sleep 0.3; done
   ```
-## Analyze the ACK timing by Matlab script
+
+  Or use any other device/test-box that can send out packet with specified MCS and size towards openwifi board.
+
+## Analyze the ACK timing by Matlab script and Wireshark
   A matlab script **test_iq_file_ack_timing_display.m** is offered to help you do analysis on the ACK timing based on **iq.txt**. For boards with small FPGA (7020), do not forget to give 4095 (**iq_len**) as the 1st argument.
   ```
   test_iq_file_ack_timing_display(8187);
@@ -72,7 +84,7 @@ Thsi app note show how to measure the ACK timing based on [**IQ sample capture**
   
   Above figure shows that there are two abnormal GAPs for Tx ACK. One is around 12us (Cap idx 2), the other is -1 (Cap idx 11).
 
-  To look into the details of the capture 2, that capture index should be given as the 2nd parameter to the Matlab script.
+  To look into the details of the capture index 2, that capture index should be given as the 2nd parameter to the Matlab script.
   ```
   test_iq_file_ack_timing_display(8187, 2);
   ```
@@ -82,3 +94,5 @@ Thsi app note show how to measure the ACK timing based on [**IQ sample capture**
   From above figure, it was discovered that the DC power caused by AGC action before the actual ACK packet is regarded as the beginning of the ACK packet, that is why the GAP calculation result is smaller. This bug has been fixed already in the Matlab analysis script. Following figure shows the fixed analysis result.
   
   ![](./iq-ack-timing-matlab-tx-ack-gap-fixed.jpg)
+
+  To relate the captured IQ snapshot (with ACK timing in it) with the detailed packet information in Wireshark, please check this discussion on github: https://github.com/open-sdr/openwifi/discussions/344 .
