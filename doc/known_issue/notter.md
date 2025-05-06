@@ -6,6 +6,7 @@
 - [Client can not get IP](#Client-can-not-get-IP)
 - [No space left on device](#No-space-left-on-device)
 - [Ping issue due to hostname resolving issue caused by DNS server change](#Ping-issue-due-to-hostname-resolving-issue-caused-by-DNS-server-change)
+- [FMCOMMS board eeprom issue causes Linux crash](#FMCOMMS-board-eeprom-issue-causes-Linux-crash)
 
 ## Network issue in quick star
 
@@ -55,3 +56,41 @@ ForwardToWall=no
 ## Ping issue due to hostname resolving issue caused by DNS server change
 
 You might need to change nameserver to 8.8.8.8 in /etc/resolv.conf on board.
+
+## FMCOMMS board eeprom issue causes Linux crash
+
+Some FMCOMMS2/3/4/x boards shipped with wrong/empty eeprom, so that on some platform (like ZCU102) it causes issues like Linux crash. You can follow https://github.com/analogdevicesinc/fru_tools to reprogram the eeprom.
+- Insert the FMCOMMS board on a platform (such as 32bit zed/zc706/zc702/etc) that can boot and boot into Linux
+- On board Linux:
+  ```
+  git clone https://github.com/analogdevicesinc/fru_tools.git
+  cd fru_tools/
+  make
+  find /sys -name eeprom
+  (It might return like: /sys/devices/soc0/fpga-axi@0/41620000.i2c/i2c-0/0-0050/eeprom)
+  fru-dump -i /sys/devices/soc0/fpga-axi@0/41620000.i2c/i2c-0/0-0050/eeprom -b
+  ```
+- If there is issue, you will see some "mismatch" warning like:
+  ```
+  read 256 bytes from /sys/devices/soc0/fpga-axi@0/41620000.i2c/i2c-0/0-0050/eeprom
+  fru_dump 0.8.1.7, built 04Aug2022
+  FRU Version number mismatch 0xff should be 0x01
+  ```
+- To reprogram the eeprom (FMCOMMS4 as an example):
+  ```
+  fru-dump -i ./masterfiles/AD-FMCOMMS4-EBZ-FRU.bin -o /sys/devices/soc0/fpga-axi@0/41620000.i2c/i2c-0/0-0050/eeprom
+  ```
+- Reboot the board, and try to read eeprom again, correct information should be shown like:
+  ```
+  fru-dump -i /sys/devices/soc0/fpga-axi@0/41620000.i2c/i2c-0/0-0050/eeprom -b
+  read 256 bytes from /sys/devices/soc0/fpga-axi@0/41620000.i2c/i2c-0/0-0050/eeprom
+  Date of Man	: Mon Jul 22 20:23:00 2013
+  Manufacturer	: Analog Devices
+  Product Name	: AD9364 RF Eval/Software Dev Kit
+  Serial Number	: 00045
+  Part Number	: AD-FMCOMMS4-EBZ
+  FRU File ID	: Empty Field
+  PCB Rev 	: C
+  PCB ID  	: FMCOMMSFMC04A
+  BOM Rev 	: 1
+  ```
