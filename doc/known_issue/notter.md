@@ -7,6 +7,9 @@
 - [No space left on device](#No-space-left-on-device)
 - [Ping issue due to hostname resolving issue caused by DNS server change](#Ping-issue-due-to-hostname-resolving-issue-caused-by-DNS-server-change)
 - [FMCOMMS board eeprom issue causes Linux crash](#FMCOMMS-board-eeprom-issue-causes-Linux-crash)
+- [Not booting due to SPI flash](#Not-booting-due-to-SPI-flash)
+- [Kernel compiling issue like GCC plugins](#Kernel-compiling-issue-like-GCC-plugins)
+- [Missing libidn.so.11 while run boot_bin_gen.sh](#Missing-libidn.so.11-while-run-boot_bin_gen.sh)
 
 ## Network issue in quick star
 
@@ -94,3 +97,38 @@ Some FMCOMMS2/3/4/x boards shipped with wrong/empty eeprom, so that on some plat
   PCB ID  	: FMCOMMSFMC04A
   BOM Rev 	: 1
   ```
+
+## Not booting due to SPI flash
+
+Before loading content on SD card, the on board SPI flash controls some configurations, such as the kernel file and AD9361 crystal frequency (ad9361_ext_refclk=0x2625a8b). When (suspect) there is an issue, the SPI flash can be restored to default by interrupting booting (hitting enter before Linux loading in the UART console), then
+```
+Zynq> env default -a
+## Resetting to default environment
+Zynq> saveenv
+Saving Environment to SPI Flash...
+SF: Detected n25q256a with page size 256 Bytes, erase size 4 KiB, total 32 MiB
+Erasing SPI flash...Writing to SPI flash...done
+```
+
+## Kernel compiling issue like GCC plugins
+
+Sometimes after the GNU/GCC tool chain update in the host PC or the slightly kernel update (such as 5.15.0 --> 5.15.36), it might prompt user to select among some new options while compiling kernel like:
+```
+...
+Xen guest support on ARM (XEN) [N/y/?] n
+Use a unique stack canary value for each task (STACKPROTECTOR_PER_TASK) [Y/n/?] (NEW) n
+*
+* GCC plugins
+*
+GCC plugins (GCC_PLUGINS) [Y/n/?] (NEW) n
+...
+```
+In these cases, the best/safest way is to chose **n** and **weakest** options. Otherwise the compiling might fail or potential issues might happen.
+
+## Missing libidn.so.11 while run boot_bin_gen.sh
+
+You might need to prepare/fake libidn.so.11 by
+```
+sudo ln -s  /usr/lib/x86_64-linux-gnu/libidn.so.12.6.3 /usr/lib/x86_64-linux-gnu/libidn.so.11
+```
+Please check/confirm what is the exact **libidn.so.12.6.3** in your system.
