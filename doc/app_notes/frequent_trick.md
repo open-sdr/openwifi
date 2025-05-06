@@ -61,19 +61,29 @@ To override the maximum number of re-transmission, set bit3 to 1, and set the va
 ```
 ./sdrctl dev sdr0 set reg xpu 11 9
 ```
-
 9 in binary form is 01001.
 
-To disable the ACK TX after receiving a packet, set bit4 to 1. (Assume we want to preserve the above re-transmission overriding setting)
+To disable the ACK TX after receiving a packet, set bit4 to 1:
+```
+./sdrctl dev sdr0 set reg xpu 11 16
+```
+If we want to preserve the above re-transmission overriding setting while disable ACK Tx:
 ```
 ./sdrctl dev sdr0 set reg xpu 11 25
 ```
-
 25 in binary form is 11001. the 1001 of bit3 to 1 is untouched.
 
 Disabling ACK TX might be useful for monitor mode and packet injection.
 
-To disable the ACK RX after sending a packet, set bit5 to 1.
+To disable the ACK RX after sending a packet, set bit5 to 1:
+```
+./sdrctl dev sdr0 set reg xpu 11 32
+```
+
+To disable both ACK Tx and Rx:
+```
+./sdrctl dev sdr0 set reg xpu 11 48
+```
   
 ## NAV DIFS EIFS CW disable and enable
 
@@ -194,6 +204,11 @@ In normal operation, the Tx Lo and RF port are controled by FPGA automatically d
 ./set_tx_lo.sh
 ```
 Give argument **1** to above scripts to turn them **ON**, **0** for **OFF**.
+
+To turn off automatic Tx Lo control from FPGA and leave Tx Lo always ON:
+```
+./sdrctl dev sdr0 set reg xpu 13 1
+```
   
 ## Antenna selection
   
