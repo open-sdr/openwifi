@@ -174,11 +174,17 @@ module_name: **rx** (for full list, check openofdm_rx.c and **slv_reg** in openo
 reg_idx|meaning|comment
 -------|-------|----
 0|reset|each bit is connected to openofdm_rx.v internal sub-module. 1 -- reset; 0 -- normal
-1|channel estimation subcarrier smoothing control|bit0: 1--force smoothing; 0--auto by ht header. bit4: 1--disable all smoothing; 0--let bit0 decide
+1|misc settings|bit0: 1--force smoothing; 0--auto by ht header. bit4: 1--disable all smoothing; 0--let bit0 decide. bit8: 0--high sensitivity sync short; 1--less fake sync short. bit12: 0--watchdog runs regardless power trigger; 1--runs only when power trigger. bit13: 0--watchdog runs regardless state; 1--runs only when state <= S_DECODE_SIGNAL. bit16: 0--enable watchdog eq monitor; 1--disable eq monitor
 2|power trigger and dc detection threshold|bit10-0: signal level below this threshold won't trigger demodulation. the unit is rssi_half_db, check rssi_half_db_to_rssi_dbm()/rssi_dbm_to_rssi_half_db() in sdr.c to see the relation to rssi dBm. bit23-16: threshold to prevent dc (or low frequency interference) triggered demodulation
 3|minimum plateau used for short preamble detection|initialized by openofdm_rx.c: openofdm_rx_api->OPENOFDM_RX_REG_MIN_PLATEAU_write
-4|soft decoding flag and abnormal packet length threshold|bit0 for soft decoding: 0 -- hard, 1 -- soft. bit31-16: if the packet length is not in the range of 14 to this threshold, terminate demodulation.
+4|soft decoding flag and abnormal packet length threshold|bit0 for soft decoding: 0--hard; 1--soft. bit31-16: if the packet length is longer this threshold, terminate demodulation. bit15-12: minimum packet length threshold to terminate demodulation
+5|fft_win_shift and small eq monitor threshold|bit3-0: fft window shift (default 4). bit9-4: threshold of how many very small eq out is counted to decide whether reset receiver
+17|selector for watchdog event counter|0--phase_offset(sync_short) too big. 1--too many eq out small values. 2--dc is detected (threshold slv_reg2[23:16]). 3--packet too short. 4--packet too long.
+18|sync_short phase_offset (frequency offset) threshold|watchdog will reset receiver if phase_offset is above the threshold
+19|sync_short phase_offset override|bit31: 1--enable override; 0--disable. bit15-0: value to be set (SIGNED value!)
 20|history of PHY rx state|read only. If the last digit readback is always 3, it means the Viterbi decoder stops working
+21|read back Fc_in_MHz and sync_short phase_offset|bit31-16: Fc_in_MHz. bit15-0: phase_offset
+30|read back watchdog event counter(selected by reg 17)|write to this register, the event counter (selected by reg 17) will be cleared
 31|git revision when build the receiver|returned register value means git revision in hex format
 
 module_name: **tx** (for full list, check openofdm_tx.c and **slv_reg** in openofdm_tx.v)
@@ -198,7 +204,7 @@ reg_idx|meaning|comment
 1|rx packet and I/Q config when tx|bit0 0: auto control (auto self-rx-IQ-mute when tx), 1:manual control by bit31 (1 self-IQ-mute; 0 unmute). bit2 0: rx packet filtering is configured by Linux, 1: no rx packet filtering, send all to Linux
 2|TSF timer low  32bit write|only write this register won't trigger the TSF timer reload. should use together with register for high 31bit
 3|TSF timer high 31bit write|falling edge of register MSB will trigger the TSF timer reload, which means write '1' then '0' to bit31 (bit30-0 for TSF)
-4|band, channel and ERP short slot setting|for CSMA engine config. set automatically by Linux. manual set could be overrided unless you change sdr.c
+4|band, channel and ERP short slot setting|for CSMA engine config. set automatically by Linux. manual set could be overrided unless you change sdr.c. Channel means frequency in MHz
 5|DIFS and backoff advance (us), abnormal pkt length threshold|advance (us) for tx preparation before the end of DIFS/backoff. bit7-0:DIFS advance, bit15-8: backoff advance. bit31-16: if the packet length is not in the range of 14 to this threshold, terminate pkt filtering procedure
 6|multi purpose CSMA settings|bit7-0: forced channel idle (us) after decoding done to avoid false alarm caused by strong "AGC tail" signal. bit31: NAV disable, bit30: DIFS disable, bit29: EIFS disable, bit28: dynamic CW disable (when disable, CW is taken from bit19-16). (value 1 -- forced disable; 0 -- normal/enable)
 7|RSSI and ad9361 gpio/gain delay setting (sync with IQ rssi)|bit26-16: offset for rssi report to Linux; bit6-0 delay (number of sample) of ad9361 gpio/gain to sync with IQ sample rssi/amplitude
@@ -221,6 +227,7 @@ reg_idx|meaning|comment
 29|BSSID address high 16bit for BSSID filtering|auto set by xpu_api->XPU_REG_BSSID_FILTER_HIGH_write in openwifi_bss_info_changed of sdr.c
 30|MAC address low  32bit|auto set by XPU_REG_MAC_ADDR_write in sdr.c
 31|MAC address high 16bit|auto set by XPU_REG_MAC_ADDR_write in sdr.c
+57|rssi_half_db read back together with channel idle and other CSMA states|Check slv_reg57 in xpu.v. Use rssi_openwifi_show.sh and rssi_ad9361_show.sh together for RSSI checking.
 58|TSF runtime value low  32bit|read only
 59|TSF runtime value high 32bit|read only
 62|addr2 of rx packet read back|bit31-0 are from bit47-16 of addr2 field in the received packet
@@ -323,7 +330,7 @@ Above will remove the limitation. Linux driven channel tuning will be recovered.
 
 ### Let openwifi work at arbitrary frequency
 
-Before setting a non-WiFi frequency to the system, a normal working system should be setup in normal WiFi frequency. After this, you can set it to any frequency in 70MHz-6GHz.
+Before setting a non-standard frequency to the system, a normal working system should be setup in normal/legal WiFi frequency, which should be as close as possible to the target non-standard frequency. Then use **set_restrict_freq.sh** (see above) to force upper layer to stay at that normal WiFi frequency (no scanning anymore). After this, you can set actual RF frequency to any frequency in 70MHz-6GHz (without notifying upper layer).
 ```
 ./sdrctl dev sdr0 set reg rf 1 3500 
 ```
