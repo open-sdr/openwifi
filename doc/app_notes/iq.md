@@ -5,9 +5,21 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
 
-We implement the **IQ sample capture** with interesting extensions: many **trigger conditions**; **RSSI**, RF chip **AGC** **status (lock/unlock)** and **gain**.
+We implement the **IQ sample capture** with interesting extensions: many **trigger conditions**; **RSSI**, RF chip **AGC** **status (lock/unlock)** and **gain**, Frequency offset FPGA vs Actual(floating point python algorithm based on IQ).
 
 (By default, openwifi Rx baseband is muted during self Tx, to unmute Rx baseband and capture self Tx signal you need to run "./sdrctl dev sdr0 set reg xpu 1 1" after the test running)
+
+[[Quick start](#Quick-start)]
+[[Understand the IQ capture feature](#Understand-the-IQ-capture-feature)]
+[[Config the IQ capture and interval](#Config-the-IQ-capture-and-interval)]
+[[Config the iq_len](#Config-the-iq_len)]
+
+[[Examine frequency offset estimation FPGA VS Python](#Examine-frequency-offset-estimation-FPGA-VS-Python)]
+[[Calculate SNR based on IQ](#Calculate-SNR-based-on-IQ)]
+
+[[Compile the side channel driver and user space program](#Compile-the-side-channel-driver-and-user-space-program)]
+[[Run the IQ capture together with modes other than monitor](#Run-the-IQ-capture-together-with-modes-other-than-monitor)]
+[[Map the IQ information to the WiFi packet](#Map-the-IQ-information-to-the-WiFi-packet)]
 
 ## Quick start
 - Power on the SDR board.
@@ -23,6 +35,9 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   insmod side_ch.ko iq_len_init=8187
   (for smaller FPGA (7Z020), iq_len_init should be <4096, like 4095, instead of 8187)
   
+  ./side_ch_ctl wh3h01
+  (Enable the IQ capture and configure the IQ data source)
+
   ./side_ch_ctl wh11d4094
   (Above command is needed only when you run with zed, adrv9364z7020, zc702 board)
   
@@ -81,7 +96,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   
   value|meaning
   -----|-------
-  0 |receiver gives FCS checksum result. no matter pass/fail
+  0 |receiver gives FCS checksum result. no matter pass/fail. Or free run
   1 |receiver gives FCS checksum result. pass
   2 |receiver gives FCS checksum result. fail
   3 |the tx_intf_iq0 becomes non zero (the 1st I/Q out)
@@ -97,7 +112,7 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   13|AD9361 AGC from unlock to lock
   14|AD9361 AGC gain goes above the threshold
   15|AD9361 AGC gain goes below the threshold
-  16|phy_tx_started signal from openofdm tx core
+  16|tx_control_state_hit when xpu tx_control_state hit the specified value (by side_ch_ctl wh5)
   17|phy_tx_done signal from openofdm tx core
   18|positive edge of tx_bb_is_ongoing from xpu core
   19|negative edge of tx_bb_is_ongoing from xpu core
@@ -105,8 +120,8 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   21|negative edge of tx_rf_is_ongoing from xpu core
   22|phy_tx_started and this tx packet needs ACK
   23|phy_tx_done and this tx packet needs ACK
-  24|positive edge of tx_bb_is_ongoing and this tx packet needs ACK
-  25|negative edge of tx_bb_is_ongoing and this tx packet needs ACK
+  24|both tx_control_state and phy_type (0 Legacy; 1 HT; 2 HE) hit (by side_ch_ctl wh5)
+  25|addr1 and/or addr2 are matched. Please check the related addr1/2 match config in CSI app note
   26|positive edge of tx_rf_is_ongoing and this tx packet needs ACK
   27|negative edge of tx_rf_is_ongoing and this tx packet needs ACK
   28|tx_bb_is_ongoing and I/Q amplitude from the other antenna is above rssi_or_iq_th
@@ -114,6 +129,11 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   30|start tx, meanwhile I/Q amplitude from the other antenna is above rssi_or_iq_th
   31|start tx and need for ACK, meanwhile I/Q amplitude from the other antenna is above rssi_or_iq_th
   
+  Hardware register 5 has fields for multi-purpose. bit0 for free running mode. bit7~4 for tx_control_state target value. bit 9~8 for phy_type. For example, set target tx_control_state to SEND_BLK_ACK (3) and phy_type to HE (2):
+  ```
+  ./side_ch_ctl wh5h230
+  ```
+
   If free running is wanted (alway trigger), please use the following two commands together.
   ```
   ./side_ch_ctl wh8d0
@@ -137,6 +157,51 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   side_ch_ctl gN
   ```
   The interval will become N*1ms
+
+## Examine frequency offset estimation FPGA VS Python
+  The script **iq_capture_freq_offset.py** can show the FPGA estimated frequency offset and the actual frequency offset calculated by floating point python algorithm. If they are very different, you could try to override the FPGA frequency estimation module by **user_space/receiver_phase_offset_override.sh** with the result from the python algorithm.
+
+  **DO NOT FORGET** to change **LUT_SIZE** in the **iq_capture_freq_offset.py** if you are testing 80211ax.
+
+  To use the **iq_capture_freq_offset.py**, here is an example command sequence (also available at the beginning of **iq_capture_freq_offset.py**):
+  - On board, insert the module with iq length 1500 and set: pre trigger length 1497, the MAC address of the peer, the self MAC address, enable the MAC address match, trigger condition 25 (both addr1 and addr2 match), starting capture.
+    ```
+    insmod side_ch.ko iq_len_init=1500
+    ./side_ch_ctl wh11d1497
+    ./side_ch_ctl wh7h635c982f
+    ./side_ch_ctl wh6h44332236
+    ./side_ch_ctl wh1h6001
+    ./side_ch_ctl wh8d25
+    ./side_ch_ctl g0
+    ```
+    In the case of totally clean/non-standard channel, long preamble detected can also be used as trigger condition:
+    ```
+    insmod side_ch.ko iq_len_init=1500
+    ./side_ch_ctl wh11d1497
+    ./side_ch_ctl wh8d8
+    ./side_ch_ctl g0
+    ```
+  - On host PC:
+    ```
+    python3 iq_capture_freq_offset.py 1500
+    ```
+  It will print phase_offset value (FPGA VS python) in the shell, and plot some real-time figures.
+
+## Calculate SNR based on IQ
+  After the IQ is captured and the .mat file has been generated by **test_iq_file_display.m**, **show_iq_snr.m** can be used to calculate the SNR (Signal to Noise Ratio) based on the .mat file in Matlab.
+
+  It is recommended to do this SNR check with single signal/packet source in a very clean (such as cable test in non-standard channels) environment. Otherwise the SNR statistics over variant link status is less meaningful.
+
+  - The 1st step is running with .mat file as the only argument in Matlab:
+    ```
+    show_iq_snr(mat_file_name)
+    ```
+    It will show a figure of relative RSSI change (dB). You should decide the middle value which is roughly the middle point between the high RSSI (signal) and low RSSI.
+  - The 2nd step is running with .mat file and the middle value as arguments in Matlab:
+    ```
+    show_iq_snr(mat_file_name, middle_value)
+    ```
+    It will show the SNR in Matlab command line, and plot the figure with signal and noise regions identified.
 
 ## Config the iq_len
   The **iq_len** (number of IQ sample per capture) is configurable in case you want less IQ samples per capture so that it can be triggered more times during a specific analysis period. The valid value is 1~**8187**. For **small FPGA** (zed_fmcs2, adrv9364z7020, zc702), the valid range is 0 ~ **4095**. It is independent from pre_trigger_len, and it can be less than pre_trigger_len if you want. You should align the **iq_len** value at the side_ch.ko, iq_capture.py and test_iq_file_display.m. 
@@ -166,8 +231,10 @@ We implement the **IQ sample capture** with interesting extensions: many **trigg
   The openwifi IQ capture feature could run with not only monitor mode but also other modes, such as AP-Client or ad-hoc mode. After the communication functionality is fully up in those modes, you can start IQ capture from "**insmod side_ch.ko**" and "**./side_ch_ctl g**" on board as described in the previous sections to extract IQ information to your computer.
 
 ## Map the IQ information to the WiFi packet
-  (See this https://github.com/open-sdr/openwifi/discussions/344 to understand how to map the collected data to the packet via the TSF timestamp)
-  
+  Recent tutorial: https://github.com/open-sdr/openwifi/discussions/344
+
+  Old text:
+
   If you want to relate the IQ information to the WiFi packet, you need to capture WiFi packets (tcpdump/wireshark/etc) while capturing IQ. Then you can relate the timestamp between WiFi packet and IQ information. Please be noticed that the timestamp in the IQ information is the moment when capture is triggered, which could be different from the timestamp reported in the packet capture program. But since they share the same time base (TSF timer), you can relate them easily by analyzing the WiFi packet and IQ sample sequence.
   
   Please learn the python and Matlab script to extract IQ information per capture according to your requirement.
