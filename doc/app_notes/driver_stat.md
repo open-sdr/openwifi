@@ -25,6 +25,10 @@ Clear the stattistics
 ./tx_prio_queue_show.sh clear
 ./rx_stat_show.sh clear
 ```
+Let rx_stat_show.sh calculate PER (Packet Error Rate) by giving the number of packet sent at the peer (30000 packets for example):
+```
+./rx_stat_show.sh 30000
+```
 To only show the statistics for the link with a specific peer node
 ```
 ./set_rx_target_sender_mac_addr.sh c83caf93
