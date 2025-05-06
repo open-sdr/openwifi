@@ -17,6 +17,9 @@ Thsi app note show how to measure the ACK timing based on [**IQ sample capture**
   
   ./side_ch_ctl wh11d4096
   (For smaller FPGA (7Z020), 4094 should be 2048)
+
+  ./side_ch_ctl wh3h21
+  (Enable the IQ capture and configure the correct IQ data composition for ACK timing check)
   
   ./side_ch_ctl wh5h20
   ./side_ch_ctl wh8d16
