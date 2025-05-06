@@ -5,6 +5,7 @@
 - [antsdr e200 UART console](#antsdr-e200-UART-console)
 - [Client can not get IP](#Client-can-not-get-IP)
 - [No space left on device](#No-space-left-on-device)
+- [Ping issue due to hostname resolving issue caused by DNS server change](#Ping-issue-due-to-hostname-resolving-issue-caused-by-DNS-server-change)
 
 ## Network issue in quick star
 
@@ -50,3 +51,7 @@ RuntimeMaxUse=64M
 ForwardToConsole=no
 ForwardToWall=no
 ```
+
+## Ping issue due to hostname resolving issue caused by DNS server change
+
+You might need to change nameserver to 8.8.8.8 in /etc/resolv.conf on board.
