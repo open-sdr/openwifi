@@ -34,6 +34,7 @@ Publications in category:
 - [Thijs Havinga, et al. Wi-Fi 6 Cross-Technology Interference Detection and Mitigation by OFDMA: an Experimental Study. arXiv, Submitted to EuCNC & 6G Summit 2025](https://arxiv.org/abs/2503.05429)
 - [Shyam Krishnan Venkateswaran, et al. Target wake time in IEEE 802.11 WLANs: Survey, challenges, and opportunities. Computer Communications, 2025](https://www.sciencedirect.com/science/article/pii/S0140366425000842)
 - [Baiheng Chen, et al. An Experimental Study of Wi-Fi Joint Transmission With Multiple Openwifi Access Points, IEEE WCNC, 2025](https://ieeexplore.ieee.org/document/10978612)
+- [Maksymilian, et al. Coordinated Spatial Reuse Scheduling With Machine Learning in IEEE 802.11 MAPC Networks. arXiv 2025](https://arxiv.org/abs/2505.07278), [Slides on IEEE 802.11 standardization conf, Warsaw, 2025](https://mentor.ieee.org/802.11/dcn/25/11-25-0710-01-aiml-mapc-c-sr-scheduling-with-multi-armed-bandits-revisited.pptx)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
