@@ -42,7 +42,7 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 - Easy to change bandwidth and [frequency](doc/README.md#let-openwifi-work-at-arbitrary-frequency): 
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
-- **802.11ax** under development
+- **802.11ax** and more advanced features, check: https://openwifi.tech
 
 **Performance (best case: aggregation/AMPDU on):**
 - iperf: TCP 40~50Mbps; UDP 50Mbps
