@@ -16,7 +16,7 @@ Use dd command to flash the SD card. (Or other software like Startup Disk Creato
 ```
 sudo dd bs=512 count=31116288 if=openwifi-xyz.img of=/dev/your_sdcard_dev
 ```
-To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename".
+To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename" (check the number of sectors).
 
 Then start from the 2nd step of the [Quick start](../../README.md#quick-start) in README.
 
