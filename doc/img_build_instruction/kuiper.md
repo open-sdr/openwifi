@@ -1,6 +1,6 @@
 **IMPORTANT pre-conditions**:
-- Install Vivado 2021.1. Make sure install Vitis as well. You should have this directory: your_Xilinx_install_directory/Vitis (NOT Vitis_HLS!)
-  - If the Vitis is not installed, you can add it by running "Xilinx Design Tools --> Add Design Tools for Devices 2021.1" from Xilinx program group/menu in your OS start menu, or Help menu of Vivado.
+- Install Vivado 2022.2. Make sure install Vitis as well. You should have this directory: your_Xilinx_install_directory/Vitis (NOT Vitis_HLS!)
+  - If the Vitis is not installed, you can add it by running "Xilinx Design Tools --> Add Design Tools for Devices 2022.2" from Xilinx program group/menu in your OS start menu, or Help menu of Vivado.
 - SD card at least with 16GB
 - Install packages: `sudo apt install flex bison libssl-dev device-tree-compiler u-boot-tools -y`
 
@@ -22,16 +22,16 @@ Then start from the 2nd step of the [Quick start](../../README.md#quick-start) i
 
 ## Build SD card from scratch
 
-Download image_2022-08-04-ADI-Kuiper-full.zip from https://wiki.analog.com/resources/tools-software/linux-software/kuiper-linux?redirect=1
+Download "13 December 2023 release (2022_r2)" (image_2023-12-13-ADI-Kuiper-full.zip) from https://wiki.analog.com/resources/tools-software/linux-software/kuiper-linux?redirect=1
 
 Extract it to .img file.
 
 Use dd command to flash the SD card. (Or other software like Startup Disk Creator in Ubuntu)
 ```
-sudo dd bs=512 count=24018944 if=2022-08-04-ADI-Kuiper-full.img of=/dev/your_sdcard_dev
+sudo dd bs=512 count=24182784 if=2023-12-13-ADI-Kuiper-full.img of=/dev/your_sdcard_dev
 ```
 
-(To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename". While making .img from SD card, check the SD card dev instead)
+(To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename" (check the number of sectors). While making .img from SD card, check the SD card dev instead)
 
 Mount the BOOT and rootfs partition of SD card to your computer.
 
