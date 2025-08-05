@@ -112,6 +112,7 @@ If there is issue with the connectivity (ping can not reach the target), it need
 
 Do misc configurations/installations in the ssh session onboard:
 ```
+(You might need to set correct data and time by: date -s)
 sudo apt update
 chmod +x /root/openwifi/*.sh
 
