@@ -25,6 +25,7 @@ mv ./kernel_modules/adi_axi_hdmi.ko ./openwifi/ -f || true
 mv ./kernel_modules/axidmatest.ko ./openwifi/ -f || true
 mv ./kernel_modules/lcd.ko ./openwifi/ -f || true
 mv ./kernel_modules/xilinx_dma.ko ./openwifi/ -f || true
+mv ./openwifi/system_top.bit.bin ./openwifi/system_top.bit.bin.bak -f || true
 
 rm -rf /lib/modules/$(uname -r)
 ln -s /root/kernel_modules /lib/modules/$(uname -r)

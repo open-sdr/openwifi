@@ -49,11 +49,11 @@ download_module () {
 insert_check_module () {
   TARGET_DIR_input="$1"
   MODULE_input="$2"
-  rmmod $MODULE_input
+  sudo rmmod $MODULE_input
   if [[ -n $3 ]]; then
-    (set -x; insmod $TARGET_DIR_input/$MODULE_input.ko test_mode=$3)
+    (set -x; sudo insmod $TARGET_DIR_input/$MODULE_input.ko test_mode=$3)
   else
-    (set -x; insmod $TARGET_DIR_input/$MODULE_input.ko)
+    (set -x; sudo insmod $TARGET_DIR_input/$MODULE_input.ko)
   fi
 
   checkModule $MODULE_input
@@ -64,12 +64,14 @@ insert_check_module () {
 
 print_usage
 
-insmod ad9361_drv.ko
-insmod xilinx_dma.ko
+# # now ad9361 driver is together with kernel. no need to load it.
+# insmod ad9361_drv.ko
+
+sudo insmod xilinx_dma.ko
 # modprobe ad9361_drv
 # modprobe xilinx_dma
-modprobe mac80211
-lsmod
+sudo modprobe mac80211
+sudo lsmod
 
 TARGET_DIR=./
 DOWNLOAD_FLAG=0
@@ -133,23 +135,23 @@ fi
 echo " "
 
 killall hostapd
-service dhcpcd stop #dhcp client. it will get secondary ip for sdr0 which causes trouble
+sudo service dhcpcd stop #dhcp client. it will get secondary ip for sdr0 which causes trouble
 killall dhcpd 
 killall wpa_supplicant
 #service network-manager stop
-ifconfig sdr0 down
+sudo ifconfig sdr0 down
 
-rmmod sdr
+sudo rmmod sdr
 
 if [ $DOWNLOAD_FLAG -eq 1 ]; then
   download_module fpga $TARGET_DIR
 fi
 
 if [ -f "$TARGET_DIR/system_top.bit.bin" ]; then
-  ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
+  sudo ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
 else
   echo $TARGET_DIR/system_top.bit.bin not found. Skip reloading FPGA.
-  # ./load_fpga_img.sh fjdo349ujtrueugjhj
+  # sudo ./load_fpga_img.sh fjdo349ujtrueugjhj
 fi
 
 ./rf_init_11n.sh
@@ -169,6 +171,8 @@ done
 
 # [ -e /tmp/check_calib_inf.pid ] && kill -0 $(</tmp/check_calib_inf.pid)
 # ./check_calib_inf.sh
+
+./agc_settings.sh 1
 
 echo the end
 # dmesg

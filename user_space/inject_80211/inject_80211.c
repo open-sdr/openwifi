@@ -65,8 +65,8 @@ static u8 ieee_hdr_data[] =
 {
 	0x08, 0x02, 0x00, 0x00,             // FC 0x0802. 0--subtype; 8--type&version; 02--toDS0 fromDS1 (data packet from DS to STA)
 	0x66, 0x55, 0x44, 0x33, 0x22, 0x11, // BSSID/MAC of AP
-	0x66, 0x55, 0x44, 0x33, 0x22, 0x22, // Source address (STA)
-	0x66, 0x55, 0x44, 0x33, 0x22, 0x33, // Destination address (another STA under the same AP)
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x22, // Transmitter address
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x33, // Source address
 	0x10, 0x86,                         // 0--fragment number; 0x861=2145--sequence number
 };
 
@@ -74,8 +74,8 @@ static u8 ieee_hdr_mgmt[] =
 {
 	0x00, 0x00, 0x00, 0x00,             // FC 0x0000. 0--subtype; 0--type&version; 
 	0x66, 0x55, 0x44, 0x33, 0x22, 0x11, // BSSID/MAC of AP
-	0x66, 0x55, 0x44, 0x33, 0x22, 0x22, // Source address (STA)
-	0x66, 0x55, 0x44, 0x33, 0x22, 0x33, // Destination address (another STA under the same AP)
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x22, // Transmitter address
+	0x66, 0x55, 0x44, 0x33, 0x22, 0x33, // Source address
 	0x10, 0x86,                         // 0--fragment number; 0x861=2145--sequence number
 };
 
@@ -116,6 +116,17 @@ void gen_rand_str(int size, char *rand_char)
 	rand_char[i] = '\0';
 }
 
+// Put input mac address by strtol to ieee header
+void assign_mac_addr(u64 a, u8 *hdr)
+{
+  hdr[0] = ((a>>40)&0xFF);
+  hdr[1] = ((a>>32)&0xFF);
+  hdr[2] = ((a>>24)&0xFF);
+  hdr[3] = ((a>>16)&0xFF);
+  hdr[4] = ((a>>8 )&0xFF);
+  hdr[5] = ((a>>0 )&0xFF);
+}
+
 int flagHelp = 0;
 
 void usage(void)
@@ -133,8 +144,8 @@ void usage(void)
 		"     8/A/B/C for Beacon/Disassociation/Authentication/Deauth, when packet_type m\n"
 		"     A/B/C/D for PS-Poll/RTS/CTS/ACK, when packet_type c\n"
 		"     0/1/2/8 for Data/Data+CF-Ack/Data+CF-Poll/QoS-Data, when packet_type d)\n"
-		"-a/--addr1 <the last byte of addr1 in hex>\n"
-		"-b/--addr2 <the last byte of addr2 in hex>\n"
+		"-a/--addr1 <Example: input 000e8e3b229c for 00:0e:8e:3b:22:9c>\n"
+		"-b/--addr2 <Example: input 000e8e3b229c for 00:0e:8e:3b:22:9c>\n"
 	    "-i/--sgi_flag (0,1)\n"
 	    "-n/--num_packets <number of packets>\n"
 	    "-s/--payload_size <payload size in bytes>\n"
@@ -151,7 +162,8 @@ void usage(void)
 
 int main(int argc, char *argv[])
 {
-	u8 buffer[BUF_SIZE_TOTAL], addr1=1, addr2=2, sub_type=1, *ieee_hdr;
+	u8 buffer[BUF_SIZE_TOTAL], sub_type=1, *ieee_hdr;
+  u64 addr1=1, addr2=2;
 	char szErrbuf[PCAP_ERRBUF_SIZE], rand_char[1484], hw_mode = 'n', packet_type = 'd';
 	int i, nLinkEncap = 0, r, rate_index = 0, sgi_flag = 0, num_packets = 10, payload_size = 64, packet_size, nDelay = 100000;
 	int ieee_hdr_len, payload_len;
@@ -205,11 +217,11 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'a':
-				addr1 = strtol(optarg, NULL, 16);
+				addr1 = strtoll(optarg, NULL, 16);
 				break;
 
 			case 'b':
-				addr2 = strtol(optarg, NULL, 16);
+				addr2 = strtoll(optarg, NULL, 16);
 				break;
 
 			case 'i':
@@ -269,18 +281,24 @@ int main(int argc, char *argv[])
 	if (packet_type == 'd') // data packet
 	{
 		ieee_hdr_data[0]  = ( ieee_hdr_data[0]|(sub_type<<4) );
-		ieee_hdr_data[9]  = addr1;
-		ieee_hdr_data[15] = addr2;
-		ieee_hdr_data[21] = addr1;
+		// ieee_hdr_data[9]  = addr1;
+    assign_mac_addr(addr1, ieee_hdr_data+4);
+		// ieee_hdr_data[15] = addr2;
+    assign_mac_addr(addr2, ieee_hdr_data+10);
+		// ieee_hdr_data[21] = addr1;
+    assign_mac_addr(addr2, ieee_hdr_data+16);
 		ieee_hdr_len = sizeof(ieee_hdr_data);
 		ieee_hdr = ieee_hdr_data;
 	}
 	else if (packet_type == 'm') // managment packet
 	{
 		ieee_hdr_mgmt[0]  = ( ieee_hdr_mgmt[0]|(sub_type<<4) );
-		ieee_hdr_mgmt[9]  = addr1;
-		ieee_hdr_mgmt[15] = addr2;
-		ieee_hdr_mgmt[21] = addr1;
+		// ieee_hdr_mgmt[9]  = addr1;
+    assign_mac_addr(addr1, ieee_hdr_mgmt+4);
+		// ieee_hdr_mgmt[15] = addr2;
+    assign_mac_addr(addr2, ieee_hdr_mgmt+10);
+		// ieee_hdr_mgmt[21] = addr1;
+    assign_mac_addr(addr2, ieee_hdr_mgmt+16);
 		ieee_hdr_len = sizeof(ieee_hdr_mgmt);
 		ieee_hdr = ieee_hdr_mgmt;
 	}
@@ -290,15 +308,18 @@ int main(int argc, char *argv[])
 		if (sub_type == 0xC || sub_type == 0xD)
 		{
 			ieee_hdr_ack_cts[0] = ( ieee_hdr_ack_cts[0]|(sub_type<<4) );
-			ieee_hdr_ack_cts[9] = addr1;
+			// ieee_hdr_ack_cts[9] = addr1;
+      assign_mac_addr(addr1, ieee_hdr_ack_cts+4);
 			ieee_hdr_len = sizeof(ieee_hdr_ack_cts);
 			ieee_hdr = ieee_hdr_ack_cts;
 		} 
 		else if (sub_type == 0xA || sub_type == 0xB)
 		{
 			ieee_hdr_rts[0]  = ( ieee_hdr_rts[0]|(sub_type<<4) );
-			ieee_hdr_rts[9]  = addr1;
-			ieee_hdr_rts[15] = addr2;
+			// ieee_hdr_rts[9]  = addr1;
+      assign_mac_addr(addr1, ieee_hdr_rts+4);
+			// ieee_hdr_rts[15] = addr2;
+      assign_mac_addr(addr2, ieee_hdr_rts+10);
 			ieee_hdr_len = sizeof(ieee_hdr_rts);
 			ieee_hdr = ieee_hdr_rts;
 		}
@@ -320,7 +341,7 @@ int main(int argc, char *argv[])
 	
 	packet_size = sizeof(u8aRadiotapHeader) + ieee_hdr_len + payload_len;
 	printf("mode = 802.11%c, rate index = %d, SHORT GI = %d, number of packets = %d and packet size = %d bytes, delay = %d usec\n", hw_mode, rate_index, sgi_flag, num_packets, packet_size, nDelay);
-	printf("packet_type %c sub_type %x payload_len %d ieee_hdr_len %d addr1 %02x addr2 %02x\n", packet_type, sub_type, payload_len, ieee_hdr_len, addr1, addr2);
+	printf("packet_type %c sub_type %x payload_len %d ieee_hdr_len %d addr1 %016llx addr2 %016llx\n", packet_type, sub_type, payload_len, ieee_hdr_len, addr1, addr2);
 
 	if (packet_size > BUF_SIZE_MAX) {
 		printf("packet_size %d > %d! Quite\n", packet_size, BUF_SIZE_MAX);

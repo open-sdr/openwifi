@@ -276,7 +276,7 @@ EXPORT_SYMBOL(xpu_api);
 
 static inline u32 hw_init(enum xpu_mode mode){
 	int err=0, i, rssi_half_db_th, rssi_half_db_offset, agc_gain_delay;
-	u32 filter_flag = 0;
+	// u32 filter_flag = 0;
 
 	printk("%s hw_init mode %d\n", xpu_compatible_str, mode);
 
@@ -321,8 +321,11 @@ static inline u32 hw_init(enum xpu_mode mode){
                         MY_BEACON          =     14b01000000000000,
                         MONITOR_ALL =            14b10000000000000;
 	#endif
-	filter_flag = (FIF_ALLMULTI|FIF_FCSFAIL|FIF_PLCPFAIL|FIF_BCN_PRBRESP_PROMISC|FIF_CONTROL|FIF_OTHER_BSS|FIF_PSPOLL|FIF_PROBE_REQ|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|MY_BEACON|MONITOR_ALL);
-	xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag);
+	
+  // Remove XPU_REG_FILTER_FLAG_write to avoid hw_init call in openwifi_start causing inconsistency
+  // filter_flag = (FIF_ALLMULTI|FIF_FCSFAIL|FIF_PLCPFAIL|FIF_BCN_PRBRESP_PROMISC|FIF_CONTROL|FIF_OTHER_BSS|FIF_PSPOLL|FIF_PROBE_REQ|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|MY_BEACON|MONITOR_ALL);
+	// xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag);
+
 	xpu_api->XPU_REG_CTS_TO_RTS_CONFIG_write(0xB<<16);//6M 1011:0xB
 
 	// after send data frame wait for ACK, this will be set in real time in function ad9361_rf_set_channel
@@ -359,7 +362,11 @@ static inline u32 hw_init(enum xpu_mode mode){
 			printk("%s hw_init mode %d is wrong!\n", xpu_compatible_str, mode);
 			err=1;
 	}
-	xpu_api->XPU_REG_BAND_CHANNEL_write((false<<24)|(BAND_5_8GHZ<<16)|44);//use_short_slot==false; 5.8GHz; channel 44 -- default setting to sync with priv->band/channel/use_short_slot
+  // Remove this XPU_REG_BAND_CHANNEL_write in xpu.c, because
+  // 1. the 44 for channel field is out dated. Now the channel actually should be frequency in MHz
+  // 2. PROBLEM! this hw_init call in openwifi_start will cause lossing consistency between XPU register and
+  // (priv->use_short_slot<<24)|(priv->band<<16)|(priv->actual_rx_lo)
+	// xpu_api->XPU_REG_BAND_CHANNEL_write((false<<24)|(BAND_5_8GHZ<<16)|44);//use_short_slot==false; 5.8GHz; channel 44 -- default setting to sync with priv->band/channel/use_short_slot
 
 	agc_gain_delay = 39; //samples
 	rssi_half_db_offset = 75<<1;
@@ -381,9 +388,9 @@ static inline u32 hw_init(enum xpu_mode mode){
 	// xpu_api->XPU_REG_CSMA_CFG_write(0xe0000000); // Linux will do config for each queue via openwifi_conf_tx
 
 //	// ------- assume 2.4 and 5GHz have the same SIFS (6us signal extension) --------
-	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((16+25)<<16)|((16+25)<<0) );
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
-	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | 10 );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)
+	xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((16+25+7-3+8-2)<<16)|((16+25+7-3+8-2)<<0) ); //+7 according to the ACK timing check by IQ sample: iq_ack_timing.md. -3 after Colvin LLR. +8 after new faster dac intf. -2 calibration in Oct. 2024
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | (10+3) );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M). +3 after Colvin LLR
+	xpu_api->XPU_REG_RECV_ACK_COUNT_TOP1_write( (1<<31) | (((51+2+2)*10 + 15)<<16) | (10+3) );//5GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M). +3 after Colvin LLR
 //	// ------- assume 2.4 and 5GHz have different SIFS --------
 	// xpu_api->XPU_REG_SEND_ACK_WAIT_TOP_write( ((16+23)<<16)|(0+23) );
 	// xpu_api->XPU_REG_RECV_ACK_COUNT_TOP0_write( (1<<31) | (((45+2+2)*10 + 15)<<16) | 10 );//2.4GHz. extra 300 clocks are needed when rx core fall into fake ht detection phase (rx mcs 6M)

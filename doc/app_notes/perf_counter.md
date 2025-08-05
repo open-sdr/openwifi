@@ -4,9 +4,34 @@ SPDX-FileCopyrightText: 2019 UGent
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
+Counter/statistics (number of TX packet, RX packet, watchdog event, etc.) in FPGA is offered via register write/read.
 
-Counter/statistics (number of TX packet, RX packet, etc.) in FPGA is offered via side channel register write/read.
+[[PHY RX TX event counter in side channel](#PHY-RX-TX-event-counter-in-side-channel)]
+[[PHY RX watchdog event counter in openofdm rx](#PHY-RX-watchdog-event-counter-in-openofdm-rx)]
 
+## PHY RX watchdog event counter in openofdm rx
+There is a signal_watchdog module inside openofdm_rx to detect the abnormal signal as early as possible, so that the receiver will not be busy with fake/abnormal signal for long time. (If the receiver is attracted by fake/abnormal signal easily, it could miss the normal/target packet).
+
+To access the watchdog event counter in openofdm_rx, [sdrctl command](../README.md#sdrctl-command) is used.
+
+To select the event you are interested in:
+```
+sdrctl dev sdr0 set reg rx 17 event_type
+```
+The event_type options:
+- 0: phase_offset(sync_short) too big
+- 1: Too many equalizer out small values
+- 2: DC/slow-sine-wave is detected
+- 3: Packet too short
+- 4: Packet too long
+
+To read the event counter (selected by register 17 above):
+```
+sdrctl dev sdr0 get reg rx 30
+```
+Write any value to above register 30 will clear the selected event counter (by register 17).
+
+## PHY RX TX event counter in side channel
 The 1st step is alway loading the side channel kernel module:
 ```
 insmod side_ch.ko
@@ -29,7 +54,7 @@ The register read command is:
 X -- register index
 ```
 
-## Register definition
+**Register definition:**
 
 The register 26~31 readback value represents the number of event happened. Each register has two event sources that can be selected via bit in register 19.
 

@@ -26,4 +26,5 @@ sleep 5
 cd webserver
 webfsd -F -p 80 -f index.html &
 route add default gw 192.168.10.1
-
+cd ~/openwifi
+./agc_settings.sh 1

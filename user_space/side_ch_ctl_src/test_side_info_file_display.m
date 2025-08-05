@@ -1,6 +1,6 @@
 % Xianjun Jiao. xianjun.jiao@imec.be; putaoshu@msn.com
 
-function timestamp = test_side_info_file_display(num_eq, side_info_filename, idx_to_check)
+function [timestamp, csi, freq_offset, equalizer_out] = test_side_info_file_display(num_eq, side_info_filename, idx_to_check)
 close all;
 
 if exist('num_eq', 'var')==0 || isempty(num_eq)
@@ -39,6 +39,7 @@ for i=1:num_side_info
     csi(:,i) = side_info(3:58,i);
     equalizer(:,i) = side_info(59:end,i);
 end
+equalizer_out = equalizer;
 
 csi = [csi(29:end,:); csi(1:28,:)];
 equalizer = equalizer(:);

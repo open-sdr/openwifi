@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 - We remain committed to open source, which is our foundation. To access advanced features and dedicated support, consider a **SUBSCRIPTION**. More info on https://openwifi.tech
 
-[[Download img and Quick start](#Download-img-and-Quick-start)] [[**Tips for Windows users**](https://github.com/open-sdr/openwifi/discussions/341)]
+[[Download img and Quick start](#Download-img-and-Quick-start)] [[known issue](doc/known_issue/notter.md)] [[**Tips for Windows users**](https://github.com/open-sdr/openwifi/discussions/341)]
 
 This repository includes Linux driver and software. **openwifi-hw** repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
 
@@ -73,7 +73,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 [[Update FPGA](#Update-FPGA)]
 [[Update Driver](#Update-Driver)]
 [[Update sdrctl](#Update-sdrctl)]
-[[Easy Access and etc](#Easy-Access-and-etc)]
+[[Update Misc Helpers](#Update-Misc-Helpers)]
 
 [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)]
 [[Special note for 11b](#Special-note-for-11b)]
@@ -199,9 +199,28 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
   ```
   cd ~/openwifi/sdrctl_src/ && make clean && make && cp sdrctl ../ && cd ..
   ```
-## Easy Access and etc
+## Update Misc Helpers
 
 - Check [Driver and FPGA dynamic reloading app note](./doc/app_notes/drv_fpga_dynamic_loading.md) for more convenient way of updating FPGA and driver files without rebooting/power-cycle.
+- Update new kernel, modules and devicetree to the board
+  - Prepare in the host PC (run scripts in the user_space directory)
+    - `prepare_kernel.sh`
+    - `boot_bin_gen.sh`
+    - `transfer_kernel_image_module_to_board.sh`
+  - Run on board (in the /root/ directory)
+    - `populate_kernel_image_module_reboot.sh`
+    
+      If kernel version is changed, you should run this script again after rebooting. Because the first time run it with old kernel will not setup correct liked directory name for the new kernel version.
+  - Suggest also update the Linux rootfs (https://wiki.analog.com/resources/tools-software/linux-software/kuiper-linux/update)
+    - `git clone https://github.com/analogdevicesinc/linux_image_ADI-scripts.git` on board
+    - `apt update`
+    - `adi_update_tools.sh`
+- Update new drivers .ko files to the board
+  - Prepare in the host PC
+    - `make_all.sh` (in the driver directory)
+    - `transfer_driver_userspace_to_board.sh`
+  - Run on board (in the /root/ directory)
+    - `populate_driver_userspace.sh`
 - FPGA and driver on board update scripts
   - Setup [ftp server](https://ubuntu.com/server/docs/service-ftp) on PC, allow anonymous and change ftp root directory to the openwifi directory.
   - On board:
@@ -215,8 +234,8 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
    - On PC: "File manager --> Connect to Server...", input: sftp://root@192.168.10.122/root
    - Input password "openwifi"
 
-## Build openwifi Linux img from scratch
-- For the latest ADI Kuiper image, please check [kuiper.md](./doc/img_build_instruction/kuiper.md)
+## Build openwifi Linux image from scratch
+- For the ADI Kuiper image, please check [kuiper.md](./doc/img_build_instruction/kuiper.md)
 
 ## Special note for 11b
 

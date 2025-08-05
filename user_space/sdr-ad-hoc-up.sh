@@ -27,3 +27,5 @@ sudo iwconfig $nic_name channel $ch_number
 sudo ifconfig $nic_name $ip_addr netmask 255.255.255.0
 ifconfig
 iwconfig $nic_name
+
+./agc_settings.sh 1

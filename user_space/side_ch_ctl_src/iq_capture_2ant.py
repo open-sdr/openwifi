@@ -16,16 +16,16 @@ def display_iq(iq0_capture, iq1_capture):
     # ax_iq0.set_xlabel("sample")
     ax_iq0.set_ylabel("I/Q")
     ax_iq0.set_title("rx0 I/Q")
-    plt.plot(iq0_capture.real, 'b')
-    plt.plot(iq0_capture.imag, 'r')
+    plt.plot(iq0_capture.real)
+    plt.plot(iq0_capture.imag)
     plt.ylim(-32767, 32767)
 
     ax_iq1 = fig_iq_capture.add_subplot(212)
     ax_iq1.set_xlabel("sample")
     ax_iq1.set_ylabel("I/Q")
     ax_iq1.set_title("rx1 I/Q")
-    plt.plot(iq1_capture.real, 'b')
-    plt.plot(iq1_capture.imag, 'r')
+    plt.plot(iq1_capture.real)
+    plt.plot(iq1_capture.imag)
     plt.ylim(-32767, 32767)
     fig_iq_capture.canvas.flush_events()
 
@@ -42,8 +42,10 @@ def parse_iq(iq, iq_len):
     iq1_capture = np.int16(iq[:,6::4]) + np.int16(iq[:,7::4])*1j
     # print(num_trans, iq_len, iq0_capture.shape, iq1_capture.shape)
 
-    iq0_capture = iq0_capture.reshape([num_trans*iq_len,])
-    iq1_capture = iq1_capture.reshape([num_trans*iq_len,])
+    # iq0_capture = iq0_capture.reshape([num_trans*iq_len,])
+    # iq1_capture = iq1_capture.reshape([num_trans*iq_len,])
+    iq0_capture = np.transpose(iq0_capture)
+    iq1_capture = np.transpose(iq1_capture)
 
     return timestamp, iq0_capture, iq1_capture
 
@@ -91,8 +93,11 @@ while True:
         np.savetxt(iq_fd, iq)
 
         timestamp, iq0_capture, iq1_capture = parse_iq(iq, iq_len)
-        print(timestamp, max(iq0_capture.real), max(iq1_capture.real))
         display_iq(iq0_capture, iq1_capture)
+        # print(timestamp, max(max(iq0_capture.real)), max(max(iq1_capture.real)))
+        tmp0 = np.asmatrix(iq0_capture)
+        tmp1 = np.asmatrix(iq1_capture)
+        print(timestamp, tmp0.max(), tmp1.max())
 
     except KeyboardInterrupt:
         print('User quit')

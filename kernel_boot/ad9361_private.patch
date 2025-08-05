@@ -1,0 +1,12 @@
+diff --git a/drivers/iio/adc/ad9361_private.h b/drivers/iio/adc/ad9361_private.h
+index dfffc4fa88a9..99dadf844614 100644
+--- a/drivers/iio/adc/ad9361_private.h
++++ b/drivers/iio/adc/ad9361_private.h
+@@ -127,6 +127,7 @@ struct gain_control {
+ 	u8 f_agc_lp_thresh_increment_steps; /* 0x117 1..8 */
+ 
+ 	/* Fast AGC - Lock Level */
++  bool f_agc_dig_sat_ovrg_en; /* 0x101:7 Enable digital saturation cause gain decrease */
+ 	u8 f_agc_lock_level; /* NOT USED: 0x101 0..-127 dBFS same as agc_inner_thresh_high */
+ 	bool f_agc_lock_level_lmt_gain_increase_en; /* 0x111:6 */
+ 	u8 f_agc_lock_level_gain_increase_upper_limit; /* 0x118 0..63 */

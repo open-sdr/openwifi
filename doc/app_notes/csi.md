@@ -36,7 +36,7 @@ We extend the **CSI** (Channel State Information) to **CSI** (Chip State Informa
   cd openwifi/user_space/side_ch_ctl_src
   python3 side_info_display.py
   ```
-  The python script needs "matplotlib.pyplot" and "numpy" packages installed. Now you should see 3 figures showing run-time **frequency offset**, **channel state/response** and **constellation form equalizer**. Meanwhile the python script prints the **timestamp**.
+  You might need to install beforehand: "sudo apt install python3-numpy python3-matplotlib python3-tk". Now you should see 3 figures showing run-time **frequency offset**, **channel state/response** and **constellation form equalizer**. Meanwhile the python script prints the **timestamp**.
   ![](./csi-screen-shot.jpg)
   
   While running, all information is also stored into a file **side_info.txt**. A matlab script **test_side_info_file_display.m** is offered to help you do analysis on the Chip State Information offline.

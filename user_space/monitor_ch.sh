@@ -25,3 +25,4 @@ sudo iwconfig $nic_name channel $ch_number
 ifconfig
 iwconfig $nic_name
 
+./agc_settings.sh 1

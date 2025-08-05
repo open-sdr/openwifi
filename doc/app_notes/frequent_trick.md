@@ -61,19 +61,29 @@ To override the maximum number of re-transmission, set bit3 to 1, and set the va
 ```
 ./sdrctl dev sdr0 set reg xpu 11 9
 ```
-
 9 in binary form is 01001.
 
-To disable the ACK TX after receiving a packet, set bit4 to 1. (Assume we want to preserve the above re-transmission overriding setting)
+To disable the ACK TX after receiving a packet, set bit4 to 1:
+```
+./sdrctl dev sdr0 set reg xpu 11 16
+```
+If we want to preserve the above re-transmission overriding setting while disable ACK Tx:
 ```
 ./sdrctl dev sdr0 set reg xpu 11 25
 ```
-
 25 in binary form is 11001. the 1001 of bit3 to 1 is untouched.
 
 Disabling ACK TX might be useful for monitor mode and packet injection.
 
-To disable the ACK RX after sending a packet, set bit5 to 1.
+To disable the ACK RX after sending a packet, set bit5 to 1:
+```
+./sdrctl dev sdr0 set reg xpu 11 32
+```
+
+To disable both ACK Tx and Rx:
+```
+./sdrctl dev sdr0 set reg xpu 11 48
+```
   
 ## NAV DIFS EIFS CW disable and enable
 
@@ -143,7 +153,11 @@ Bring it back to the automatic gain control mode
 ```
 To find out a good reference about a manual Rx gain setting for the current link/peer, you can set it to automatic mode and then run
 ```
-rx_gain_show.sh
+./stat_enable.sh
+```
+once and then
+```
+./rx_gain_show.sh
 ```
 for multiple times to check the actual AGC gain vlaue for received packet as explained in this [Access counter/statistics in driver](driver_stat.md). Then you can set the AGC gain value as argument to the **set_rx_gain_manual.sh** with the corret **offset**! For example, if **rx_gain_show.sh** reports a AGC gain value 34 for many successfully received data packets, and you want to use it as a manual gain setting, you need to set
 ```
@@ -190,6 +204,11 @@ In normal operation, the Tx Lo and RF port are controled by FPGA automatically d
 ./set_tx_lo.sh
 ```
 Give argument **1** to above scripts to turn them **ON**, **0** for **OFF**.
+
+To turn off automatic Tx Lo control from FPGA and leave Tx Lo always ON:
+```
+./sdrctl dev sdr0 set reg xpu 13 1
+```
   
 ## Antenna selection
   
@@ -246,4 +265,40 @@ Value N: 0 for Linux auto control; 4 ~ 11 for 6.5M, 13M, 19.5M, 26M, 39M, 52M, 5
   
 ## Arbitrary Tx IQ sample
   
-Arbitrary IQ sample (maximum 512 samples) can be written to tx_intf and sent for test purpose.
+Arbitrary IQ sample can be written to tx_intf and sent for test purposes. Currently maximum 512 samples, which is decided by the FIFO size in tx_iq_intf.v.
+
+To verify this feature, firstly bring up the sdr0 NIC and put it into non-Tx mode, such as monitor mode. Then setup IQ capture in loopback mode, for example FPGA internal. (Check IQ capture App note for more details)
+```
+insmod side_ch.ko iq_len_init=8187
+# Set 100 to register 11. It means the pre trigger length is 100, so we mainly capture IQ after trigger condition is met
+./side_ch_ctl wh11d100
+# Set 3 to register 8 -- set trigger condition to tx_intf_iq0_non_zero in tx_intf
+./side_ch_ctl wh8d3
+# Set the loopback mode to FPGA internal
+./side_ch_ctl wh5h4
+./side_ch_ctl g0
+```
+
+Run `python3 iq_capture.py 8187` on the host PC to wait for IQ capture by FPGA. After FPGA hits the IQ capture trigger condition, this host PC Python script will display and save the captured IQ.
+
+Open another ssh session to the board. Make sure you have an arbitrary_iq_gen directory, tx_intf_iq_data_to_sysfs.sh and tx_intf_iq_send.sh (from user_space directory in the host PC) on board. Then run:
+```
+# Send the example IQ data to driver sysfs, and read back for check
+./tx_intf_iq_data_to_sysfs.sh
+# Write the IQ data from driver to FPGA, and send once
+./tx_intf_iq_send.sh
+```
+
+Above scripts will send one time IQ. So you should see the captured IQ plot pop up. You can further check/process iq.txt in Matlab by `test_iq_file_display.m`.
+
+The related tx_intf registers and tx_iq_intf ports
+tx_intf register|tx_iq_intf port|explanation
+----------------|---------------|-----------
+slv_reg7 bit0   |tx_arbitrary_iq_mode| 0:Normal operation; 1:Arbitrary IQ mode
+slv_reg7 bit1   |tx_arbitrary_iq_tx_trigger| jumping from 0 to 1 will trigger one time Tx of IQ in the tx_iq_intf FIFO
+slv_reg1 bit31~0|tx_arbitrary_iq_in|The driver writes IQ (32bit=I+Q) via this port one by one into the FIFO
+
+The script `tx_intf_iq_send.sh` will trigger driver operations via `tx_intf_iq_ctl_store` function in `sysfs_intf.c`:
+- Switch to arbitrary IQ mode via slv_reg7 bit0
+- Write IQ data one by one to the tx_intf FIFO via slv_reg1
+- Trigger one time Tx of IQ data via slv_reg7 bit1

@@ -1,5 +1,5 @@
 diff --git a/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c b/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c
-index f24669f623d6..70c5769019fa 100644
+index e8241767b9f9..37809fc10bde 100644
 --- a/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c
 +++ b/drivers/gpu/drm/adi_axi_hdmi/axi_hdmi_crtc.c
 @@ -54,7 +54,7 @@ static struct dma_async_tx_descriptor *axi_hdmi_vdma_prep_interleaved_desc(

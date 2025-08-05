@@ -6,18 +6,26 @@ import os
 import sys
 import socket
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-def display_iq(iq_capture, agc_gain, rssi_half_db):
+def display_iq(iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, fcs_ok):
    
     fig_iq_capture = plt.figure(0)
     fig_iq_capture.clf()
     plt.xlabel("sample")
-    plt.ylabel("I/Q")
-    plt.title("I (blue) and Q (red) capture")
+    # plt.ylabel("I/Q")
+    # plt.title("I (blue) and Q (red) capture")
     plt.plot(iq_capture.real, 'b')
     plt.plot(iq_capture.imag, 'r')
-    plt.ylim(-32767, 32767)
+    plt.plot(30000+fcs_ok*3000, 'k-', label='fcs_ok')
+    plt.plot(27000+demod*3000, 'r--', label='demod')
+    plt.plot(-30000+tx_rf*3000, 'g-', label='tx_rf')
+    plt.plot(-33000+ch_idle*3000, 'b--', label='ch_idle')
+    plt.ylim(-34000, 34000)
+    plt.legend(loc='upper right')
+    plt.grid()
     fig_iq_capture.canvas.flush_events()
 
     agc_gain_lock = np.copy(agc_gain)
@@ -31,10 +39,11 @@ def display_iq(iq_capture, agc_gain, rssi_half_db):
     fig_agc_gain.clf()
     plt.xlabel("sample")
     plt.ylabel("gain/lock")
-    plt.title("AGC gain (blue) and lock status (red)")
-    plt.plot(agc_gain_value, 'b')
-    plt.plot(agc_gain_lock, 'r')
+    # plt.title("AGC gain (blue) and lock status (red)")
+    plt.plot(agc_gain_value, 'b', label='gain')
+    plt.plot(agc_gain_lock, 'r', label='lock')
     plt.ylim(0, 82)
+    plt.legend(loc='upper right')
     fig_agc_gain.canvas.flush_events()
 
     fig_rssi_half_db = plt.figure(2)
@@ -56,15 +65,20 @@ def parse_iq(iq, iq_len):
     
     timestamp = iq[:,0] + pow(2,16)*iq[:,1] + pow(2,32)*iq[:,2] + pow(2,48)*iq[:,3]
     iq_capture = np.int16(iq[:,4::4]) + np.int16(iq[:,5::4])*1j
-    agc_gain = iq[:,6::4]
-    rssi_half_db = iq[:,7::4]
+    agc_gain = np.bitwise_and(iq[:,6::4], np.uint16(0xFF))
+    rssi_half_db = np.bitwise_and(iq[:,7::4], np.uint16(0x7FF))
     # print(num_trans, iq_len, iq_capture.shape, agc_gain.shape, rssi_half_db.shape)
 
-    iq_capture = iq_capture.reshape([num_trans*iq_len,])
-    agc_gain = agc_gain.reshape([num_trans*iq_len,])
-    rssi_half_db = rssi_half_db.reshape([num_trans*iq_len,])
+    ch_idle = np.right_shift(np.bitwise_and(iq[:,6::4], np.uint16(0x8000)), 15)
+    demod = np.right_shift(np.bitwise_and(iq[:,7::4], np.uint16(0x8000)), 15)
+    tx_rf = np.right_shift(np.bitwise_and(iq[:,7::4], np.uint16(0x4000)), 14)
+    fcs_ok = np.right_shift(np.bitwise_and(iq[:,7::4], np.uint16(0x2000)), 13)
 
-    return timestamp, iq_capture, agc_gain, rssi_half_db
+    # iq_capture = iq_capture.reshape([num_trans*iq_len,])
+    # agc_gain = agc_gain.reshape([num_trans*iq_len,])
+    # rssi_half_db = rssi_half_db.reshape([num_trans*iq_len,])
+
+    return timestamp, iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, fcs_ok
 
 UDP_IP = "192.168.10.1" #Local IP to listen
 UDP_PORT = 4000         #Local port to listen
@@ -109,9 +123,10 @@ while True:
         iq = np.frombuffer(data, dtype='uint16')
         np.savetxt(iq_fd, iq)
 
-        timestamp, iq_capture, agc_gain, rssi_half_db = parse_iq(iq, iq_len)
+        timestamp, iq_capture, agc_gain, rssi_half_db, ch_idle, demod, tx_rf, fcs_ok = parse_iq(iq, iq_len)
         print(timestamp)
-        display_iq(iq_capture, agc_gain, rssi_half_db)
+        display_iq(iq_capture[0,:], agc_gain[0,:], rssi_half_db[0,:], ch_idle[0,:], demod[0,:], tx_rf[0,:], fcs_ok[0,:])
+        # plt.waitforbuttonpress()
 
     except KeyboardInterrupt:
         print('User quit')
