@@ -30,8 +30,13 @@ Publications in category:
 - [Trio Adiono, et al. A Scalable Design of A Full-Stack Real-Time OFDM Baseband Processor for Network-Enabled VLC Systems. IEEE Access 2024](https://ieeexplore.ieee.org/document/10589620)
 - [Roni Fagerholm, FPGA-based DECT-2020 New Radio Packet Detection. Master thesis, Aalto University, 30 September 2024](https://aaltodoc.aalto.fi/server/api/core/bitstreams/a5105c46-f4c6-4034-8024-96ed9e440feb/content)
 - [Hao Zhou, et al. Large Language Model (LLM) for Telecommunications: A Comprehensive Survey on Principles, Key Techniques, and Opportunities. IEEE Communications Surveys & Tutorials 2024](https://ieeexplore.ieee.org/document/10685369)
+- [Thijs Havinga, et al. Experimental Study Towards Efficient Interference Avoidance Using Wi-Fi 6 OFDMA on SDR, IEEE INFOCOM 2024](https://ieeexplore.ieee.org/document/10620761)
 - [Thijs Havinga, et al. Wi-Fi 6 Cross-Technology Interference Detection and Mitigation by OFDMA: an Experimental Study. arXiv, Submitted to EuCNC & 6G Summit 2025](https://arxiv.org/abs/2503.05429)
 - [Shyam Krishnan Venkateswaran, et al. Target wake time in IEEE 802.11 WLANs: Survey, challenges, and opportunities. Computer Communications, 2025](https://www.sciencedirect.com/science/article/pii/S0140366425000842)
+- [Baiheng Chen, et al. An Experimental Study of Wi-Fi Joint Transmission With Multiple Openwifi Access Points, IEEE WCNC, 2025](https://ieeexplore.ieee.org/document/10978612)
+- [Maksymilian, et al. Coordinated Spatial Reuse Scheduling With Machine Learning in IEEE 802.11 MAPC Networks. arXiv 2025](https://arxiv.org/abs/2505.07278), [Slides on IEEE 802.11 standardization conf, Warsaw, 2025](https://mentor.ieee.org/802.11/dcn/25/11-25-0710-01-aiml-mapc-c-sr-scheduling-with-multi-armed-bandits-revisited.pptx)
+- [Yanzhuo Yu, et al. DOA System Based on an Eight-Channel Circular Array and Wi-Fi, Proceedings of the 3rd International Conference on Internet of Things, Communication and Intelligent Technology, 27 May 2025](https://link.springer.com/chapter/10.1007/978-981-96-2767-7_37)
+- [Thijs, et al. Fine-Grained Coordinated OFDMA With Fiber Backhaul Enabled by openwifi and White Rabbit, Submitted to IEEE Globecom 2025.](https://arxiv.org/abs/2507.10210)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
@@ -89,6 +94,7 @@ Publications in category:
 - [Xianjun Jiao, et al. Single-Input-Multiple-Output Wi-Fi Radar for Vital Signal Sensing and Device Tracking, IEEE 5th International Symposium on Joint Communications & Sensing (JC&S) 2025](https://biblio.ugent.be/publication/01JMVPSR8AR08RRW9MC15FPF58)
 - [Renato Lo Cigno, et al. Communication and Sensing: Wireless PHY-Layer Threats to Security and Privacy for IoT Systems and Possible Countermeasures. information, MDPI, 2025](https://www.mdpi.com/2078-2489/16/1/31)
 - [Zhiming Chu, et al. Defeating CSI obfuscation mechanisms: A study on unauthorized Wi-Fi Sensing in wireless sensor network. Computer Networks, Volume 263, May 2025](https://www.sciencedirect.com/science/article/abs/pii/S1389128625001768)
+- [Xinyu Liu, et al. Integration of Person Identification and Respiratory Monitoring Based on Reconfigurable Intelligent Surface. IEEE Sensors Journal, 06 June 2025](https://ieeexplore.ieee.org/abstract/document/11027648)
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)

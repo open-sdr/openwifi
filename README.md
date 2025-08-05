@@ -9,6 +9,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 **openwifi:** Linux mac80211 compatible full-stack IEEE802.11/Wi-Fi design based on SDR (Software Defined Radio).
 
+- We remain committed to open source, which is our foundation. To access advanced features and dedicated support, consider a **SUBSCRIPTION**. More info on https://openwifi.tech
+
 [[Download img and Quick start](#Download-img-and-Quick-start)] [[known issue](doc/known_issue/notter.md)] [[**Tips for Windows users**](https://github.com/open-sdr/openwifi/discussions/341)]
 
 This repository includes Linux driver and software. **openwifi-hw** repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
@@ -19,7 +21,7 @@ This repository includes Linux driver and software. **openwifi-hw** repository h
 [[Publications and How to Cite](doc/publications.md)]
 [[maillist](https://lists.ugent.be/wws/subscribe/openwifi)]
 
-Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/blob/master/LICENSE) is the opensource license. For non-opensource and advanced feature license, please contact Filip.Louagie@UGent.be. Openwifi project also leverages some 3rd party modules. It is user's duty to check and follow licenses of those modules according to the purpose/usage. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions. [[How to contribute]](https://github.com/open-sdr/openwifi/blob/master/CONTRIBUTING.md). 
+Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/blob/master/LICENSE) is the opensource license. For non-opensource and advanced feature license, please fill a contact form on https://openwifi.tech. Openwifi project also leverages some 3rd party modules. It is user's duty to check and follow licenses of those modules according to the purpose/usage. You can find [an example explanation from Analog Devices](https://github.com/analogdevicesinc/hdl/blob/master/LICENSE) for this compound license conditions. [[How to contribute]](https://github.com/open-sdr/openwifi/blob/master/CONTRIBUTING.md). 
 
 **Features:**
 
@@ -40,7 +42,7 @@ Openwifi code has dual licenses. [AGPLv3](https://github.com/open-sdr/openwifi/b
 - Easy to change bandwidth and [frequency](doc/README.md#let-openwifi-work-at-arbitrary-frequency): 
   - 2MHz for 802.11ah in sub-GHz
   - 10MHz for 802.11p/vehicle in 5.9GHz
-- **802.11ax** under development
+- **802.11ax** and more advanced features, check: https://openwifi.tech
 
 **Performance (best case: aggregation/AMPDU on):**
 - iperf: TCP 40~50Mbps; UDP 50Mbps
