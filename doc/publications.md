@@ -69,6 +69,7 @@ Publications in category:
 - [Louis Adriaens, High-Precision Wireless Synchronization: When Wi-Fi meets UWB. IEEE/SICE International Symposium on System Integration (SII) 2025](https://ieeexplore.ieee.org/document/10870915)
 - [Yongchao Dang, Open Radio Intelligent Controller based Wireless Time Sensitive Networking for Industry 5.0. TechRxiv 2025](https://www.techrxiv.org/doi/full/10.36227/techrxiv.173750009.95972083)
 - [Pablo Avila-Campos, et al. Traffic Pattern-Based Scheduling for Wireless Non-TSN End Nodes. 2025 IEEE 21st International Conference on Factory Communication Systems (WFCS)](https://ieeexplore.ieee.org/document/11077621)
+- [S. Xu and L. Zhang, et al. A Hybrid TDMA/CSMA Protocol for Time-Sensitive Traffic in Robot Applications. arXiv, Sep. 2025](https://arxiv.org/abs/2509.06119v1)
 
 ## CSI Sensing and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
