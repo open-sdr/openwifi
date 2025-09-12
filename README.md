@@ -263,3 +263,10 @@ This section explains the porting work by showing the differences between openwi
 ## License
 
 This project is available as open source under the terms of the AGPL 3.0 Or later. However, some elements are being licensed under GPL 2-0 or later and BSD 3 license . For accurate information, please check individual files.
+
+## Funding
+
+This project received funding through [ORCA project](https://www.orca-project.eu/). ORCA project is funded by the EU's Horizon2020 programme under agreement number 732174.
+
+This project received funding through [NGI Zero Core](https://nlnet.nl/core/), a fund established by [NLnet](https://nlnet.nl/) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu/) program. Learn more at the NLnet project pages: [802.11n feature of openwifi](https://nlnet.nl/project/OpenWifi-80211n/), [openwifi: 802.11a/g/n maturity](https://nlnet.nl/project/OpenWifi-maturity/), [Extensive openwifi support for OpenWRT](https://nlnet.nl/project/OpenWifi-OpenWRT/)
+
