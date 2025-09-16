@@ -2,6 +2,7 @@
 
 - [Network issue in quick start](#Network-issue-in-quick-start)
 - [EXT4 fs error rootfs issue](#EXT4-fs-error-rootfs-issue)
+- [EXT4 fs error rootfs issue while booting on zcu102](#EXT4-fs-error-rootfs-issue-while-booting-on-zcu102)
 - [antsdr e200 UART console](#antsdr-e200-UART-console)
 - [Client can not get IP](#Client-can-not-get-IP)
 - [No space left on device](#No-space-left-on-device)
@@ -26,6 +27,35 @@ Sometimes, the 1st booting after flashing SD card might encounter "EXT4-fs error
 - gnome-disks
 - Startup Disk Creator
 - win32diskimager
+
+## EXT4 fs error rootfs issue while booting on zcu102
+
+Issue description: same SD card can boot normally on some zcu102 boards but not on some boards else.
+
+Many reportings on internet (while booting zcu102):
+```
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(179,2)
+...
+---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(179,2) ]---
+```
+
+Need to add following blocks into the mmc entry or sdhci entry of the zcu102 devicetree:
+```
+xlnx,has-cd = <0x1>;
+xlnx,has-power = <0x0>;
+xlnx,has-wp = <0x1>;
+disable-wp;
+no-1-8-v;
+broken-cd;
+xlnx,mio-bank = <1>;
+/* Do not run SD in HS mode from bootloader */
+sdhci-caps-mask = <0 0x200000>;
+sdhci-caps = <0 0>;
+max-frequency = <19000000>;
+```
+Suspect the main reason: sdcard speed needs to be limited by above.
+
+Might be due to that the sd card interface degrades and becomes unstable after years.
 
 ## antsdr e200 UART console
 
