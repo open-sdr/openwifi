@@ -37,6 +37,7 @@ Publications in category:
 - [Maksymilian, et al. Coordinated Spatial Reuse Scheduling With Machine Learning in IEEE 802.11 MAPC Networks. arXiv 2025](https://arxiv.org/abs/2505.07278), [Slides on IEEE 802.11 standardization conf, Warsaw, 2025](https://mentor.ieee.org/802.11/dcn/25/11-25-0710-01-aiml-mapc-c-sr-scheduling-with-multi-armed-bandits-revisited.pptx)
 - [Yanzhuo Yu, et al. DOA System Based on an Eight-Channel Circular Array and Wi-Fi, Proceedings of the 3rd International Conference on Internet of Things, Communication and Intelligent Technology, 27 May 2025](https://link.springer.com/chapter/10.1007/978-981-96-2767-7_37)
 - [Thijs, et al. Fine-Grained Coordinated OFDMA With Fiber Backhaul Enabled by openwifi and White Rabbit, Submitted to IEEE Globecom 2025.](https://arxiv.org/abs/2507.10210)
+- [Robbe Gaeremynck, et al.Openwifi and sub-20 MHz Co-OFDMA. WNG (Wireless Next Generation) SC, IEEE 802 Plenary session, Madrid, Spain, July 27 – August 1, 2025](https://mentor.ieee.org/802.11/dcn/25/11-25-1039-00-0wng-openwifi-and-sub-20-mhz-co-ofdma.pptx)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
