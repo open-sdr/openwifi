@@ -270,6 +270,8 @@ Arbitrary IQ sample can be written to tx_intf and sent for test purposes. Curren
 To verify this feature, firstly bring up the sdr0 NIC and put it into non-Tx mode, such as monitor mode. Then setup IQ capture in loopback mode, for example FPGA internal. (Check IQ capture App note for more details)
 ```
 insmod side_ch.ko iq_len_init=8187
+# Make sure to set the Tx local oscillator always on (as XPU is not aware of the transmission)
+./sdrctl dev sdr0 set reg xpu 13
 # Set 100 to register 11. It means the pre trigger length is 100, so we mainly capture IQ after trigger condition is met
 ./side_ch_ctl wh11d100
 # Set 3 to register 8 -- set trigger condition to tx_intf_iq0_non_zero in tx_intf
