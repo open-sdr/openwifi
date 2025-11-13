@@ -1,0 +1,76 @@
+{
+    "versionMajor": "0",
+    "versionMinor": "0",
+    "usesPR": "false",
+    "platformState": "pre_synth",
+    "topModuleName": "system_top",
+    "acceleratorBinaryFormat": "xclbin2",
+    "acceleratorBinaryContent": "bitstream",
+    "validAcceleratorBinaryContentValues": "dcp,bitstream",
+    "dcpFunctionStripped": "false",
+    "dcpEncrypted": "false",
+    "defaultOutputType": "hw_export",
+    "designIntent": {
+        "dataCenter": {
+            "value": "false",
+            "explicit": "false"
+        },
+        "embedded": {
+            "value": "false",
+            "explicit": "false"
+        },
+        "externalHost": {
+            "value": "false",
+            "explicit": "false"
+        },
+        "serverManaged": {
+            "value": "false",
+            "explicit": "false"
+        }
+    },
+    "devices": [
+        {
+            "name": "fpga0",
+            "type": "8",
+            "fpgaPart": "zynq:xc7z020:clg484:-1",
+            "part": {
+                "name": "xc7z020clg484-1",
+                "architecture": "zynq",
+                "device": "xc7z020",
+                "package": "clg484",
+                "speedGrade": "-1"
+            },
+            "core": {
+                "name": "OCL_REGION_0",
+                "type": "clc_region",
+                "numComputeUnits": "60"
+            }
+        }
+    ],
+    "files": [
+        {
+            "name": "system_top.bit",
+            "type": "FULL_BIT"
+        }
+    ],
+    "vendor": "xilinx",
+    "boardId": "zed",
+    "description": "Vivado generated Hardware Platform",
+    "uniqueName": "xilinx:zed::0.0",
+    "fpgaPart": "zynq",
+    "fpgaDevice": "xc7z020",
+    "unifiedPlatform": "true",
+    "expandablePlatform": "false",
+    "hardware": "true",
+    "softwareEmulation": "true",
+    "hardwareEmulation": "false",
+    "hardwareEmuPlatform": "false",
+    "usesNIFD": "false",
+    "generatedName": "Vivado",
+    "generatedVersion": "2022.2",
+    "generatedChangeList": "3671981",
+    "generatedIpChangeList": "3669848",
+    "generatedTimestamp": "Fri Jun 20 12:21:30 2025",
+    "idCode": "03727093"
+}
+

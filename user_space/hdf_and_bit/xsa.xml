@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root VersionMajor="1" VersionMinor="15">
+  <GenAppInfo Name="Vivado" Version="2022.2" CL="3671981" TimeStamp="Fri Jun 20 12:21:30 2025"/>
+  <DSA Vendor="xilinx" BoardId="zed" Name="" VersionMajor="0" VersionMinor="0" Description="Vivado generated Hardware Platform" FeatureRomTimestamp="0" DcpLogicFunctionStripped="false" DcpEncrypt="false" Unified="true" Fixed="true" DefaultOutputType="hw_export">
+    <Build UsesPR="false" PlatformState="pre_synth" AcceleratorBinaryContent="bitstream" ValidBinaryContentValues="dcp,bitstream" TopModuleName="system_top"/>
+    <Board Name="" Vendor="" Part="">
+      <Images>
+        <Img Type="HDPI" File=""/>
+        <Img Type="MDPI" File=""/>
+        <Img Type="LDPI" File=""/>
+      </Images>
+    </Board>
+    <Devices>
+      <Device Name="fpga0" Type="8" FpgaDevice="zynq:xc7z020:clg484:-1">
+        <Core Name="OCL_REGION_0" Type="clc_region" ComputeUnits="60"/>
+      </Device>
+    </Devices>
+    <Files>
+      <File Type="FULL_BIT" Name="system_top.bit"/>
+    </Files>
+  </DSA>
+</Root>

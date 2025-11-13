@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="BA" for="node" attr.name="base_addr" attr.type="string"/>
+  <key id="BP" for="node" attr.name="base_param" attr.type="string"/>
+  <key id="EH" for="edge" attr.name="edge_hid" attr.type="int"/>
+  <key id="HA" for="node" attr.name="high_addr" attr.type="string"/>
+  <key id="HP" for="node" attr.name="high_param" attr.type="string"/>
+  <key id="LT" for="node" attr.name="lock_type" attr.type="string"/>
+  <key id="MA" for="node" attr.name="master_addrspace" attr.type="string"/>
+  <key id="MX" for="node" attr.name="master_instance" attr.type="string"/>
+  <key id="MI" for="node" attr.name="master_interface" attr.type="string"/>
+  <key id="MS" for="node" attr.name="master_segment" attr.type="string"/>
+  <key id="MV" for="node" attr.name="master_vlnv" attr.type="string"/>
+  <key id="TM" for="node" attr.name="memory_type" attr.type="string"/>
+  <key id="SX" for="node" attr.name="slave_instance" attr.type="string"/>
+  <key id="SI" for="node" attr.name="slave_interface" attr.type="string"/>
+  <key id="MM" for="node" attr.name="slave_memmap" attr.type="string"/>
+  <key id="SS" for="node" attr.name="slave_segment" attr.type="string"/>
+  <key id="SV" for="node" attr.name="slave_vlnv" attr.type="string"/>
+  <key id="TU" for="node" attr.name="usage_type" attr.type="string"/>
+  <key id="VH" for="node" attr.name="vert_hid" attr.type="int"/>
+  <key id="VM" for="node" attr.name="vert_name" attr.type="string"/>
+  <key id="VT" for="node" attr.name="vert_type" attr.type="string"/>
+  <graph id="G" edgedefault="undirected" parse.nodeids="canonical" parse.edgeids="canonical" parse.order="nodesfirst">
+    <node id="n0">
+      <data key="BA">0x00000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x1FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_SG</data>
+      <data key="MX">/openwifi_ip/axi_dma_0</data>
+      <data key="MI">M_AXI_SG</data>
+      <data key="MS">SEG_sys_ps7_HP3_DDR_LOWOCM</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_HP3</data>
+      <data key="SS">HP3_DDR_LOWOCM</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n1">
+      <data key="BA">0x40000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x7FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_SG</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_SG</data>
+      <data key="MS">SEG_sys_ps7_ACP_M_AXI_GP0</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_M_AXI_GP0</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n2">
+      <data key="BA">0x00000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x1FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_MM2S</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_MM2S</data>
+      <data key="MS">SEG_sys_ps7_ACP_DDR_LOWOCM</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_DDR_LOWOCM</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n3">
+      <data key="TU">active</data>
+      <data key="VH">2</data>
+      <data key="VT">PM</data>
+    </node>
+    <node id="n4">
+      <data key="BA">0x83C40000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x83C4FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_xpu_0_reg0</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/xpu_0</data>
+      <data key="SI">s00_axi</data>
+      <data key="SS">reg0</data>
+      <data key="SV">user.org:user:xpu:1.0</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n5">
+      <data key="BA">0x80000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xBFFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_MM2S</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_MM2S</data>
+      <data key="MS">SEG_sys_ps7_ACP_M_AXI_GP1</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_M_AXI_GP1</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n6">
+      <data key="BA">0x40000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x7FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_MM2S</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_MM2S</data>
+      <data key="MS">SEG_sys_ps7_ACP_M_AXI_GP0</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_M_AXI_GP0</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n7">
+      <data key="BA">0xE0000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xE03FFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_MM2S</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_MM2S</data>
+      <data key="MS">SEG_sys_ps7_ACP_IOP</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_IOP</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n8">
+      <data key="BA">0x80400000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x8040FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_axi_dma_0_Reg</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/axi_dma_0</data>
+      <data key="SI">S_AXI_LITE</data>
+      <data key="SS">Reg</data>
+      <data key="SV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n9">
+      <data key="BA">0xE0000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xE03FFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_S2MM</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_S2MM</data>
+      <data key="MS">SEG_sys_ps7_ACP_IOP</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_IOP</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n10">
+      <data key="BA">0x83C20000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x83C2FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_rx_intf_0_reg0</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/rx_intf_0</data>
+      <data key="SI">s00_axi</data>
+      <data key="SS">reg0</data>
+      <data key="SV">user.org:user:rx_intf:1.0</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n11">
+      <data key="BA">0x41620000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x4162FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP0</data>
+      <data key="MS">SEG_axi_iic_fmc_Reg</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/axi_iic_fmc</data>
+      <data key="SI">S_AXI</data>
+      <data key="SS">Reg</data>
+      <data key="SV">xilinx.com:ip:axi_iic:2.1</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n12">
+      <data key="BA">0x40000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x7FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_S2MM</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_S2MM</data>
+      <data key="MS">SEG_sys_ps7_ACP_M_AXI_GP0</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_M_AXI_GP0</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n13">
+      <data key="BA">0x79020000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x7902FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP0</data>
+      <data key="MS">SEG_axi_ad9361_axi_lite</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/axi_ad9361</data>
+      <data key="SI">s_axi</data>
+      <data key="SS">axi_lite</data>
+      <data key="SV">analog.com:user:axi_ad9361:1.0</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n14">
+      <data key="BA">0xFC000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xFCFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_S2MM</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_S2MM</data>
+      <data key="MS">SEG_sys_ps7_ACP_QSPI_LINEAR</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_QSPI_LINEAR</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n15">
+      <data key="BA">0x83C30000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x83C3FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_openofdm_rx_0_reg0</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/openofdm_rx_0</data>
+      <data key="SI">s00_axi</data>
+      <data key="SS">reg0</data>
+      <data key="SV">user.org:user:openofdm_rx:1.0</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n16">
+      <data key="VM">system</data>
+      <data key="VT">BC</data>
+    </node>
+    <node id="n17">
+      <data key="BA">0x00000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x1FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_S2MM</data>
+      <data key="MX">/openwifi_ip/axi_dma_0</data>
+      <data key="MI">M_AXI_S2MM</data>
+      <data key="MS">SEG_sys_ps7_HP3_DDR_LOWOCM</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_HP3</data>
+      <data key="SS">HP3_DDR_LOWOCM</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n18">
+      <data key="BA">0x83C10000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x83C1FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_openofdm_tx_0_reg0</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/openofdm_tx_0</data>
+      <data key="SI">s00_axi</data>
+      <data key="SS">reg0</data>
+      <data key="SV">user.org:user:openofdm_tx:1.0</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n19">
+      <data key="VH">2</data>
+      <data key="VM">system</data>
+      <data key="VT">VR</data>
+    </node>
+    <node id="n20">
+      <data key="BA">0x80000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xBFFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_S2MM</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_S2MM</data>
+      <data key="MS">SEG_sys_ps7_ACP_M_AXI_GP1</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_M_AXI_GP1</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n21">
+      <data key="BA">0x80000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xBFFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_SG</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_SG</data>
+      <data key="MS">SEG_sys_ps7_ACP_M_AXI_GP1</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_M_AXI_GP1</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n22">
+      <data key="BA">0xFC000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xFCFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_SG</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_SG</data>
+      <data key="MS">SEG_sys_ps7_ACP_QSPI_LINEAR</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_QSPI_LINEAR</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n23">
+      <data key="BA">0xE0000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xE03FFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_SG</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_SG</data>
+      <data key="MS">SEG_sys_ps7_ACP_IOP</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_IOP</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">register</data>
+      <data key="VT">ACE</data>
+    </node>
+    <node id="n24">
+      <data key="BA">0x83C50000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x83C5FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_side_ch_0_reg0</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/side_ch_0</data>
+      <data key="SI">s00_axi</data>
+      <data key="SS">reg0</data>
+      <data key="SV">user.org:user:side_ch:1.0</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n25">
+      <data key="BA">0x00000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x1FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_S2MM</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_S2MM</data>
+      <data key="MS">SEG_sys_ps7_ACP_DDR_LOWOCM</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_DDR_LOWOCM</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n26">
+      <data key="BA">0x83C00000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x83C0FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_tx_intf_0_reg0</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/tx_intf_0</data>
+      <data key="SI">s00_axi</data>
+      <data key="SS">reg0</data>
+      <data key="SV">user.org:user:tx_intf:1.0</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n27">
+      <data key="BA">0xFC000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0xFCFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_MM2S</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_MM2S</data>
+      <data key="MS">SEG_sys_ps7_ACP_QSPI_LINEAR</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_QSPI_LINEAR</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n28">
+      <data key="BA">0x80410000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x8041FFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data</data>
+      <data key="MX">/sys_ps7</data>
+      <data key="MI">M_AXI_GP1</data>
+      <data key="MS">SEG_axi_dma_1_Reg</data>
+      <data key="MV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TM">both</data>
+      <data key="SX">/openwifi_ip/axi_dma_1</data>
+      <data key="SI">S_AXI_LITE</data>
+      <data key="SS">Reg</data>
+      <data key="SV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TU">register</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n29">
+      <data key="BA">0x00000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x1FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_MM2S</data>
+      <data key="MX">/openwifi_ip/axi_dma_0</data>
+      <data key="MI">M_AXI_MM2S</data>
+      <data key="MS">SEG_sys_ps7_HP3_DDR_LOWOCM</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_HP3</data>
+      <data key="SS">HP3_DDR_LOWOCM</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <node id="n30">
+      <data key="BA">0x00000000</data>
+      <data key="BP">C_BASEADDR</data>
+      <data key="HA">0x1FFFFFFF</data>
+      <data key="HP">C_HIGHADDR</data>
+      <data key="MA">Data_SG</data>
+      <data key="MX">/openwifi_ip/axi_dma_1</data>
+      <data key="MI">M_AXI_SG</data>
+      <data key="MS">SEG_sys_ps7_ACP_DDR_LOWOCM</data>
+      <data key="MV">xilinx.com:ip:axi_dma:7.1</data>
+      <data key="TM">both</data>
+      <data key="SX">/sys_ps7</data>
+      <data key="SI">S_AXI_ACP</data>
+      <data key="SS">ACP_DDR_LOWOCM</data>
+      <data key="SV">xilinx.com:ip:processing_system7:5.5</data>
+      <data key="TU">memory</data>
+      <data key="VT">AC</data>
+    </node>
+    <edge id="e0" source="n16" target="n19"/>
+    <edge id="e1" source="n19" target="n3"/>
+    <edge id="e2" source="n0" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e3" source="n29" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e4" source="n17" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e5" source="n30" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e6" source="n23" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e7" source="n1" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e8" source="n21" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e9" source="n22" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e10" source="n2" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e11" source="n7" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e12" source="n6" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e13" source="n5" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e14" source="n27" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e15" source="n25" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e16" source="n9" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e17" source="n12" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e18" source="n20" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e19" source="n14" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e20" source="n13" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e21" source="n8" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e22" source="n28" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e23" source="n11" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e24" source="n15" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e25" source="n18" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e26" source="n10" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e27" source="n24" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e28" source="n26" target="n3">
+      <data key="EH">2</data>
+    </edge>
+    <edge id="e29" source="n4" target="n3">
+      <data key="EH">2</data>
+    </edge>
+  </graph>
+</graphml>

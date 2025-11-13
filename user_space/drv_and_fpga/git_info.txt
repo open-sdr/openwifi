@@ -1,0 +1,73 @@
+openwifi-hw-git-branch
+  master
+* nlnet_fpga_2025
+ 
+openwifi-hw-git-commit
+commit a51dcd1d1400cfdf021c400d28fca9acda8b58d2
+Author: Xianjun Jiao <xianjun.jiao@ugent.be>
+Date:   Thu Apr 17 14:27:40 2025 +0200
+
+    Connect freq offset (phase_offset FPGA) to rx_intf:
+    sdrpi
+
+commit bd971a8175af93935ff11ce405aef74df9039cc2
+Author: Xianjun Jiao <xianjun.jiao@ugent.be>
+Date:   Thu Apr 17 14:23:17 2025 +0200
+
+    Connect freq offset (phase_offset FPGA) to rx_intf:
+    neptunesdr
+
+commit 34f235f8bbfa6c5924c3f91e9afd137cab3117fd
+Author: Xianjun Jiao <xianjun.jiao@ugent.be>
+Date:   Thu Apr 17 14:19:56 2025 +0200
+
+    Connect freq offset (phase_offset FPGA) to rx_intf:
+    e310v2
+ 
+openofdm_rx-git-branch
+  dot11zynq
+* dot11zynq_nlnet_fpga_2025
+  master
+ 
+openofdm_rx-git-commit
+commit 2bb3ad1a1f0023bfd15168db4e196ebf0d56d76c
+Author: Xianjun Jiao <xianjun.jiao@ugent.be>
+Date:   Fri Mar 14 10:18:59 2025 +0100
+
+    re-format openofdm_rx_s_axi.v
+
+commit c371ce95c045fc1824ae8c5aead9fc8aa44ab523
+Author: Xianjun Jiao <xianjun.jiao@ugent.be>
+Date:   Fri Mar 7 17:28:57 2025 +0100
+
+    re-format openofdm_rx_s_axi.v
+
+commit e40d79f1ac32079a13d2931a1512b3526e6e0b48
+Author: Xianjun Jiao <xianjun.jiao@ugent.be>
+Date:   Thu Mar 6 16:39:52 2025 +0100
+
+    Add missing lines
+ 
+ 
+openwifi-git-branch
+* master
+ 
+openwifi-git-commit
+commit 835e67fe671a45035e013b64a2ab87c3b10679ee
+Author: Jiao Xianjun <xianjun.jiao@ugent.be>
+Date:   Thu Nov 6 09:03:32 2025 +0100
+
+    Add Thijs and Yibin paper
+
+commit 7efd0676b142b71f1765d059a21eae497d97d27e
+Author: Thijs Havinga <94684410+HavingaThijs@users.noreply.github.com>
+Date:   Thu Oct 23 17:13:13 2025 +0200
+
+    For arbitrary I/Q transmission, leave Tx LO enabled
+
+commit d71365077525a7d5cc1e350dd80173923927af69
+Author: Thijs Havinga <94684410+HavingaThijs@users.noreply.github.com>
+Date:   Thu Oct 23 17:07:47 2025 +0200
+
+    For arbitrary I/Q transmission, leave Tx LO enabled
+ 

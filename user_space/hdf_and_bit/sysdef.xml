@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<Project Version="1" Minor="7" DIGEST="">
+	<TOOL_VERSION Version="2022.2"/>
+	<MODE Name="Post-Synthesis"/>
+	<SYSTEMINFO BOARD="" PART="xc7z020clg484-1" ARCH="zynq" PACKAGE="clg484" DEVICE="7z020" SPEED="-1"/>
+	<PART Name="xc7z020clg484-1">
+		<SSIT IS_SSIT="0"/>
+		<NUM_OF_SLRS Value="1"/>
+	</PART>
+	<HIERARCHY Name="system_top"/>
+	<File Type="HW_HANDOFF" Name="system.hwh" src_db="system.hwdef" DESIGN_HIERARCHY="i_system_wrapper/system_i" BD_TYPE="DEFAULT_BD">
+	</File>
+	<File Type="BDA" Name="system.bda" src_db="system.hwdef">
+	</File>
+	<File Type="PS_FSBL_INIT" Name="ps7_init.c" src_db="system_sys_ps7_0.hwdef">
+	</File>
+	<File Type="PS_FSBL_INIT" Name="ps7_init.h" src_db="system_sys_ps7_0.hwdef">
+	</File>
+	<File Type="PS_FSBL_INIT_GPL" Name="ps7_init_gpl.c" src_db="system_sys_ps7_0.hwdef">
+	</File>
+	<File Type="PS_FSBL_INIT_GPL" Name="ps7_init_gpl.h" src_db="system_sys_ps7_0.hwdef">
+	</File>
+	<File Type="PS_INIT_HELP" Name="ps7_init.html" src_db="system_sys_ps7_0.hwdef">
+	</File>
+	<File Type="PS_XMD_INIT" Name="ps7_init.tcl" src_db="system_sys_ps7_0.hwdef">
+	</File>
+	<File Type="BIT" Name="system_top.bit" src_db="temp.hdf">
+	</File>
+	<USEDRESOURCES/>
+</Project>
+
