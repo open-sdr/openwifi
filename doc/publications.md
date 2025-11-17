@@ -104,7 +104,7 @@ Publications in category:
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
-- [Christian Arendt, et al. Empowering the Convergence of Wi-Fi and 5G for Future Private 6G Networks. Accepted by European Wireless 2023; 28th European Wireless Conference 2023](https://cni.etit.tu-dortmund.de/storages/cni-etit/r/Research/Publications/2023/Arendt_2023_EW/2023_openwifi_ew_cr.pdf)
+- [Christian Arendt, et al. Empowering the Convergence of Wi-Fi and 5G for Future Private 6G Networks. 28th European Wireless Conference 2023](https://ieeexplore.ieee.org/document/10461434)
 - [Liangdong Wei, et al. An Experimental Evaluation of ACK-based Passive Bandwidth Estimation Methods in Ad Hoc Networks, 9th International Conference on Computer and Communications (ICCC) 2023](https://ieeexplore.ieee.org/document/10507541)
 
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
