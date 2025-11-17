@@ -18,7 +18,7 @@ Publications in category:
 - [Xianjun Jiao, et al. openwifi: a free and open-source IEEE802.11 SDR implementation on SoC. VTC2020 spring Antwerp](https://www.orca-project.eu/wp-content/uploads/sites/4/2020/03/openwifi-vtc-antwerp-PID1249076.pdf)
 - [Cedric Den Haese, The initial 802.11n 2*2 MIMO and diversity (CSD/Combining) work. UGent master thesis 2021](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Cedric_Den_Haese_masterproef.pdf)
 - [Paul Zanna, et al. A novel method for utilizing RF information from IEEE 802.11 frames in Software Defined Networks. MethodsX 2021](https://www.sciencedirect.com/science/article/pii/S2215016121003368)
-- [Thijs Havinga, et al. WIP: Achieving Self-Interference-Free Operation on SDR Platform with Critical TDD Turnaround Time. accepted WoWMoM2022 paper](https://arxiv.org/abs/2204.07354)
+- [Thijs Havinga, et al. WIP: Achieving Self-Interference-Free Operation on SDR Platform with Critical TDD Turnaround Time. WoWMoM 2022](http://hdl.handle.net/1854/LU-8765231)
 - [Yingshuo Xi, Baiming Zhang. High-Throughput Open Source Viterbi Decoder for OpenWiFi. 2022 KU Leuven master thesis](https://github.com/BaimingZhang26213/viterbi_decoder)
 - [Merkebu Girmay, et al. Technology recognition and traffic characterization for wireless technologies in ITS band. Vehicular Communications Volume 39, February 2023, 100563](https://doi.org/10.1016/j.vehcom.2022.100563)
 - [Thijs Havinga, et al. Accelerating FPGA-Based Wi-Fi Transceiver Design and Prototyping by High-Level Synthesis. FCCM2023 Poster](https://github.com/open-sdr/openwifi-hw-img/raw/master/doc_repo/Thijs-FCCM2023-poster.jpg), [[Longer/detailed info about the poster](https://arxiv.org/abs/2305.13351)]
