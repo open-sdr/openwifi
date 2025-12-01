@@ -74,6 +74,7 @@ Publications in category:
 - [Pablo Avila-Campos, et al. Traffic Pattern-Based Scheduling for Wireless Non-TSN End Nodes. 2025 IEEE 21st International Conference on Factory Communication Systems (WFCS)](https://ieeexplore.ieee.org/document/11077621)
 - [S. Xu and L. Zhang, et al. A Hybrid TDMA/CSMA Protocol for Time-Sensitive Traffic in Robot Applications. arXiv, Sep. 2025](https://arxiv.org/abs/2509.06119v1)
 - [Ingrid Moerman, et al. Deterministic communications - An end-to-end system point of view (invited presentation). Symposium on Future Network/6G challenges, Future Networks World Forum 2025](http://hdl.handle.net/1854/LU-01K9YE9V3NNKFTBDBW1D09EM6A)
+- [Ingrid Moerman, et al. The role of wireless in end-to-end Deterministic Connected Systems. Plenary talk at Workshop on Communication Networks and Power Systems, 28 Nov. 2025 (WCNPS’25)](http://hdl.handle.net/1854/LU-01KBCXDFS273CRGHB8TZTS8YB8)
 
 ## CSI Sensing and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
