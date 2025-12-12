@@ -40,6 +40,7 @@ Publications in category:
 - [Robbe Gaeremynck, et al.Openwifi and sub-20 MHz Co-OFDMA. WNG (Wireless Next Generation) SC, IEEE 802 Plenary session, Madrid, Spain, July 27 – August 1, 2025](https://mentor.ieee.org/802.11/dcn/25/11-25-1039-00-0wng-openwifi-and-sub-20-mhz-co-ofdma.pptx)
 - [Thijs, et al. Cross-Technology Interference awareness for multi-user OFDMA scheduling in IEEE 802.11ax, Ad Hoc Networks, Volume 181, 104057, 1 February 2026](https://doi.org/10.1016/j.adhoc.2025.104057)
 - [Yibin Shen, et al. Law: Towards Consistent Low Latency in 802.11 Home Networks, USENIX NSDI 2026](https://zilimeng.com/papers/law-nsdi26.pdf)
+- [Thijs, Flexible and Real-Time Interference Mitigation Techniques for Reliable Wireless Communication Using Software-Defined Radio, PhD dissertation, Gent University, 2025](http://hdl.handle.net/1854/LU-01KC11QRHFPRGD3WA9YQFSA7RZ)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
