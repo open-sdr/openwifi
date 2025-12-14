@@ -11,7 +11,8 @@
 - [Not booting due to SPI flash](#Not-booting-due-to-SPI-flash)
 - [Kernel compiling issue like GCC plugins](#Kernel-compiling-issue-like-GCC-plugins)
 - [Missing libidn.so.11 while run boot_bin_gen.sh](#Missing-libidn.so.11-while-run-boot_bin_gen.sh)
-- [Zcu102 booting kernel panic due to RTC](Zcu102-booting-kernel-panic-due-to-RTC)
+- [Zcu102 booting kernel panic due to RTC](#Zcu102-booting-kernel-panic-due-to-RTC)
+- [Kernel panic due to hardware capacitor and current load](#Kernel-panic-due-to-hardware-capacitor-and-current-load)
 
 ## Network issue in quick star
 
@@ -167,3 +168,7 @@ Please check/confirm what is the exact **libidn.so.12.6.3** in your system.
 ## Zcu102 booting kernel panic due to RTC
 
 https://github.com/open-sdr/openwifi/issues/366
+
+## Kernel panic due to hardware capacitor and current load
+
+https://github.com/open-sdr/openwifi/issues/457
