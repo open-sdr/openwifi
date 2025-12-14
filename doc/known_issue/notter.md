@@ -11,6 +11,7 @@
 - [Not booting due to SPI flash](#Not-booting-due-to-SPI-flash)
 - [Kernel compiling issue like GCC plugins](#Kernel-compiling-issue-like-GCC-plugins)
 - [Missing libidn.so.11 while run boot_bin_gen.sh](#Missing-libidn.so.11-while-run-boot_bin_gen.sh)
+- [Zcu102 booting kernel panic due to RTC](Zcu102-booting-kernel-panic-due-to-RTC)
 
 ## Network issue in quick star
 
@@ -162,3 +163,7 @@ You might need to prepare/fake libidn.so.11 by
 sudo ln -s  /usr/lib/x86_64-linux-gnu/libidn.so.12.6.3 /usr/lib/x86_64-linux-gnu/libidn.so.11
 ```
 Please check/confirm what is the exact **libidn.so.12.6.3** in your system.
+
+## Zcu102 booting kernel panic due to RTC
+
+https://github.com/open-sdr/openwifi/issues/366
