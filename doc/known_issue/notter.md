@@ -14,6 +14,7 @@
 - [Zcu102 booting kernel panic due to RTC](#Zcu102-booting-kernel-panic-due-to-RTC)
 - [Kernel panic due to hardware capacitor and current load](#Kernel-panic-due-to-hardware-capacitor-and-current-load)
 - [lightdm memory leakage leads to issue after long run](#lightdm-memory-leakage-leads-to-issue-after-long-run)
+- [Wrong memory size on adrv9361z7035 SoM](#Wrong-memory-size-on-adrv9361z7035-SoM)
 
 ## Network issue in quick star
 
@@ -177,3 +178,24 @@ https://github.com/open-sdr/openwifi/issues/457
 ## lightdm memory leakage leads to issue after long run
 
 Better to disable lightdm via systemctl
+
+## Wrong memory size on adrv9361z7035 SoM
+
+https://github.com/open-sdr/openwifi/issues/404 reports that Linux only sees half memory size than the actual DDR memory size in the hardware.
+
+The root cause is the old/wrong u-boot.elf hard coded the memory size as 512MB. It is already fixed to the correct 1GB (0x40000000): https://github.com/analogdevicesinc/u-boot-xlnx/blob/master/arch/arm/dts/zynq-adrv9361.dts
+
+The solution is re-building u-boot.elf from https://github.com/analogdevicesinc/u-boot-xlnx and re-generating BOOT.BIN for adrv9361z7035 SoM.
+
+Steps to re-build u-boot.elf for adrv9361z7035 SoM:
+
+```
+git clone https://github.com/analogdevicesinc/u-boot-xlnx.git
+cd u-boot-xlnx
+source environment_setting.sh (could be XILINX_DIR/Vitis/2022.2/settings64.sh or directory of your tool chain)
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+make zynq_adrv9361_defconfig
+make -j8
+make u-boot.elf
+```
