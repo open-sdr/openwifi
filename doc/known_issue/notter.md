@@ -13,6 +13,7 @@
 - [Missing libidn.so.11 while run boot_bin_gen.sh](#Missing-libidn.so.11-while-run-boot_bin_gen.sh)
 - [Zcu102 booting kernel panic due to RTC](#Zcu102-booting-kernel-panic-due-to-RTC)
 - [Kernel panic due to hardware capacitor and current load](#Kernel-panic-due-to-hardware-capacitor-and-current-load)
+- [lightdm memory leakage leads to issue after long run](#lightdm-memory-leakage-leads-to-issue-after-long-run)
 
 ## Network issue in quick star
 
@@ -172,3 +173,7 @@ https://github.com/open-sdr/openwifi/issues/366
 ## Kernel panic due to hardware capacitor and current load
 
 https://github.com/open-sdr/openwifi/issues/457
+
+## lightdm memory leakage leads to issue after long run
+
+Better to disable lightdm via systemctl
