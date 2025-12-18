@@ -15,6 +15,7 @@
 - [Kernel panic due to hardware capacitor and current load](#Kernel-panic-due-to-hardware-capacitor-and-current-load)
 - [lightdm memory leakage leads to issue after long run](#lightdm-memory-leakage-leads-to-issue-after-long-run)
 - [Wrong memory size on adrv9361z7035 SoM](#Wrong-memory-size-on-adrv9361z7035-SoM)
+- [Unsupported PRODUCT_ID 0xFF](#Unsupported-PRODUCT_ID-0xFF)
 
 ## Network issue in quick star
 
@@ -199,3 +200,10 @@ make zynq_adrv9361_defconfig
 make -j8
 make u-boot.elf
 ```
+
+## Unsupported PRODUCT_ID 0xFF
+
+https://ez.analog.com/microcontroller-no-os-drivers/f/q-a/101813/ad9361-spi32766-0-ad9361_probe-unsupported-product_id-0xff/303302
+
+https://wiki.analog.com/resources/tools-software/linux-software/fru_dump
+
