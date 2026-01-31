@@ -105,6 +105,7 @@ Publications in category:
 - [Zhiming Chu, et al. Defeating CSI obfuscation mechanisms: A study on unauthorized Wi-Fi Sensing in wireless sensor network. Computer Networks, Volume 263, May 2025](https://www.sciencedirect.com/science/article/abs/pii/S1389128625001768)
 - [Xinyu Liu, et al. Integration of Person Identification and Respiratory Monitoring Based on Reconfigurable Intelligent Surface. IEEE Sensors Journal, 06 June 2025](https://ieeexplore.ieee.org/abstract/document/11027648)
 - [Zhiming Chu, et al. Privacy-preserving WiFi sensing in WSNs via CSI obfuscation. Computers & Security Volume 157, October 2025, 104594](https://doi.org/10.1016/j.cose.2025.104594)
+- [Stepan Mazokha, et al. Real-time Device Fingerprinting and Re-identification in GNUradio, Proceedings of the 15th GNU Radio Conference, 2025](https://events.gnuradio.org/event/26/contributions/773/attachments/229/665/gr-mobrffi_paper_v1.2.pdf)
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
