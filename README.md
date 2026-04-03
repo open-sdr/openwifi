@@ -259,7 +259,7 @@ This section explains the porting work by showing the differences between openwi
 - "Open Block Design", you will see the differences between openwifi and the reference design. Both in "diagram" and in "Address Editor".
 - The address/interrupts of FPGA blocks hooked to the ARM bus should be put/aligned to the devicetree file openwifi/kernel_boot/boards/zc706_fmcs2/devicetree.dts. Linux will parse the devicetree.dtb when booting to know information of attached device (FPGA blocks in our case).
 - We use dtc command to get devicetree.dts converted from devicetree.dtb in [Analog Devices Linux image](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images), then do modification according to what we have added/modified to the reference design.
-- Please learn the script in [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to understand how we generate devicetree.dtb, BOOT.BIN, Linux kernel and put them together to build the full SD card image.
+- Please learn the script in [[Build openwifi Linux image from scratch](#Build-openwifi-Linux-image-from-scratch)] to understand how we generate devicetree.dtb, BOOT.BIN, Linux kernel and put them together to build the full SD card image.
 
 ## License
 
