@@ -43,6 +43,7 @@ Publications in category:
 - [Thijs, Flexible and Real-Time Interference Mitigation Techniques for Reliable Wireless Communication Using Software-Defined Radio, PhD dissertation, Gent University, 2025](http://hdl.handle.net/1854/LU-01KC11QRHFPRGD3WA9YQFSA7RZ)
 - [Holger Santillan-Carranza, et al. FPGA-Based Simulation of Open Wi-Fi Service Using the Analog Devices SDR Platform, INGENIO 9(1):26-33, January 2026](https://www.researchgate.net/publication/400217316_FPGA-Based_Simulation_of_Open_Wi-Fi_Service_Using_the_Analog_Devices_SDR_Platform)
 - [Yuhao Chen et al. WiLD: Learning-based Wireless Loss Diagnosis for Congestion Control with Ultra-low Kernel Overhead, IEEE Transactions on Network and Service Management, 13 February 2026](https://ieeexplore.ieee.org/abstract/document/11396390)
+- [Yuchen Pan et al. Demo: Real-Time Cross-Layer Semantic Error Correction Using Language Models and Software-Defined Radio, submitted to MobiSys' 26, April 9 2026](https://arxiv.org/abs/2604.08419v1)
 
 ## TSN Time Sensitive Network and RT Real Time
 - [Jetmir Haxhibeqiri, et al. Enabling TSN over IEEE 802.11: Low-overhead Time Synchronization for Wi-Fi Clients. ICIT2021](https://biblio.ugent.be/publication/8700714/file/8700715.pdf)
