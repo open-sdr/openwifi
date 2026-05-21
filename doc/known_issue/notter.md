@@ -5,6 +5,7 @@
 - [EXT4 fs error rootfs issue while booting on zcu102](#EXT4-fs-error-rootfs-issue-while-booting-on-zcu102)
 - [antsdr e200 UART console](#antsdr-e200-UART-console)
 - [Client can not get IP](#Client-can-not-get-IP)
+- [Big packet loss while slow ping](#Big-packet-loss-while-slow-ping)
 - [No space left on device](#No-space-left-on-device)
 - [Ping issue due to hostname resolving issue caused by DNS server change](#Ping-issue-due-to-hostname-resolving-issue-caused-by-DNS-server-change)
 - [FMCOMMS board eeprom issue causes Linux crash](#FMCOMMS-board-eeprom-issue-causes-Linux-crash)
@@ -69,6 +70,19 @@ If can't see the UART console in Linux (/dev/ttyUSB0 or /dev/ttyCH341USB0), acco
 ## Client can not get IP
 
 If the client can not get IP from the openwifi AP, just re-run "service isc-dhcp-server restart" on board and do re-connect from the client.
+
+## Big packet loss while slow ping
+
+When ping from openwifi to COTS device (such as a laptop), if you see big packet loss with normal/slow ping interval (like 1s) but less and less packet loss while decreasing ping interval to 0.01 and 0.001s, the reason most probably is power save behavior of the COTS device.
+
+Check power save status:
+```
+iw dev wlan0 get power_save
+```
+If it returns "Power save: on", turn it off by:
+```
+sudo iw dev wlan0 set power_save off
+```
 
 ## No space left on device
 It might be due to too many dmesg/log/journal, disk becomes full. 
