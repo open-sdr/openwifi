@@ -44,7 +44,7 @@ git clone https://github.com/open-sdr/openwrt-openwifi.git
 Instructions on how to set up this container are found [here](https://openwrt.org/docs/guide-user/virtualization/obtain.firmware.docker).
 
 ```
-docker build --rm --tag openwrt:debian_12 --file ./Dockerfile ./openwrt
+docker build --rm --tag openwrt:debian_12 --file ./Dockerfile ./openwrt-openwifi
 ```
 
 ## Starting the container
