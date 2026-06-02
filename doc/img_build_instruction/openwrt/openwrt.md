@@ -150,13 +150,11 @@ Edit the openwifi packages to use the locally provided source at /openwifi. As t
 - Follow instructions [above](#use-local-source-to-build-package-not-git) to mount source in container.
 - Edit OpenWrt its feeds.conf.default file and replace the default src-git openwifi feed entry by:
 ```
-src-link openwifi_packages /feed/feed/packages/thesis_packages
+src-link openwifi /openwrt-openwifi-packages-feed
 ```
 
 ## Easy access to container paths
 You can mount --bind the openwrt source under /workdir, making it possible to copy and paste paths shown in the docker container.
-
-
 
 # Known issues
 There are some known issues that are OpenWrt specific, these can be consulted [here](../../known_issue/notter.md#known-issues-specific-to-openwrt).
