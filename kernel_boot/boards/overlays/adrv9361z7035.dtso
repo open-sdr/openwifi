@@ -17,16 +17,18 @@
     };
 
     // Add clock gate
-    fragment@1{
-        target-path = "/";
-        gated_40M_ad9361_clk: ad9361-refclk-gpio-gate@0 {
-            #clock-cells = <0>;
-            compatible = "gpio-gate-clock";
-            clocks = <&clk_40M_adj>;
-            enable-gpios = <&gpio0 0x69 0x0>;
-            clk-set-rate-parent-enable;
-            clock-output-names = "ad9361_ext_refclk";
-        };
+    fragment@1 {
+		target-path = "/";
+		__overlay__{
+			gated_40M_ad9361_clk: ad9361-refclk-gpio-gate@0 {
+				#clock-cells = <0>;
+				compatible = "gpio-gate-clock";
+				clocks = <&clk_40M_adj>;
+				enable-gpios = <&gpio0 0x69 0x0>;
+				clk-set-rate-parent-enable;
+				clock-output-names = "ad9361_ext_refclk";
+			};
+		};
     };
 
     // Set clock in ad9361_phy
