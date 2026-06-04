@@ -27,6 +27,9 @@ else if test -f "/sys/kernel/debug/iio/iio:device1/direct_reg_access"; then
 fi
 set +x
 
+# openwrt bash uses built-in echo which is newer and supports different syntax
+echo () { /bin/echo "$@"; }
+
 if [ $1 == "0" ]; then 
   echo 0x15C 0x72 > direct_reg_access
   echo 0x106 0x72 > direct_reg_access
