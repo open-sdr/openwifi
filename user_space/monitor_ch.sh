@@ -17,12 +17,11 @@ echo $ch_number
 
 # sudo service network-manager stop
 sudo ip link set $nic_name down
-sudo iwconfig $nic_name mode monitor
+sudo iw dev $nic_name set type monitor
 sudo ip link set $nic_name up
-sudo iwconfig $nic_name channel $ch_number
+sudo iw dev $nic_name set channel $ch_number
 # sudo iwconfig $nic_name modulation 11g
 # sudo iwconfig $nic_name rate 6M
-ifconfig
-iwconfig $nic_name
+ip addr
 
 ./agc_settings.sh 1
