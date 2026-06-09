@@ -236,7 +236,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 
 ## Build openwifi Linux image from scratch
 - For the ADI Kuiper image, please check [kuiper.md](./doc/img_build_instruction/kuiper.md)
-- For OpenWrt image, please check [openwrt.md](./doc/img_build_instruction/openwrt.md)
+- For OpenWrt image, please check [openwrt.md](./doc/img_build_instruction/openwrt/openwrt.md)
 
 ## Special note for 11b
 
