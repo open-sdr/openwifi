@@ -14,19 +14,23 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 - [Known issues](#known-issues)
 
 # Support matrix
+Tested = [usage example](#usage-example-create-openwifi-ap-via-luci) works + IQ capture and CSI works
+
+(In case a board that we support does not work, contact us)
+
 | Board | Supported | Tested | Comments |
-|-------|-----------|--------|----------|
-| zc706_fmcs2 | ✅ |  | |
-| zed_fmcs2 | ✅ | | |
-| adrv9364z7020 | ✅ | | |
-| adrv9361z7035 | ✅ |  | |
-| zc702_fmcs2 | ✅ | | |
-| antsdr | ✅ | | |
-| e310v2 | ✅ | | |
-| antsdr_e200 | ✅ | | |
-| sdrpi | ✅ | | |
+|-------|-----------|--|----------|
+| zc706_fmcs2 | ✅ | ✅ | |
+| zed_fmcs2 | ✅ | ✅ | |
+| adrv9364z7020 | ✅ | ✅ | |
+| adrv9361z7035 | ✅ | ✅ | |
+| zc702_fmcs2 | ✅ |  | |
+| antsdr | ✅ |  | |
+| e310v2 | ✅ |  | |
+| antsdr_e200 | ✅ |  | |
+| sdrpi | ✅ |  | |
 | zcu102_fmcs2 | ✅ | ✅ | ⚠️ Fails on some boards, see [here](../../known_issue/notter.md#no-uart-output-on-zcu102). |
-| neptunesdr | ✅ | | |
+| neptunesdr | ✅ |  | |
 
 # Creating an OpenWrt image with openwifi installed for a supported board
 The instructions are given as if you were to build everything in this directory.
