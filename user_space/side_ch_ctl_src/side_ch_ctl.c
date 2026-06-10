@@ -266,8 +266,9 @@ int parse_para_string(char *para, int *action_flag, int *reg_type, int *reg_idx,
 }
 
 void print_usage(void) {
-    printf("Usage: side_ch_ctl parameter_string\n");
+    printf("Usage: side_ch_ctl parameter_string [value_only] [-s server_ip]\n");
     printf("Example:\n");
+    printf("set remote server address to 192.168.10.2: side_ch_ctl g -s 192.168.10.2\n");
     printf("write 987   to hardware register  3: wh3d987  (w--write; h--hardware; 3 --register idx; d--decimal; 987--value)\n");
     printf("write 0x3db to software register 19: ws19h3db (w--write; s--software; 19--register idx; h--hex;     3db--value 0x3db)\n");
     printf("          read software register 23: rs23     (r-- read; s--software; 23--register idx)\n");
@@ -288,7 +289,10 @@ int main(const int argc, char * const argv[])
     unsigned int reg_val, *cmd_buf;
     unsigned short port;
     struct sockaddr_in server;
+    const char *server_ip = "192.168.10.1";
+    in_addr_t server_addr;
     int value_only_flag = 0;
+    int i;
     int ret = 0;
 
     if (argc<2) {
@@ -297,7 +301,19 @@ int main(const int argc, char * const argv[])
         return(ret);
     }
 
-    value_only_flag = (argc>2?1:0);
+    for (i = 2; i < argc; i++) {
+        if (strcmp(argv[i], "-s") == 0) {
+            if ((i + 1) >= argc) {
+                printf("Missing server IP after -s!\n");
+                print_usage();
+                return(-1);
+            }
+            server_ip = argv[i + 1];
+            i++;
+            continue;
+        }
+        value_only_flag = 1;
+    }
 
     ret = parse_para_string(argv[1], &action_flag, &reg_type, &reg_idx, &reg_val, &interval_ms);
     if (value_only_flag==0) {
@@ -354,7 +370,12 @@ int main(const int argc, char * const argv[])
     }
     server.sin_family      = AF_INET;            /* Internet Domain    */
     server.sin_port        = port;               /* Server Port        */
-    server.sin_addr.s_addr = inet_addr("192.168.10.1"); /* Server's Address   */
+    server_addr = inet_addr(server_ip);
+    if (server_addr == INADDR_NONE) {
+        printf("Invalid server address %s\n", server_ip);
+        return(-1);
+    }
+    server.sin_addr.s_addr = server_addr;        /* Server's Address   */
 
     while(do_exit==false) {
         nlh->nlmsg_len = NLMSG_SPACE(4*4);
