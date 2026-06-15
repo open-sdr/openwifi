@@ -8,35 +8,126 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 # Using openwifi with OpenWrt
 ## Table of contents
 - [Support matrix](#support-matrix)
-- **[Getting started: Creating an OpenWrt image with openwifi installed for a supported board + usage example](#creating-an-openwrt-image-with-openwifi-installed-for-a-supported-board)**
+- **[Quick start: Openwifi AP using prebuild OpenWrt image](#quick-start-openwifi-ap-using-prebuild-openwrt-image)**
+- **[Usage examples: IQ & CSI capture](#usage-examples-iq--csi-capture)**
+- **[Creating an OpenWrt image with openwifi installed for a supported board](#creating-an-openwrt-image-with-openwifi-installed-for-a-supported-board)**
 - [Tips and tricks for openwifi on OpenWrt](#tips-and-tricks-for-openwifi-on-openwrt)
 - [Debugging](#debugging)
 - [Known issues](#known-issues)
 
 # Support matrix
-Tested = [usage example](#usage-example-create-openwifi-ap-via-luci) works + IQ capture and CSI works
 
 (In case a board that we support does not work, contact us)
 
-| Board | Supported | Tested | Comments |
-|-------|-----------|--|----------|
-| zc706_fmcs2 | ✅ | ✅ | |
-| zed_fmcs2 | ✅ | ✅ | |
+| Board         | Supported | Tested | Comments |
+|---------------|-----------|--|----------|
+| zc706_fmcs2   | ✅ | ✅ | |
+| zed_fmcs2     | ✅ | ✅ | |
 | adrv9364z7020 | ✅ | ✅ | |
 | adrv9361z7035 | ✅ | ✅ | |
-| zc702_fmcs2 | ✅ |  | |
-| antsdr | ✅ |  | |
-| e310v2 | ✅ |  | |
-| antsdr_e200 | ✅ |  | |
-| sdrpi | ✅ |  | |
-| zcu102_fmcs2 | ✅ | ✅ | ⚠️ Fails on some boards, see [here](../../known_issue/notter.md#no-uart-output-on-zcu102). |
-| neptunesdr | ✅ |  | |
+| zc702_fmcs2   | ✅ |  | |
+| antsdr        | ✅ |  | |
+| e310v2        | ✅ |  | |
+| antsdr_e200   | ✅ |  | |
+| sdrpi         | ✅ |  | |
+| zcu102_fmcs2  | ✅ | ✅ | ⚠️ Fails on some boards, see [here](../../known_issue/notter.md#no-uart-output-on-zcu102). |
+| neptunesdr    | ✅ |  | |
+
+# Quick start: Openwifi AP using prebuild OpenWrt image
+This is the equivalent of the ./fosdem.sh demo used for kuiper but via OpenWrt its web interface LuCi.
+
+Instructions to use prebuild OpenWrt image with openwifi support.
+Do note that these images contain the bare minimum for openwifi to run.
+
+Download image for your board [here]() and flash it to SD card using instructions [below](#unzip-image--flash-image).
+
+## Unzip & flash image
+Flash image to SD card, assuming you downloaded the prebuild image for adrv9364z7020 (if not, beware of the paths).
+
+Run the following command to change directory to ~/Downloads and unzip img.gz:
+```
+cd ~/Downloads && gunzip openwrt-zynq-generic-analog_devices_zynq-adrv9364-squashfs-sdcard.img.gz
+```
+Flash image to SD card:
+```
+sudo dd if=~/Downloads/openwrt-zynq-generic-analog_devices_zynq-adrv9364-squashfs-sdcard.img of=/dev/mmcblk0 status=progress
+```
+
+## First boot & internet access
+Boot the board. After a minute, the 'openwrt-openwifi' SSID should now be discoverable by your phone (2.4 GHz, channel 1)!
+If you connect, you will get an IP address but no internet access.
+
+To enable internet access, connect the board via Ethernet cable to your PC, it will by default assign ```192.168.10.1```.
+Check the interface names on your pc via ```ip addr```.
+
+Run (first argument is interface with internet access, second one to board):
+```
+./give_board_internet_access.sh wlan0 eth0
+```
+
+**Done!** Both the board and the connected clients should have internet access.
+
+**Note:** The default OpenWrt network configuration when openwifi package is installed; is for research, not for deployment.
+If you want to deploy the board, ensure that its ```eth0``` interface is in the **wan** zone and is **DHCP client** instead of DHCP server, the wireless network can be assigned to lan.
+
+### Extra: Access LuCi, OpenWrt's web interface
+Open the web browser and surf to ```http://192.168.10.122``` on your PC, or to ```http://192.168.13.1``` on a device connected to 'openwrt-openwifi'.
+The following webpage should appear (first login, by default there is no password set, I recommend to change this for use in actual deployment):
+
+<img src="./img/luci_status_page.png" width="900">
+
+Go to **Network -> Wireless** and the following page should be shown:
+
+<img src="./img/luci_wireless_page.png" width="900">
+
+Here you can tweak the wireless settings however you prefer.
+
+# Usage examples: IQ & CSI capture
+Assumes you previously performed the [quick start](#quick-start-openwifi-ap-using-prebuild-openwrt-image).
+Note that current [app notes](../../app_notes/README.md) for Kuiper are also valid for OpenWrt with some minor differences.
+
+## IQ capture
+Ssh to board, install side_ch kernel module, and set trigger conditions.
+```
+ssh root@192.168.10.122
+insmod side_ch iq_len_init=4095
+side_ch_ctl wh11d0 % Set pre-trigger length
+```
+Start the transmission from the client (openwifi board), to the server (host PC):
+```
+side_ch_ctl g
+```
+
+On the host PC:
+```
+cd openwifi/user_space/side_ch_ctl_src
+python3 iq_capture.py 4095
+```
+
+## CSI capture
+Ssh to board, install side_ch kernel module.
+```
+ssh root@192.168.10.122
+insmod side_ch
+```
+Start the transmission from the client (openwifi board), to the server (host PC):
+```
+side_ch_ctl g
+```
+
+On the host PC:
+```
+cd openwifi/user_space/side_ch_ctl_src
+python3 side_info_display.py
+```
 
 # Creating an OpenWrt image with openwifi installed for a supported board
 The instructions are given as if you were to build everything in this directory.
 
 ## Prerequisits
-We highly advice to build OpenWrt inside a docker container (conform the instructions below). As such, the only real prerequisite is **Docker installed** on a Linux machine (did not try Windows). Vivado installation is **not** required.
+We recommend to build OpenWrt inside a docker container (conform the instructions below).
+As such, the only real prerequisite is **Docker installed** on a Linux machine (did not try Windows).
+Vivado installation is **not** required.
 
 ## Cloning the OpenWrt source code
 The OpenWrt v24.10 (Linux kernel v6.6, mac80211 v6.12) source with openwifi support is found [here](https://github.com/open-sdr/openwrt-openwifi).
@@ -57,25 +148,50 @@ docker build --rm --tag openwrt:debian_12 --file ./Dockerfile ./openwrt-openwifi
 ```
 
 ## Update package feeds
-Running this command will retrieve the openwrt-openwifi-packages-feed found [here](https://github.com/open-sdr/openwrt-openwifi-packages-feed). The package feed for openwifi is added in OpenWrt by editing its feeds.conf.default file. By default, the feed source should be git. If you want to edit the feed, you should use a local source of feed, see [here](#use-local-source-of-package-feed).
+Running this command will retrieve the openwrt-openwifi-packages-feed found [here](https://github.com/open-sdr/openwrt-openwifi-packages-feed).
+The package feed for openwifi is added in OpenWrt by editing its feeds.conf.default file.
+By default, the feed source should be git.
+If you want to edit the feed, you should use a local source of feed, see [here](#use-local-source-of-package-feed).
 ```
 ./scripts/feeds update
 ./scripts/feeds install -a
 ```
 
 ## Configure build
+### Default configuration
+**Bare minimum** default configurations of OpenWrt with openwifi selected are provided in ./openwrt-openwifi/configs folder.
+
+```
+cp configs/adrv9364z7020_defconfig .config
+```
+
+### Manual configuration
 ```
 make menuconfig
 ```
 Select:
 - Architecture (zynq or zynqmp)
+<img src="./img/architecture.png" width="900">
 - Board
+<img src="./img/board.png" width="900">
 - Openwifi kernel module under:
-    - Kernel Modules -> Wireless Drivers -> openwifi (compilation of user space tools is optional). Note that selecting openwifi will by default also select LuCi (OpenWrt its web interface). 
+  - Kernel Modules
+  
+  <img src="./img/kernel_modules.png" width="200">
+  
+  - Wireless Drivers
+  
+  <img src="./img/wireless_drivers.png" width="300">
+  
+  - Openwifi kernel package
+  
+  <img src="./img/kmod-openwifi.png" width="900">
+
 - Other packages you may want to use with openwifi/OpenWrt. Recommendations:
     - Network -> SSH -> openssh-sftp-server (Allows use of scp command to board)
+    - Utilities -> Editors -> nano (Or stick to vim)
 
-Save config.
+Save and exit menuconfig.
 
 ## Build
 ```
@@ -85,36 +201,10 @@ We recommend to keep the number of jobs low (~3) works fine.
 Increasing number of jobs decreases build time put risks error due to dependencies.
 If it throws an error, try to resume the build with fewer jobs.
 
-## Usage example: Create openwifi AP via LuCi
-This is the equivalent of the ./fosdem.sh demo used for kuiper but via OpenWrt its web interface LuCi. 
+## Flash image
+Exit the docker container (Ctrl + D).
+See [Unzip & flash image](#unzip--flash-image) (mind the different paths).
 
-**The board should automatically boot with IP address assignment via DHCP.** Hence, you can plug it into your home network and surf to the following url:
-```
-http://openwrt.lan
-```
-It can be that openwrt.lan should be replaced by its actual IP address.
-
-**In case this would fail or you prefer a static IP**, you can connect via UART and change the network config under */etc/config/network*. To set a static IP typical to a home router, change br-lan config to:
-```
-config interface 'lan'
-    option device 'br-lan'
-    option proto 'static'
-    option ipaddr '192.168.1.1'
-    option netmask '255.255.255.0'
-```
-Changes are applied after */etc/init.d/network restart*. DNS and gateway can also be set here or later in LuCi.
-
-The following webpage should appear (first login, by default there is no password set, I advice to change this for use in actual deployment):
-
-<img src="./img/luci_status_page.png" width="900">
-
-Go to **Network -> Wireless**
-
-<img src="./img/luci_wireless_page.png" width="900">
-
-Click on **Enable**.
-
-Done!
 
 
 # Tips and tricks for openwifi on OpenWrt
