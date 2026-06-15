@@ -1823,6 +1823,17 @@
 			u-boot,dm-pre-reloc;
 			compatible = "xlnx,zynqmp-8.9a\0arasan,sdhci-8.9a";
 			status = "disabled";
+      xlnx,has-cd = <0x1>;
+      xlnx,has-power = <0x0>;
+      xlnx,has-wp = <0x1>;
+      disable-wp;
+      no-1-8-v;
+      broken-cd;
+      xlnx,mio-bank = <1>;
+      /* Do not run SD in HS mode from bootloader */
+      sdhci-caps-mask = <0 0x200000>;
+      sdhci-caps = <0 0>;
+      max-frequency = <19000000>;
 			interrupt-parent = <0x04>;
 			interrupts = <0x00 0x30 0x04>;
 			reg = <0x00 0xff160000 0x00 0x1000>;
@@ -1843,6 +1854,17 @@
 			u-boot,dm-pre-reloc;
 			compatible = "xlnx,zynqmp-8.9a\0arasan,sdhci-8.9a";
 			status = "okay";
+      xlnx,has-cd = <0x1>;
+      xlnx,has-power = <0x0>;
+      xlnx,has-wp = <0x1>;
+      disable-wp;
+      no-1-8-v;
+      broken-cd;
+      xlnx,mio-bank = <1>;
+      /* Do not run SD in HS mode from bootloader */
+      sdhci-caps-mask = <0 0x200000>;
+      sdhci-caps = <0 0>;
+      max-frequency = <19000000>;
 			interrupt-parent = <0x04>;
 			interrupts = <0x00 0x31 0x04>;
 			reg = <0x00 0xff170000 0x00 0x1000>;
@@ -1856,10 +1878,10 @@
 			clock-output-names = "clk_out_sd1\0clk_in_sd1";
 			power-domains = <0x0c 0x28>;
 			clocks = <0x03 0x37 0x03 0x1f>;
-			no-1-8-v;
+			// no-1-8-v;
 			pinctrl-names = "default";
 			pinctrl-0 = <0x1f>;
-			xlnx,mio-bank = <0x01>;
+			// xlnx,mio-bank = <0x01>;
 			phandle = <0x94>;
 		};
 

@@ -62,7 +62,8 @@ e310v2|[MicroPhase](https://github.com/MicroPhase/) new antsdr [Notes](kernel_bo
 antsdr_e200|[MicroPhase](https://github.com/MicroPhase/) enhanced ADALM-PLUTO (smaller/cheaper) [Notes](kernel_boot/boards/antsdr_e200/README.md)|**NO** need
 sdrpi|[HexSDR](https://github.com/HexSDR/) SDR in Raspberry Pi size [Notes](kernel_boot/boards/sdrpi/notes.md)|**NO** need
 zcu102_fmcs2|[Xilinx ZCU102 board](https://www.xilinx.com/products/boards-and-kits/ek-u1-zcu102-g.html) + [FMCOMMS2/3/4](https://www.analog.com/en/design-center/evaluation-hardware-and-software/evaluation-boards-kits/eval-ad-fmcomms2.html)|Need
-neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
+neptunesdr|Low cost Zynq 7020 + AD9361 board (Unofficial!)|**NO** need
+LibreSDR|[Low cost Zynq 7020 + AD9361 board (Unofficial!)](https://github.com/pavelyazev/openwifi-libresdr)|**NO** need
 
 - Check [Porting guide](#Porting-guide) for your new board if it isn't in the list.
 - board_name is used to identify FPGA design in openwifi-hw/boards/ and FPGA image in openwifi-hw-img/boards
@@ -82,7 +83,7 @@ neptunesdr|Low cost Zynq 7020 + AD9361 board|**NO** need
 [[Application notes](doc/app_notes/README.md)]
 
 ## Download img and Quick start
-- Download [openwifi img](https://drive.google.com/file/d/12egFLT9TclmY8m3vCMHmUuSne3qK0SWc/view?usp=sharing), unzip and burn it into a SD card (>=16GB). After this operation, the SD card should have two partitions: BOOT and rootfs. To flash the SD card, SD card tool software (such as Startup Disk Creator in Ubuntu) or dd command can be used:
+- Download [openwifi img](https://users.ugent.be/~xjiao/openwifi-1.5.0-shahecheng.img.xz), unzip and burn it into a SD card (>=16GB). After this operation, the SD card should have two partitions: BOOT and rootfs. To flash the SD card, SD card tool software (such as Startup Disk Creator in Ubuntu) or dd command can be used:
   ```
   sudo dd bs=512 count=31116288 if=openwifi-xyz.img of=/dev/your_sdcard_dev
   (To have correct count value, better to check the .img file actual situation by "fdisk -l img_filename")
@@ -259,8 +260,15 @@ This section explains the porting work by showing the differences between openwi
 - "Open Block Design", you will see the differences between openwifi and the reference design. Both in "diagram" and in "Address Editor".
 - The address/interrupts of FPGA blocks hooked to the ARM bus should be put/aligned to the devicetree file openwifi/kernel_boot/boards/zc706_fmcs2/devicetree.dts. Linux will parse the devicetree.dtb when booting to know information of attached device (FPGA blocks in our case).
 - We use dtc command to get devicetree.dts converted from devicetree.dtb in [Analog Devices Linux image](https://wiki.analog.com/resources/tools-software/linux-software/zynq_images), then do modification according to what we have added/modified to the reference design.
-- Please learn the script in [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)] to understand how we generate devicetree.dtb, BOOT.BIN, Linux kernel and put them together to build the full SD card image.
+- Please learn the script in [[Build openwifi Linux image from scratch](#Build-openwifi-Linux-image-from-scratch)] to understand how we generate devicetree.dtb, BOOT.BIN, Linux kernel and put them together to build the full SD card image.
 
 ## License
 
 This project is available as open source under the terms of the AGPL 3.0 Or later. However, some elements are being licensed under GPL 2-0 or later and BSD 3 license . For accurate information, please check individual files.
+
+## Funding
+
+This project received funding through [ORCA project](https://www.orca-project.eu/). ORCA project is funded by the EU's Horizon2020 programme under agreement number 732174.
+
+This project received funding through [NGI Zero Core](https://nlnet.nl/core/), a fund established by [NLnet](https://nlnet.nl/) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu/) program. Learn more at the NLnet project pages: [802.11n feature of openwifi](https://nlnet.nl/project/OpenWifi-80211n/), [openwifi: 802.11a/g/n maturity](https://nlnet.nl/project/OpenWifi-maturity/), [Extensive openwifi support for OpenWRT](https://nlnet.nl/project/OpenWifi-OpenWRT/)
+

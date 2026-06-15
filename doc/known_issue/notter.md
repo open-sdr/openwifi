@@ -2,14 +2,21 @@
 
 - [Network issue in quick start](#Network-issue-in-quick-start)
 - [EXT4 fs error rootfs issue](#EXT4-fs-error-rootfs-issue)
+- [EXT4 fs error rootfs issue while booting on zcu102](#EXT4-fs-error-rootfs-issue-while-booting-on-zcu102)
 - [antsdr e200 UART console](#antsdr-e200-UART-console)
 - [Client can not get IP](#Client-can-not-get-IP)
+- [Big packet loss while slow ping](#Big-packet-loss-while-slow-ping)
 - [No space left on device](#No-space-left-on-device)
 - [Ping issue due to hostname resolving issue caused by DNS server change](#Ping-issue-due-to-hostname-resolving-issue-caused-by-DNS-server-change)
 - [FMCOMMS board eeprom issue causes Linux crash](#FMCOMMS-board-eeprom-issue-causes-Linux-crash)
 - [Not booting due to SPI flash](#Not-booting-due-to-SPI-flash)
 - [Kernel compiling issue like GCC plugins](#Kernel-compiling-issue-like-GCC-plugins)
 - [Missing libidn.so.11 while run boot_bin_gen.sh](#Missing-libidn.so.11-while-run-boot_bin_gen.sh)
+- [Zcu102 booting kernel panic due to RTC](#Zcu102-booting-kernel-panic-due-to-RTC)
+- [Kernel panic due to hardware capacitor and current load](#Kernel-panic-due-to-hardware-capacitor-and-current-load)
+- [lightdm memory leakage leads to issue after long run](#lightdm-memory-leakage-leads-to-issue-after-long-run)
+- [Wrong memory size on adrv9361z7035 SoM](#Wrong-memory-size-on-adrv9361z7035-SoM)
+- [Unsupported PRODUCT_ID 0xFF](#Unsupported-PRODUCT_ID-0xFF)
 
 OpenWrt specific:
 - [No UART output on zcu102](#no-uart-output-on-zcu102)
@@ -30,6 +37,35 @@ Sometimes, the 1st booting after flashing SD card might encounter "EXT4-fs error
 - Startup Disk Creator
 - win32diskimager
 
+## EXT4 fs error rootfs issue while booting on zcu102
+
+Issue description: same SD card can boot normally on some zcu102 boards but not on some boards else.
+
+Many reportings on internet (while booting zcu102):
+```
+Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(179,2)
+...
+---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(179,2) ]---
+```
+
+Need to add following blocks into the mmc entry or sdhci entry of the zcu102 devicetree:
+```
+xlnx,has-cd = <0x1>;
+xlnx,has-power = <0x0>;
+xlnx,has-wp = <0x1>;
+disable-wp;
+no-1-8-v;
+broken-cd;
+xlnx,mio-bank = <1>;
+/* Do not run SD in HS mode from bootloader */
+sdhci-caps-mask = <0 0x200000>;
+sdhci-caps = <0 0>;
+max-frequency = <19000000>;
+```
+Suspect the main reason: sdcard speed needs to be limited by above.
+
+Might be due to that the sd card interface degrades and becomes unstable after years.
+
 ## antsdr e200 UART console
 
 If can't see the UART console in Linux (/dev/ttyUSB0 or /dev/ttyCH341USB0), according to https://github.com/juliagoda/CH341SER, you might need to do `sudo apt remove brltty`
@@ -37,6 +73,19 @@ If can't see the UART console in Linux (/dev/ttyUSB0 or /dev/ttyCH341USB0), acco
 ## Client can not get IP
 
 If the client can not get IP from the openwifi AP, just re-run "service isc-dhcp-server restart" on board and do re-connect from the client.
+
+## Big packet loss while slow ping
+
+When ping from openwifi to COTS device (such as a laptop), if you see big packet loss with normal/slow ping interval (like 1s) but less and less packet loss while decreasing ping interval to 0.01 and 0.001s, the reason most probably is power save behavior of the COTS device.
+
+Check power save status:
+```
+iw dev wlan0 get power_save
+```
+If it returns "Power save: on", turn it off by:
+```
+sudo iw dev wlan0 set power_save off
+```
 
 ## No space left on device
 It might be due to too many dmesg/log/journal, disk becomes full. 
@@ -135,6 +184,45 @@ You might need to prepare/fake libidn.so.11 by
 sudo ln -s  /usr/lib/x86_64-linux-gnu/libidn.so.12.6.3 /usr/lib/x86_64-linux-gnu/libidn.so.11
 ```
 Please check/confirm what is the exact **libidn.so.12.6.3** in your system.
+
+## Zcu102 booting kernel panic due to RTC
+
+https://github.com/open-sdr/openwifi/issues/366
+
+## Kernel panic due to hardware capacitor and current load
+
+https://github.com/open-sdr/openwifi/issues/457
+
+## lightdm memory leakage leads to issue after long run
+
+Better to disable lightdm via systemctl
+
+## Wrong memory size on adrv9361z7035 SoM
+
+https://github.com/open-sdr/openwifi/issues/404 reports that Linux only sees half memory size than the actual DDR memory size in the hardware.
+
+The root cause is the old/wrong u-boot.elf hard coded the memory size as 512MB. It is already fixed to the correct 1GB (0x40000000): https://github.com/analogdevicesinc/u-boot-xlnx/blob/master/arch/arm/dts/zynq-adrv9361.dts
+
+The solution is re-building u-boot.elf from https://github.com/analogdevicesinc/u-boot-xlnx and re-generating BOOT.BIN for adrv9361z7035 SoM.
+
+Steps to re-build u-boot.elf for adrv9361z7035 SoM:
+
+```
+git clone https://github.com/analogdevicesinc/u-boot-xlnx.git
+cd u-boot-xlnx
+source environment_setting.sh (could be XILINX_DIR/Vitis/2022.2/settings64.sh or directory of your tool chain)
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+make zynq_adrv9361_defconfig
+make -j8
+make u-boot.elf
+```
+
+## Unsupported PRODUCT_ID 0xFF
+
+https://ez.analog.com/microcontroller-no-os-drivers/f/q-a/101813/ad9361-spi32766-0-ad9361_probe-unsupported-product_id-0xff/303302
+
+https://wiki.analog.com/resources/tools-software/linux-software/fru_dump
 
 # Known issues specific to OpenWrt
 ## No UART output on zcu102
