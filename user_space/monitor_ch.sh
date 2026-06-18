@@ -16,10 +16,10 @@ echo $nic_name
 echo $ch_number
 
 if [ -f /etc/openwrt_release ]; then
-  sudo ip link set $nic_name down
-  sudo iw dev $nic_name set type monitor
-  sudo ip link set $nic_name up
-  sudo iw dev $nic_name set channel $ch_number
+  ip link set $nic_name down
+  iw dev $nic_name set type monitor
+  ip link set $nic_name up
+  iw dev $nic_name set channel $ch_number
   ip addr
 else
   # sudo service network-manager stop
