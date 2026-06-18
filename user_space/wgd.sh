@@ -64,17 +64,24 @@ insert_check_module () {
 
 print_usage
 
-if [ -d /etc/openwrt_release ]; then
+if [ -f /etc/openwrt_release ]; then
   IS_OPENWRT="true"
 else
   IS_OPENWRT="false"
 fi
 
-# These modules are missing in OpenWrt but are present by default in ADI Kuiper
-if [ IS_OPENWRT=="true" ]; then
+
+if [ "$IS_OPENWRT" = "true" ]; then
+  # These modules are missing in OpenWrt but are present by default in ADI Kuiper
   echo "OpenWrt detected, installing ADI specific kernel modules..."
   insmod cf_axi_dds_drv.ko
   insmod cf_axi_adc.ko
+
+  # For OpenWrt, OpenWiFi kernel modules are packed in the image under /lib/modules/$kernel_version
+  kernel_version=$(uname -r)
+  TARGET_DIR=/lib/modules/$kernel_version
+else
+  TARGET_DIR=.
 fi
 
 insmod ad9361_drv.ko
@@ -84,13 +91,6 @@ insmod xilinx_dma.ko
 modprobe mac80211
 lsmod
 
-if [ IS_OPENWRT=="true" ]; then
-  # For OpenWrt, OpenWiFi kernel modules are packed in the image under /lib/modules/$kernel_version
-  kernel_version=$(uname -r)
-  TARGET_DIR=/lib/modules/$kernel_version
-else
-  TARGET_DIR=.
-fi
 DOWNLOAD_FLAG=0
 test_mode=0
 
