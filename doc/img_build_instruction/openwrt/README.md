@@ -124,7 +124,7 @@ python3 side_info_display.py
 # Creating an OpenWrt image with openwifi installed for a supported board
 The instructions are given as if you were to build everything in this directory.
 
-## Prerequisits
+## Prerequisites
 We recommend to build OpenWrt inside a docker container (conform the instructions below).
 As such, the only real prerequisite is **Docker installed** on a Linux machine (did not try Windows).
 Vivado installation is **not** required.
