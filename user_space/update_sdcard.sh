@@ -1,4 +1,3 @@
-  
 #!/bin/bash
 
 # Author: Xianjun Jiao
@@ -104,11 +103,13 @@ if [ "$SKIP_BOOT" == "0" ]; then
   for BOARD_NAME_TMP in $BOARD_NAME_ALL
   do
       if [ "$BOARD_NAME_TMP" == "zcu102_fmcs2" ] || [ "$BOARD_NAME_TMP" == "zcu102_9371" ]; then
+          ARCH=64
           dtb_filename_tmp="system.dtb"
           dts_filename_tmp="system.dts"
           LINUX_KERNEL_PATH=$OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME64
           DEFAULT_DTS_PATH=$LINUX_KERNEL_PATH/arch/arm64/boot/dts/xilinx
       else
+          ARCH=32
           dtb_filename_tmp="devicetree.dtb"
           dts_filename_tmp="devicetree.dts"
           LINUX_KERNEL_PATH=$OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME32
@@ -120,7 +121,7 @@ if [ "$SKIP_BOOT" == "0" ]; then
       echo $dts_filename_tmp
 
       # Generate device tree products for board
-      sh $OPENWIFI_DIR/kernel_boot/boards/construct_device_tree.sh $BOARD_NAME_TMP $DEFAULT_DTS_PATH
+      $OPENWIFI_DIR/kernel_boot/boards/construct_device_tree.sh $BOARD_NAME_TMP $ARCH $DEFAULT_DTS_PATH
 
       # Copy device tree to kuiper SD card
       sudo mkdir -p $SDCARD_DIR/BOOT/openwifi/$BOARD_NAME_TMP
