@@ -2,6 +2,14 @@
 
 # Author: Robbe Gaeremynck
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+SCRIPT_PATH="$SCRIPT_DIR/$(basename -- "${BASH_SOURCE[0]}")"
+
+if ! cd "$SCRIPT_DIR"; then
+  echo "ERROR: Could not change directory to $SCRIPT_DIR"
+  exit 1
+fi
+
 BOARD_NAME=$1
 ARCH=$2
 DEFAULT_DTS_FOLDER="${3:-./defaults}"
@@ -53,7 +61,7 @@ DEFAULT_DTS_FILENAME=${openwifi_name_to_kernel_dts[$BOARD_NAME]}
 # Check if DTS exists in DTS folder
 if [ ! -f "$DEFAULT_DTS_FOLDER/$DEFAULT_DTS_FILENAME" ]; then
   if [ "$#" -gt 2 ]; then # If file not found and non-defaults used, call yourself again, but this time with defaults
-    sh ./construct_device_tree.sh $BOARD_NAME $ARCH
+    "$SCRIPT_PATH" "$BOARD_NAME" "$ARCH"
     exit 1
   fi
   echo "WARNING: No default device tree present, only compiling overlays"
