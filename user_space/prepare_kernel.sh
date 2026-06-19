@@ -102,7 +102,7 @@ else
     # cp $OPENWIFI_DIR/driver/ad9361/ad9361.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361.c -rf
     # cp $OPENWIFI_DIR/driver/ad9361/ad9361_conv.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361_conv.c -rf
     git apply ../kernel_boot/axi_hdmi_crtc.patch
-    git apply ../kernel_boot/ad9361.patch
+    git apply ../kernel_boot/ad9361_v6_12.patch
     git apply ../kernel_boot/ad9361_private.patch
     git apply ../kernel_boot/ad9361_conv.patch
     # #Ignore warning in mac80211 -- NOT necessary for 2022_R2 kernel!
