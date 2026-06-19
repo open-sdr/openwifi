@@ -44,6 +44,8 @@
 #include <linux/gpio.h>
 #include <linux/leds.h>
 
+#include <net/sock.h>
+
 // #include <linux/time.h>
 
 #define IIO_AD9361_USE_PRIVATE_H_
@@ -2733,14 +2735,23 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   return err;
 }
 
+#ifdef CONFIG_OPENWRT
 static int openwifi_dev_remove(struct platform_device *pdev)
+#else
+static void openwifi_dev_remove(struct platform_device *pdev)
+#endif
 {
   struct ieee80211_hw *dev = platform_get_drvdata(pdev);
   struct openwifi_priv *priv = dev->priv;
 
   if (!dev) {
     pr_info("%s openwifi_dev_remove: dev %p\n", sdr_compatible_str, (void*)dev);
+
+#ifdef CONFIG_OPENWRT
     return(-1);
+#else
+    return;
+#endif
   }
 
   sysfs_remove_bin_file(&pdev->dev.kobj, &priv->bin_iq);
@@ -2750,7 +2761,10 @@ static int openwifi_dev_remove(struct platform_device *pdev)
   openwifi_rfkill_exit(dev);
   ieee80211_unregister_hw(dev);
   ieee80211_free_hw(dev);
-  return(0);
+
+#ifdef CONFIG_OPENWRT
+  return 0;
+#endif
 }
 
 static struct platform_driver openwifi_dev_driver = {

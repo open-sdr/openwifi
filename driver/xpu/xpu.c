@@ -22,6 +22,7 @@
 #include <linux/io-64-nonatomic-lo-hi.h>
 #include <linux/delay.h>
 #include <net/mac80211.h>
+#include <linux/platform_device.h>
 
 #include "../hw_def.h"
 
@@ -529,7 +530,11 @@ static int dev_probe(struct platform_device *pdev)
 	return err;
 }
 
+#ifdef CONFIG_OPENWRT
 static int dev_remove(struct platform_device *pdev)
+#else
+static void dev_remove(struct platform_device *pdev)
+#endif
 {
 	printk("\n");
 
@@ -538,7 +543,9 @@ static int dev_remove(struct platform_device *pdev)
 	printk("%s dev_remove             xpu_api %p\n", xpu_compatible_str, xpu_api);
 
 	printk("%s dev_remove succeed!\n", xpu_compatible_str);
+#ifdef CONFIG_OPENWRT
 	return 0;
+#endif
 }
 
 static struct platform_driver dev_driver = {
