@@ -1,0 +1,27 @@
+/dts-v1/;
+/plugin/;
+
+/{
+    // Add board specific clocks
+    fragment@0{
+        target = <&clocks>;
+        __overlay__{
+            clk_40M_adj: clock@0 {
+                #clock-cells = <0>;
+                compatible = "adjustable-clock";
+                clock-frequency = <40000000>;
+                clock-accuracy = <200000>;
+                clock-output-names = "XO_40MHz";
+            };
+        };
+    };
+
+    // Set clock in ad9361_phy
+    fragment@2{
+        target = <&ad9361_phy>;
+        __overlay__{
+            clocks = <&clk_40M_adj 0x0>;
+            adi,xo-disable-use-ext-refclk-enable;
+        };
+    };
+};

@@ -170,7 +170,7 @@ const int rx_intf_fo_mapping[] = {0,0,0,0,-10,-10,10,10};
 
 struct rx_intf_driver_api {
   u32 io_start;
-  u32 base_addr;
+  u64 base_addr;
   
   u32 (*hw_init)(enum rx_intf_mode mode, u32 num_dma_symbol_to_pl, u32 num_dma_symbol_to_ps);
 

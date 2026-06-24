@@ -1,0 +1,373 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	// Insert clocks
+	fragment@0 {
+		target-path = "/";
+		__overlay__{
+			clocks: clocks {
+				clk_24M_fixed: clock@2 {
+					#clock-cells = <0>;
+					compatible = "fixed-clock";
+					clock-frequency = <24000000>;
+					clock-output-names = "24MHz";
+				};
+			};
+		};
+	};
+
+	// Ensure that fabric clocks are enabled, for some reason, zynq-7000.dtsi of Linux kernel turns this off (U-Boot does not)
+    fragment@1{
+        target = <&clkc>;
+        __overlay__{
+            fclk-enable = <0xf>;
+        };
+    };
+
+	// Set default interrupt parent
+	fragment@2{
+		target-path = "/";
+		__overlay__{
+			interrupt-parent = <&intc>;
+		};
+	};
+
+	
+	// Insert axi devices in fpga
+	fragment@3{
+		target-path = "/";
+		__overlay__{
+			fpga-axi@0 {
+				compatible = "simple-bus";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				ranges;
+
+				i2c@41600000 {
+					compatible = "xlnx,axi-iic-1.02.a", "xlnx,xps-iic-2.00.a";
+					reg = <0x41600000 0x10000>;
+					interrupt-parent = <&intc>;
+					interrupts = <0x0 0x3a 0x4>;
+					clocks = <&clkc 0xf>;
+					clock-names = "pclk";
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					adm1166@68 {
+						compatible = "adi,adm1166";
+						reg = <0x68>;
+					};
+
+					ad7291-bob@2f {
+						compatible = "adi,ad7291";
+						reg = <0x2f>;
+					};
+
+					eeprom@50 {
+						compatible = "at24,24c32";
+						reg = <0x50>;
+					};
+				};
+
+				sdr: sdr {
+					compatible ="sdr,sdr";
+					dmas = <&rx_dma 1
+							&tx_dma 0>;
+					dma-names = "rx_dma_s2mm", "tx_dma_mm2s";
+					interrupt-names = "not_valid_anymore", "rx_pkt_intr", "tx_itrpt";
+					interrupt-parent = <&intc>;
+					interrupts = <0 29 1>, <0 30 1>, <0 33 1>, <0 34 1>;
+				} ;
+
+				axidmatest_1: axidmatest@1 {
+					compatible ="xlnx,axi-dma-test-1.00.a";
+					dmas = <&rx_dma 0 &rx_dma 1>;
+					dma-names = "axidma0", "axidma1";
+				};
+
+				tx_dma: dma@80400000 {
+					#dma-cells = <1>;
+					clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
+					clocks = <&clkc 0x11>, <&clkc 0x11>, <&clkc 0x11>, <&clkc 0x11>;
+					compatible = "xlnx,axi-dma-1.00.a";
+					interrupt-names = "mm2s_introut", "s2mm_introut";
+					interrupt-parent = <&intc>;
+					interrupts = <0 35 4>, <0 36 4>;
+					reg = <0x80400000 0x10000>;
+					xlnx,addrwidth = <0x20>;
+					xlnx,include-sg ;
+					xlnx,sg-length-width = <0xe>;
+					dma-channel@80400000 {
+						compatible = "xlnx,axi-dma-mm2s-channel";
+						dma-channels = <1>;
+						interrupts = <0 35 4>;
+						xlnx,datawidth = <0x40>;
+						xlnx,device-id = <0x0>;
+					};
+					dma-channel@80400030 {
+						compatible = "xlnx,axi-dma-s2mm-channel";
+						dma-channels = <1>;
+						interrupts = <0 36 4>;
+						xlnx,datawidth = <0x40>;
+						xlnx,device-id = <0x0>;
+					};
+				};
+				
+				rx_dma: dma@80410000 {
+					#dma-cells = <1>;
+					clock-names = "s_axi_lite_aclk", "m_axi_sg_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk";
+					clocks = <&clkc 0x11>, <&clkc 0x11>, <&clkc 0x11>, <&clkc 0x11>;
+					compatible = "xlnx,axi-dma-1.00.a";
+					//dma-coherent ;
+					interrupt-names = "mm2s_introut", "s2mm_introut";
+					interrupt-parent = <&intc>;
+					interrupts = <0 31 4>, <0 32 4>;
+					reg = <0x80410000 0x10000>;
+					xlnx,addrwidth = <0x20>;
+					xlnx,include-sg ;
+					xlnx,sg-length-width = <0xe>;
+					dma-channel@80410000 {
+						compatible = "xlnx,axi-dma-mm2s-channel";
+						dma-channels = <0x1>;
+						interrupts = <0 31 4>;
+						xlnx,datawidth = <0x40>;
+						xlnx,device-id = <0x1>;
+					};
+					dma-channel@80410030 {
+						compatible = "xlnx,axi-dma-s2mm-channel";
+						dma-channels = <0x1>;
+						interrupts = <0 32 4>;
+						xlnx,datawidth = <0x40>;
+						xlnx,device-id = <0x1>;
+					};
+				};
+
+				tx_intf_0: tx_intf@83c00000 {
+					clock-names = "s00_axi_aclk", "s00_axis_aclk";//, "s01_axis_aclk", "m00_axis_aclk";
+					clocks = <&clkc 0x11>, <&clkc 0x11>;//, <&clkc 0x11>, <&clkc 0x11>;
+					compatible = "sdr,tx_intf";
+					interrupt-names = "tx_itrpt";
+					interrupt-parent = <&intc>;
+					interrupts = <0 34 1>;
+					reg = <0x83c00000 0x10000>;
+					xlnx,s00-axi-addr-width = <0x7>;
+					xlnx,s00-axi-data-width = <0x20>;
+				};
+
+				rx_intf_0: rx_intf@83c20000 {
+					clock-names = "s00_axi_aclk", "m00_axis_aclk";//, "s00_axis_aclk";
+					clocks = <&clkc 0x11>, <&clkc 0x11>;//, <&clkc 0x11>;
+					compatible = "sdr,rx_intf";
+					interrupt-names = "not_valid_anymore", "rx_pkt_intr";
+					interrupt-parent = <&intc>;
+					interrupts = <0 29 1>, <0 30 1>;
+					reg = <0x83c20000 0x10000>;
+					xlnx,s00-axi-addr-width = <0x7>;
+					xlnx,s00-axi-data-width = <0x20>;
+				};
+
+				openofdm_tx_0: openofdm_tx@83c10000 {
+					clock-names = "clk";
+					clocks = <&clkc 0x11>;
+					compatible = "sdr,openofdm_tx";
+					reg = <0x83c10000 0x10000>;
+				};
+
+				openofdm_rx_0: openofdm_rx@83c30000 {
+					clock-names = "clk";
+					clocks = <&clkc 0x11>;
+					compatible = "sdr,openofdm_rx";
+					reg = <0x83c30000 0x10000>;
+				};
+
+				xpu_0: xpu@83c40000 {
+					clock-names = "s00_axi_aclk";
+					clocks = <&clkc 0x11>;
+					compatible = "sdr,xpu";
+					reg = <0x83c40000 0x10000>;
+				};
+
+				side_ch_0: side_ch@83c50000 {
+					clock-names = "s00_axi_aclk";
+					clocks = <&clkc 0x11>;
+					compatible = "sdr,side_ch";
+					reg = <0x83c50000 0x10000>;
+					dmas = <&rx_dma 0
+							&tx_dma 1>;
+					dma-names = "rx_dma_mm2s", "tx_dma_s2mm";
+				};
+
+				cf-ad9361-lpc@79020000 {
+					compatible = "adi,axi-ad9361-6.00.a";
+					reg = <0x79020000 0x6000>;
+					// dmas = <0xb 0x0>;
+					// dma-names = "rx";
+					spibus-connected = <&ad9361_phy>;
+				};
+
+				cf-ad9361-dds-core-lpc@79024000 {
+					compatible = "adi,axi-ad9361-dds-6.00.a";
+					reg = <0x79024000 0x1000>;
+					clocks = <&ad9361_phy 0xd>;
+					clock-names = "sampl_clk";
+					// dmas = <0xd 0x0>;
+					// dma-names = "tx";
+				};
+
+				mwipcore@43c00000 {
+					compatible = "mathworks,mwipcore-axi4lite-v1.00";
+					reg = <0x43c00000 0xffff>;
+				};
+			};
+		};
+	};
+
+	
+	// Insert AD9361 SPI device and other changes to amba bus
+	fragment@4{
+		target-path = "/axi";
+		__overlay__{
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ocmc@f800c000 {
+				compatible = "xlnx,zynq-ocmc-1.0";
+				interrupt-parent = <&intc>;
+				interrupts = <0x0 0x3 0x4>;
+				reg = <0xf800c000 0x1000>;
+			};
+
+			spi0: spi@e0006000 {
+				status = "okay";
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				ad9361_phy: ad9361-phy@0 {
+					#address-cells = <1>;
+					#size-cells = <0>;
+					#clock-cells = <1>;
+					compatible = "adi,ad9361";
+					reg = <0x0>;
+					spi-cpha;
+					spi-max-frequency = <10000000>;
+					clock-names = "ad9361_ext_refclk";
+					clock-output-names = "rx_sampl_clk", "tx_sampl_clk";
+					adi,digital-interface-tune-skip-mode = <0x0>;
+					adi,pp-tx-swap-enable;
+					adi,pp-rx-swap-enable;
+					adi,rx-frame-pulse-mode-enable;
+					adi,lvds-mode-enable;
+					adi,lvds-bias-mV = <0x96>;
+					adi,lvds-rx-onchip-termination-enable;
+					adi,rx-data-delay = <0x4>;
+					adi,tx-fb-clock-delay = <0x7>;
+					adi,2rx-2tx-mode-enable;
+					adi,frequency-division-duplex-mode-enable;
+					adi,rx-rf-port-input-select = <0x0>;
+					adi,tx-rf-port-input-select = <0x0>;
+					adi,tx-attenuation-mdB = <0x2710>;
+					adi,tx-lo-powerdown-managed-enable;
+					adi,rf-rx-bandwidth-hz = <0x112a880>;
+					adi,rf-tx-bandwidth-hz = <0x112a880>;
+					adi,rx-synthesizer-frequency-hz = <0x0 0x8f0d1800>;
+					adi,tx-synthesizer-frequency-hz = <0x0 0x92080880>;
+					adi,rx-path-clock-frequencies = <0x3a980000 0xea60000 0x7530000 0x3a98000 0x1d4c000 0x1d4c000>;
+					adi,tx-path-clock-frequencies = <0x3a980000 0x7530000 0x7530000 0x3a98000 0x1d4c000 0x1d4c000>;
+					adi,gc-rx1-mode = <0x2>;
+					adi,gc-rx2-mode = <0x2>;
+					adi,gc-adc-ovr-sample-size = <0x4>;
+					adi,gc-adc-small-overload-thresh = <0x2f>;
+					adi,gc-adc-large-overload-thresh = <0x3a>;
+					adi,gc-lmt-overload-high-thresh = <0x320>;
+					adi,gc-lmt-overload-low-thresh = <0x2c0>;
+					adi,gc-dec-pow-measurement-duration = <0x2000>;
+					adi,gc-low-power-thresh = <0x18>;
+					adi,mgc-inc-gain-step = <0x2>;
+					adi,mgc-dec-gain-step = <0x2>;
+					adi,mgc-split-table-ctrl-inp-gain-mode = <0x0>;
+					adi,agc-attack-delay-extra-margin-us = <0x1>;
+					adi,agc-outer-thresh-high = <0x5>;
+					adi,agc-outer-thresh-high-dec-steps = <0x2>;
+					adi,agc-inner-thresh-high = <0xa>;
+					adi,agc-inner-thresh-high-dec-steps = <0x1>;
+					adi,agc-inner-thresh-low = <0xc>;
+					adi,agc-inner-thresh-low-inc-steps = <0x1>;
+					adi,agc-outer-thresh-low = <0x12>;
+					adi,agc-outer-thresh-low-inc-steps = <0x2>;
+					adi,agc-adc-small-overload-exceed-counter = <0xa>;
+					adi,agc-adc-large-overload-exceed-counter = <0xa>;
+					adi,agc-adc-large-overload-inc-steps = <0x7>;
+					adi,agc-lmt-overload-large-exceed-counter = <0xa>;
+					adi,agc-lmt-overload-small-exceed-counter = <0xa>;
+					adi,agc-lmt-overload-large-inc-steps = <0x7>;
+					adi,agc-gain-update-interval-us = <0x3e8>;
+					adi,fagc-dec-pow-measurement-duration = <0x10>;
+			adi,fagc-adc-large-overload-inc-steps = <0x07>;
+					adi,fagc-lp-thresh-increment-steps = <0x1>;
+					adi,fagc-lp-thresh-increment-time = <0x5>;
+					adi,fagc-energy-lost-stronger-sig-gain-lock-exit-cnt = <0x8>;
+			adi,fagc-dig-sat-ovrg-enable;
+					adi,fagc-final-overrange-count = <0x3>;
+					adi,fagc-gain-index-type-after-exit-rx-mode = <0x0>;
+					adi,fagc-lmt-final-settling-steps = <0x1>;
+					adi,fagc-lock-level = <0xa>;
+					adi,fagc-lock-level-gain-increase-upper-limit = <0x5>;
+					adi,fagc-lock-level-lmt-gain-increase-enable;
+					adi,fagc-lpf-final-settling-steps = <0x1>;
+					adi,fagc-optimized-gain-offset = <0x5>;
+					adi,fagc-power-measurement-duration-in-state5 = <0x10>;
+					adi,fagc-rst-gla-engergy-lost-goto-optim-gain-enable;
+					adi,fagc-rst-gla-engergy-lost-sig-thresh-below-ll = <0xa>;
+					adi,fagc-rst-gla-if-en-agc-pulled-high-mode = <0x0>;
+					adi,fagc-rst-gla-large-adc-overload-enable;
+					adi,fagc-rst-gla-large-lmt-overload-enable;
+					adi,fagc-rst-gla-stronger-sig-thresh-above-ll = <0xa>;
+					adi,fagc-state-wait-time-ns = <0x104>;
+					adi,fagc-use-last-lock-level-for-set-gain-enable;
+					adi,rssi-restart-mode = <0x3>;
+					adi,rssi-delay = <0x1>;
+					adi,rssi-wait = <0x1>;
+					adi,rssi-duration = <0x3e8>;
+					adi,ctrl-outs-index = <0x0>;
+					adi,ctrl-outs-enable-mask = <0xff>;
+					adi,temp-sense-measurement-interval-ms = <0x3e8>;
+					adi,temp-sense-offset-signed = <0xce>;
+					adi,temp-sense-periodic-measurement-enable;
+					adi,aux-dac-manual-mode-enable;
+					adi,aux-dac1-default-value-mV = <0x0>;
+					adi,aux-dac1-rx-delay-us = <0x0>;
+					adi,aux-dac1-tx-delay-us = <0x0>;
+					adi,aux-dac2-default-value-mV = <0x0>;
+					adi,aux-dac2-rx-delay-us = <0x0>;
+					adi,aux-dac2-tx-delay-us = <0x0>;
+					en_agc-gpios = <&gpio0 0x62 0x0>;
+					sync-gpios = <&gpio0 0x63 0x0>;
+					reset-gpios = <&gpio0 0x64 0x0>;
+					enable-gpios = <&gpio0 0x65 0x0>;
+					txnrx-gpios = <&gpio0 0x66 0x0>;
+				};
+			};
+
+			sdhci0: mmc@e0100000 {
+				disable-wp;
+			};
+
+			usb0: usb@e0002000 {
+				xlnx,phy-reset-gpio = <0x6 0x7 0x0>;
+			};
+		};
+	};
+	
+	// Insert gpio gated clocks
+	fragment@5{
+		target-path = "/";
+		__overlay__{
+			usb-ulpe-gpio-gate@0 {
+				#clock-cells = <0>;
+				compatible = "gpio-gate-clock";
+				clocks = <&clk_24M_fixed>;
+				enable-gpios = <&gpio0 0x9 0x1>;
+			};
+		};
+	};
+};

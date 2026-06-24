@@ -1,0 +1,153 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    // Add board specific clocks
+    fragment@0{
+        target = <&clocks>;
+        __overlay__{
+            clk_40M_adj: clock@0 {
+                #clock-cells = <0>;
+                compatible = "adjustable-clock";
+                clock-frequency = <40000000>;
+                clock-accuracy = <200000>;
+                clock-output-names = "XO_40MHz";
+            };
+        };
+    };
+
+    // Add clock gate
+    fragment@1 {
+		target-path = "/";
+		__overlay__{
+			gated_40M_ad9361_clk: ad9361-refclk-gpio-gate@0 {
+				#clock-cells = <0>;
+				compatible = "gpio-gate-clock";
+				clocks = <&clk_40M_adj>;
+				enable-gpios = <&gpio0 0x69 0x0>;
+				clk-set-rate-parent-enable;
+				clock-output-names = "ad9361_ext_refclk";
+			};
+		};
+    };
+
+    // Set clock in ad9361_phy
+    fragment@2{
+        target = <&ad9361_phy>;
+        __overlay__{
+            clocks = <&gated_40M_ad9361_clk 0x0>;
+            adi,xo-disable-use-ext-refclk-enable;
+        };
+    };
+
+
+
+	// Add board properties
+	fragment@3{
+		target = <&sdhci0>;
+		__overlay__{
+			disable-wp;
+		};
+	};
+	fragment@4{
+		target = <&clkc>;
+		__overlay__{
+			ps-clk-frequency = <33333333>;
+		};
+	};
+	fragment@5{
+		target = <&usb0>;
+		__overlay__{
+			xlnx,phy-reset-gpio = <&gpio0 0x7 0x0>;
+		};
+	};
+
+	// Insert GPIO leds, buttons, and switches
+	fragment@6{
+		target-path = "/";
+		__overlay__{
+			leds {
+				compatible = "gpio-leds";
+
+				led0 {
+					label = "led0:green";
+					gpios = <&gpio0 0x3a 0x0>;
+				};
+
+				led1 {
+					label = "led1:green";
+					gpios = <&gpio0 0x3b 0x0>;
+				};
+
+				led2 {
+					label = "led2:green";
+					gpios = <&gpio0 0x3c 0x0>;
+				};
+
+				led3 {
+					label = "led3:green";
+					gpios = <&gpio0 0x3d 0x0>;
+				};
+			};
+
+			gpio_keys {
+				compatible = "gpio-keys";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				autorepeat;
+
+				pb0 {
+					label = "Left";
+					linux,code = <0x69>;
+					gpios = <&gpio0 0x36 0x0>;
+				};
+
+				pb1 {
+					label = "Right";
+					linux,code = <0x6a>;
+					gpios = <&gpio0 0x37 0x0>;
+				};
+
+				pb2 {
+					label = "Up";
+					linux,code = <0x67>;
+					gpios = <&gpio0 0x38 0x0>;
+				};
+
+				pb3 {
+					label = "Down";
+					linux,code = <0x6c>;
+					gpios = <&gpio0 0x39 0x0>;
+				};
+
+				sw0 {
+					label = "SW0";
+					linux,input-type = <0x5>;
+					linux,code = <0x0>;
+					gpios = <&gpio0 0x3e 0x0>;
+				};
+
+				sw1 {
+					label = "SW1";
+					linux,input-type = <0x5>;
+					linux,code = <0x1>;
+					gpios = <&gpio0 0x3f 0x0>;
+				};
+
+				sw2 {
+					label = "SW2";
+					linux,input-type = <0x5>;
+					linux,code = <0x2>;
+					gpios = <&gpio0 0x40 0x0>;
+				};
+
+				sw3 {
+					label = "SW3";
+					linux,input-type = <0x5>;
+					linux,code = <0x3>;
+					gpios = <&gpio0 0x41 0x0>;
+				};
+			};
+		};
+	};
+};

@@ -15,14 +15,22 @@ ch_number=$2
 echo $nic_name
 echo $ch_number
 
-# sudo service network-manager stop
-sudo ip link set $nic_name down
-sudo iwconfig $nic_name mode monitor
-sudo ip link set $nic_name up
-sudo iwconfig $nic_name channel $ch_number
-# sudo iwconfig $nic_name modulation 11g
-# sudo iwconfig $nic_name rate 6M
-ifconfig
-iwconfig $nic_name
+if [ -f /etc/openwrt_release ]; then
+  ip link set $nic_name down
+  iw dev $nic_name set type monitor
+  ip link set $nic_name up
+  iw dev $nic_name set channel $ch_number
+  ip addr
+else
+  # sudo service network-manager stop
+  sudo ip link set $nic_name down
+  sudo iwconfig $nic_name mode monitor
+  sudo ip link set $nic_name up
+  sudo iwconfig $nic_name channel $ch_number
+  # sudo iwconfig $nic_name modulation 11g
+  # sudo iwconfig $nic_name rate 6M
+  ifconfig
+  iwconfig $nic_name
+fi
 
 ./agc_settings.sh 1

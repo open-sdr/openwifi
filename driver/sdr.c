@@ -44,6 +44,8 @@
 #include <linux/gpio.h>
 #include <linux/leds.h>
 
+#include <net/sock.h>
+
 // #include <linux/time.h>
 
 #define IIO_AD9361_USE_PRIVATE_H_
@@ -58,7 +60,7 @@
 #include "git_rev.h"
 
 #ifndef RFSoC4x2
-extern int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg); 
+extern int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg);
 extern int cf_axi_dds_datasel(struct cf_axi_dds_state *st, int channel, enum dds_data_select sel);
 extern struct ad9361_rf_phy* ad9361_spi_to_phy(struct spi_device *spi);
 extern int ad9361_tx_mute(struct ad9361_rf_phy *phy, u32 state);
@@ -67,13 +69,13 @@ extern int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb, bool tx
 extern int ad9361_spi_read(struct spi_device *spi, u32 reg);
 extern int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num);
 #else
-int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg){return(0);}; 
-int cf_axi_dds_datasel(struct cf_axi_dds_state *st, int channel, enum dds_data_select sel){return(0);}; 
-struct ad9361_rf_phy* ad9361_spi_to_phy(struct spi_device *spi){return(0);}; 
-int ad9361_tx_mute(struct ad9361_rf_phy *phy, u32 state){return(0);}; 
-int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy, struct ctrl_outs_control *ctrl){return(0);}; 
-int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb, bool tx1, bool tx2, bool immed){return(0);}; 
-int ad9361_spi_read(struct spi_device *spi, u32 reg){return(0);}; 
+int ad9361_do_calib_run(struct ad9361_rf_phy *phy, u32 cal, int arg){return(0);};
+int cf_axi_dds_datasel(struct cf_axi_dds_state *st, int channel, enum dds_data_select sel){return(0);};
+struct ad9361_rf_phy* ad9361_spi_to_phy(struct spi_device *spi){return(0);};
+int ad9361_tx_mute(struct ad9361_rf_phy *phy, u32 state){return(0);};
+int ad9361_ctrl_outs_setup(struct ad9361_rf_phy *phy, struct ctrl_outs_control *ctrl){return(0);};
+int ad9361_set_tx_atten(struct ad9361_rf_phy *phy, u32 atten_mdb, bool tx1, bool tx2, bool immed){return(0);};
+int ad9361_spi_read(struct spi_device *spi, u32 reg){return(0);};
 int ad9361_get_tx_atten(struct ad9361_rf_phy *phy, u32 tx_num){return(0);};
 #endif
 static struct ad9361_rf_phy ad9361_phy_fake;
@@ -102,10 +104,10 @@ static void rfsoc_rf_set_channel(struct ieee80211_hw *dev, struct ieee80211_conf
 #include "sdrctl_intf.c"
 #include "sysfs_intf.c"
 
-// bit0: aggregation enable(1)/disable(0); 
+// bit0: aggregation enable(1)/disable(0);
 // bit1: tx offset tuning enable(0)/disable(1). NO USE ANY MORE
-// bit1: short GI enable(1)/disable(0); 
-static int test_mode = 0; 
+// bit1: short GI enable(1)/disable(0);
+static int test_mode = 0;
 // Internal indication variables after parsing test_mode
 static bool AGGR_ENABLE = false;
 static bool TX_OFFSET_TUNING_ENABLE = false;
@@ -209,17 +211,17 @@ inline int rssi_correction_lookup_table(u32 freq_MHz)
 inline void ad9361_tx_calibration(struct openwifi_priv *priv, u32 actual_tx_lo)
 {
   // struct timespec64 tv;
-  // unsigned long time_before = 0; 
+  // unsigned long time_before = 0;
   // unsigned long time_after = 0;
-  u32 spi_disable; 
+  u32 spi_disable;
 
-  priv->last_tx_quad_cal_lo = actual_tx_lo; 
+  priv->last_tx_quad_cal_lo = actual_tx_lo;
   // do_gettimeofday(&tv);
   // time_before = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
   spi_disable = xpu_api->XPU_REG_SPI_DISABLE_read(); // backup current fpga spi disable state
   xpu_api->XPU_REG_SPI_DISABLE_write(1); // disable FPGA SPI module
-  ad9361_do_calib_run(priv->ad9361_phy, TX_QUAD_CAL, (int)priv->ad9361_phy->state->last_tx_quad_cal_phase); 
-  xpu_api->XPU_REG_SPI_DISABLE_write(spi_disable); // restore original SPI disable state 
+  ad9361_do_calib_run(priv->ad9361_phy, TX_QUAD_CAL, (int)priv->ad9361_phy->state->last_tx_quad_cal_phase);
+  xpu_api->XPU_REG_SPI_DISABLE_write(spi_disable); // restore original SPI disable state
   // do_gettimeofday(&tv);
   // time_after = tv.tv_usec + ((u64)1000000ull)*((u64)tv.tv_sec );
 
@@ -265,13 +267,13 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
   struct openwifi_priv *priv = dev->priv;
   u32 actual_rx_lo;
   u32 actual_tx_lo;
-  u32 diff_tx_lo; 
+  u32 diff_tx_lo;
   bool change_flag;
 
   actual_rx_lo = conf->chandef.chan->center_freq - priv->rx_freq_offset_to_lo_MHz;
   change_flag = (actual_rx_lo != priv->actual_rx_lo);
 
-  printk("%s ad9361_rf_set_channel target %dMHz rx offset %dMHz current %dMHz change flag %d\n", sdr_compatible_str, 
+  printk("%s ad9361_rf_set_channel target %dMHz rx offset %dMHz current %dMHz change flag %d\n", sdr_compatible_str,
   conf->chandef.chan->center_freq, priv->rx_freq_offset_to_lo_MHz, priv->actual_rx_lo, change_flag);
 
   // if (change_flag && priv->rf_reg_val[RF_TX_REG_IDX_FREQ_MHZ]==0 && priv->rf_reg_val[RF_RX_REG_IDX_FREQ_MHZ]==0) {
@@ -279,7 +281,7 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
     actual_tx_lo = conf->chandef.chan->center_freq - priv->tx_freq_offset_to_lo_MHz;
     diff_tx_lo = priv->last_tx_quad_cal_lo > actual_tx_lo ? priv->last_tx_quad_cal_lo - actual_tx_lo : actual_tx_lo - priv->last_tx_quad_cal_lo;
 
-    printk("%s ad9361_rf_set_channel target %dMHz tx offset %dMHz current %dMHz diff_tx_lo %dMHz\n", sdr_compatible_str, 
+    printk("%s ad9361_rf_set_channel target %dMHz tx offset %dMHz current %dMHz diff_tx_lo %dMHz\n", sdr_compatible_str,
     conf->chandef.chan->center_freq, priv->tx_freq_offset_to_lo_MHz, priv->actual_tx_lo, diff_tx_lo);
 
     // -------------------Tx Lo tuning-------------------
@@ -291,8 +293,8 @@ static void ad9361_rf_set_channel(struct ieee80211_hw *dev,
     priv->actual_rx_lo = actual_rx_lo;
 
     priv->band = freq_MHz_to_band(actual_rx_lo);
-    
-    // call Tx Quadrature calibration if frequency change is more than 100MHz 
+
+    // call Tx Quadrature calibration if frequency change is more than 100MHz
     if (diff_tx_lo > 100)
       ad9361_tx_calibration(priv, actual_tx_lo);
 
@@ -373,12 +375,12 @@ static void openwifi_free_tx_ring(struct openwifi_priv *priv, int ring_idx)
     if (ring->bds[i].skb_linked == 0 && ring->bds[i].dma_mapping_addr == 0)
       continue;
     if (ring->bds[i].dma_mapping_addr != 0)
-      dma_unmap_single(priv->tx_chan->device->dev, ring->bds[i].dma_mapping_addr,ring->bds[i].skb_linked->len, DMA_MEM_TO_DEV);
+      dma_unmap_single(priv->tx_chan->device->dev, ring->bds[i].dma_mapping_addr,ring->bds[i].skb_linked->len, DMA_TO_DEVICE);
 //    if (ring->bds[i].skb_linked!=NULL)
 //      dev_kfree_skb(ring->bds[i].skb_linked); // only use dev_kfree_skb when there is exception
     if ( (ring->bds[i].dma_mapping_addr != 0 && ring->bds[i].skb_linked == 0) ||
          (ring->bds[i].dma_mapping_addr == 0 && ring->bds[i].skb_linked != 0))
-      printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08x\n", sdr_compatible_str, 
+      printk("%s openwifi_free_tx_ring: WARNING ring %d i %d skb_linked %p dma_mapping_addr %08x\n", sdr_compatible_str,
       ring_idx, i, (void*)(ring->bds[i].skb_linked), (unsigned int)(ring->bds[i].dma_mapping_addr));
 
     ring->bds[i].skb_linked=NULL;
@@ -455,9 +457,9 @@ inline int rssi_half_db_to_rssi_dbm(int rssi_half_db, int rssi_correction)
   rssi_db = (rssi_half_db>>1);
 
   rssi_dbm = rssi_db - rssi_correction;
-  
+
   rssi_dbm = (rssi_dbm < (-128)? (-128) : rssi_dbm);
-  
+
   return rssi_dbm;
 }
 
@@ -523,7 +525,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
       // }
       content_ok = true;
     } else {
-      printk("%s openwifi_rx: WARNING content! len%d overflow%d rate_idx%d\n", sdr_compatible_str, 
+      printk("%s openwifi_rx: WARNING content! len%d overflow%d rate_idx%d\n", sdr_compatible_str,
       len, len_overflow, rate_idx);
       content_ok = false;
     }
@@ -553,15 +555,15 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
            ((!is_unicast)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_BROADCAST)) ||
          ((  fcs_ok==0)&&(priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_ERROR)) )
         printk("%s openwifi_rx: %dB ht%daggr%d/%d sgi%d %dM FC%04x DI%04x ADDR%04x%08x/%04x%08x/%04x%08x SC%d fcs%d buf_idx%d %ddBm fo %d\n", sdr_compatible_str,
-          len, ht_flag, ht_aggr, ht_aggr_last, short_gi, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id, 
-          reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32), 
+          len, ht_flag, ht_aggr, ht_aggr_last, short_gi, wifi_rate_table[rate_idx], hdr->frame_control, hdr->duration_id,
+          reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
 #ifdef USE_NEW_RX_INTERRUPT
           seq_no, fcs_ok, i, signal, phase_offset);
 #else
           seq_no, fcs_ok, target_buf_idx_old, signal, phase_offset);
 #endif
     }
-    
+
     // priv->phy_rx_sn_hw_old = phy_rx_sn_hw;
     if (content_ok) {
       skb = dev_alloc_skb(len);
@@ -577,7 +579,7 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
         // rx_status.freq = priv->actual_rx_lo;
         rx_status.band = dev->conf.chandef.chan->band;
         // rx_status.band = (rx_status.freq<2500?NL80211_BAND_2GHZ:NL80211_BAND_5GHZ);
-        
+
         rx_status.mactime = ( ( (u64)tsft_low ) | ( ((u64)tsft_high)<<32 ) );
         rx_status.flag |= RX_FLAG_MACTIME_START;
         if (!fcs_ok)
@@ -646,13 +648,13 @@ static irqreturn_t openwifi_rx_interrupt(int irq, void *dev_id)
     (*((u16*)(pdata_tmp+10))) = 0; // clear the field (set by rx_intf_pl_to_m_axis.v) to indicate the packet has been processed
     loop_count++;
 #ifndef USE_NEW_RX_INTERRUPT
-    target_buf_idx_old=((target_buf_idx_old+1)&(NUM_RX_BD-1)); 
+    target_buf_idx_old=((target_buf_idx_old+1)&(NUM_RX_BD-1));
 #endif
   }
 
   if ( loop_count!=1 && (priv->drv_rx_reg_val[DRV_RX_REG_IDX_PRINT_CFG]&DMESG_LOG_ERROR) )
     printk("%s openwifi_rx: WARNING loop_count %d\n", sdr_compatible_str,loop_count);
-  
+
 // openwifi_rx_out:
   spin_unlock(&priv->lock);
   return IRQ_HANDLED;
@@ -691,7 +693,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
       //cw = ((0xF0000000 & reg_val1) >> 28);
       if(cw > 10) {
         cw = 10 ;
-        num_slot_random += 512 ; 
+        num_slot_random += 512 ;
       }
       pkt_cnt = (reg_val2&0x3F);
       blk_ack_ssn = ((reg_val2>>6)&0xFFF);
@@ -713,7 +715,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
           if( priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_NORMAL_QUEUE_STOP )
             printk("%s openwifi_tx_interrupt: WARNING ieee80211_wake_queue prio%d i%d queue%d no room flag%x hwq len%08x wr%d rd%d\n", sdr_compatible_str,
                     prio, i, queue_idx, dma_fifo_no_room_flag, hw_queue_len, drv_ring_tmp->bd_wr_idx, last_bd_rd_idx);
-            
+
           if (fpga_queue_has_room) {
             prio_wake_up_flag = true;
             drv_ring_tmp->stop_flag = -1;
@@ -743,7 +745,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
         seq_no = ring->bds[ring->bd_rd_idx].seq_no;
 
         if (seq_no == 0xffff) {// it has been forced cleared by the openwifi_tx (due to out-of-order Tx of different queues to the air?)
-          printk("%s openwifi_tx_interrupt: WARNING wr%d rd%d last_bd_rd_idx%d i%d pkt_cnt%d prio%d fpga q%d hwq len%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%u\n", sdr_compatible_str,
+          printk("%s openwifi_tx_interrupt: WARNING wr%d rd%d last_bd_rd_idx%d i%d pkt_cnt%d prio%d fpga q%d hwq len%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%lld\n", sdr_compatible_str,
           ring->bd_wr_idx, ring->bd_rd_idx, last_bd_rd_idx, i, pkt_cnt, prio, queue_idx, hw_queue_len, ring->bds[ring->bd_rd_idx].prio, ring->bds[ring->bd_rd_idx].len_mpdu, seq_no, ring->bds[ring->bd_rd_idx].skb_linked, (long long int)(ring->bds[ring->bd_rd_idx].dma_mapping_addr));
           continue;
         }
@@ -751,7 +753,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
         skb = ring->bds[ring->bd_rd_idx].skb_linked;
 
         dma_unmap_single(priv->tx_chan->device->dev,ring->bds[ring->bd_rd_idx].dma_mapping_addr,
-            skb->len, DMA_MEM_TO_DEV);
+            skb->len, DMA_TO_DEVICE);
 
         info = IEEE80211_SKB_CB(skb);
         use_ht_aggr = ((info->flags&IEEE80211_TX_CTL_AMPDU)!=0);
@@ -785,7 +787,7 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
           mcs_for_sysfs = ieee80211_get_tx_rate(dev, info)->hw_value;
           if (use_ht_rate)
             mcs_for_sysfs = (mcs_for_sysfs | 0x80000000);
-          
+
           if ( ieee80211_is_data(hdr->frame_control) ) {
             nof_retx_stat = (nof_retx<=5?nof_retx:5);
 
@@ -833,9 +835,9 @@ static irqreturn_t openwifi_tx_interrupt(int irq, void *dev_id)
         ring->bds[ring->bd_rd_idx].skb_linked = NULL;
         ring->bds[ring->bd_rd_idx].dma_mapping_addr = 0;
       }
-      
+
       loop_count++;
-      
+
       // printk("%s openwifi_tx_interrupt: loop %d prio %d rd %d\n", sdr_compatible_str, loop_count, prio, ring->bd_rd_idx);
 
     } else
@@ -896,14 +898,14 @@ static inline struct gpio_led_data * //please align with the implementation in l
 inline int calc_n_ofdm(int num_octet, int n_dbps)
 {
   int num_bit, num_ofdm_sym;
-  
+
   num_bit      = 22+num_octet*8;
   num_ofdm_sym = (num_bit/n_dbps) + ((num_bit%n_dbps)!=0);
 
   return (num_ofdm_sym);
 }
 
-inline __le16 gen_ht_duration_id(__le16 frame_control, __le16 aid, u8 qos_hdr, bool use_ht_aggr, u8 rate_hw_value, u16 sifs) 
+inline __le16 gen_ht_duration_id(__le16 frame_control, __le16 aid, u8 qos_hdr, bool use_ht_aggr, u8 rate_hw_value, u16 sifs)
 {
 // COTS wifi ht QoS data duration field analysis (lots of capture):
 
@@ -950,7 +952,7 @@ inline __le16 gen_ht_duration_id(__le16 frame_control, __le16 aid, u8 qos_hdr, b
     num_octet = (use_ht_aggr?32:14); //32 bytes for compressed block ack; 14 bytes for normal ack
     num_ofdm_sym = calc_n_ofdm(num_octet, n_dbps);
     dur = sifs + 20 + 4*num_ofdm_sym; // 20us legacy preamble
-    // printk("%s gen_ht_duration_id: num_octet %d n_dbps %d num_ofdm_sym %d dur %d\n", sdr_compatible_str, 
+    // printk("%s gen_ht_duration_id: num_octet %d n_dbps %d num_ofdm_sym %d dur %d\n", sdr_compatible_str,
     // num_octet, n_dbps, num_ofdm_sym, dur);
   } else {
     printk("%s openwifi_tx: WARNING gen_ht_duration_id wrong pkt type!\n", sdr_compatible_str);
@@ -1063,12 +1065,12 @@ static void openwifi_tx(struct ieee80211_hw *dev,
       }
       for (i=0; i<empty_bd_idx; i++) {
         j = ( (ring->bd_wr_idx+i)&(NUM_TX_BD-1) );
-        printk("%s openwifi_tx: WARNING fake stop queue empty_bd_idx%d i%d lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%u\n", sdr_compatible_str,
+        printk("%s openwifi_tx: WARNING fake stop queue empty_bd_idx%d i%d lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%lld\n", sdr_compatible_str,
         empty_bd_idx, i, prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked,(long long int)(ring->bds[j].dma_mapping_addr));
         // tell Linux this skb failed
         skb_new = ring->bds[j].skb_linked;
         dma_unmap_single(priv->tx_chan->device->dev,ring->bds[j].dma_mapping_addr,
-              skb_new->len, DMA_MEM_TO_DEV);
+              skb_new->len, DMA_TO_DEVICE);
         info_skipped = IEEE80211_SKB_CB(skb_new);
         ieee80211_tx_info_clear_status(info_skipped);
         info_skipped->status.rates[0].count = 1;
@@ -1089,7 +1091,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
       }
     } else {
       j = ring->bd_wr_idx;
-      printk("%s openwifi_tx: WARNING real stop queue lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%u\n", sdr_compatible_str,
+      printk("%s openwifi_tx: WARNING real stop queue lnx prio%d map to q%d stop%d hwq len%d wr%d rd%d bd prio%d len_mpdu%d seq_no%d skb_linked%p dma_mapping_addr%lld\n", sdr_compatible_str,
       prio, drv_ring_idx, ring->stop_flag, hw_queue_len, ring->bd_wr_idx, ring->bd_rd_idx, ring->bds[j].prio, ring->bds[j].len_mpdu, ring->bds[j].seq_no, ring->bds[j].skb_linked, (long long int)(ring->bds[j].dma_mapping_addr));
 
       ieee80211_stop_queue(dev, prio); // here we should stop those prio related to the queue idx flag set in TX_INTF_REG_S_AXIS_FIFO_NO_ROOM_read
@@ -1134,7 +1136,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
   rate_hw_value = ieee80211_get_tx_rate(dev, info)->hw_value;
   // drv_tx_reg_val[DRV_TX_REG_IDX_RATE]
   // override rate legacy: 4:6M,   5:9M,  6:12M,  7:18M, 8:24M, 9:36M, 10:48M,   11:54M
-  // drv_tx_reg_val[DRV_TX_REG_IDX_RATE_HT] 
+  // drv_tx_reg_val[DRV_TX_REG_IDX_RATE_HT]
   // override rate     ht: 4:6.5M, 5:13M, 6:19.5M,7:26M, 8:39M, 9:52M, 10:58.5M, 11:65M
   if ( ieee80211_is_data(hdr->frame_control) ) {//rate override command
     if (use_ht_rate && priv->drv_tx_reg_val[DRV_TX_REG_IDX_RATE_HT]>0) {
@@ -1174,7 +1176,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
     cts_rate_hw_value = 4; //wifi_mcs_table_11b_force_up[] translate it to 1011(6M)
     if (pkt_need_ack)
       ack_duration = 44;//assume the ack we wait use 6Mbps: 4*ceil((22+14*8)/24) + 20(preamble+SIGNAL)
-    
+
     n_dbps = (use_ht_rate?wifi_n_dbps_ht_table[rate_hw_value+4]:wifi_n_dbps_table[rate_hw_value]);
     traffic_pkt_duration = (use_ht_rate?36:20) + 4*calc_n_ofdm(len_mpdu, n_dbps);
     cts_duration = traffic_pkt_duration + sifs + pkt_need_ack*(sifs+ack_duration);
@@ -1233,8 +1235,8 @@ static void openwifi_tx(struct ieee80211_hw *dev,
     len_mpdu_delim_pad = ((len_mpdu + LEN_PHY_CRC)%4 == 0) ? 0 :(4 - (len_mpdu + LEN_PHY_CRC)%4);
     len_psdu = LEN_MPDU_DELIM + len_mpdu + LEN_PHY_CRC + len_mpdu_delim_pad;
 
-    if( (addr1_low32 != addr1_low32_prev) || (addr1_high16 != addr1_high16_prev) || (duration_id != duration_id_prev) || 
-      (rate_hw_value != rate_hw_value_prev) || (use_short_gi != use_short_gi_prev) || 
+    if( (addr1_low32 != addr1_low32_prev) || (addr1_high16 != addr1_high16_prev) || (duration_id != duration_id_prev) ||
+      (rate_hw_value != rate_hw_value_prev) || (use_short_gi != use_short_gi_prev) ||
       (prio != prio_prev) || (retry_limit_raw != retry_limit_raw_prev) || (pkt_need_ack != pkt_need_ack_prev) )
     {
       addr1_low32_prev = addr1_low32;
@@ -1253,7 +1255,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
   {
     // psdu = [ MPDU ]
     len_psdu = len_mpdu;
-    
+
     // // Don't need to reset _prev variables every time when it is not ht aggr qos data. Reason:
     // // 1. In 99.9999% cases, the ht always use qos data and goes to prio/queue_idx 2. By not resetting the variable to -1, we can have continuous aggregation packet operation in FPGA queue 2.
     // // 2. In other words, the aggregation operation for queue 2 in FPGA won't be interrupted by other non aggregation packets (control/management/beacon/etc.) that go to queue 0 (or other queues than 2).
@@ -1270,9 +1272,9 @@ static void openwifi_tx(struct ieee80211_hw *dev,
   }
   num_dma_symbol = (len_psdu>>TX_INTF_NUM_BYTE_PER_DMA_SYMBOL_IN_BITS) + ((len_psdu&(TX_INTF_NUM_BYTE_PER_DMA_SYMBOL-1))!=0);
 
-  if ( ( (!pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_BROADCAST) ) || ( (pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_UNICAST) ) ) 
+  if ( ( (!pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_BROADCAST) ) || ( (pkt_need_ack)&&(priv->drv_tx_reg_val[DRV_TX_REG_IDX_PRINT_CFG]&DMESG_LOG_UNICAST) ) )
     printk("%s openwifi_tx: %dB RC%x %dM FC%04x DI%04x ADDR%04x%08x/%04x%08x/%04x%08x flag%08x QoS%02x SC%d_%d retr%d ack%d prio%d q%d wr%d rd%d\n", sdr_compatible_str,
-      len_mpdu, rc_flags, (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id, 
+      len_mpdu, rc_flags, (use_ht_rate == false ? wifi_rate_all[rate_hw_value] : wifi_rate_all[rate_hw_value + 12]),frame_control,duration_id,
       reverse16(addr1_high16), reverse32(addr1_low32), reverse16(addr2_high16), reverse32(addr2_low32), reverse16(addr3_high16), reverse32(addr3_low32),
       info->flags, qos_hdr, seq_no, drv_seqno, retry_limit_raw, pkt_need_ack, prio, drv_ring_idx,
       // use_rts_cts,use_cts_protect|force_use_cts_protect,wifi_rate_all[cts_rate_hw_value],cts_duration,
@@ -1416,7 +1418,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
 
 //-------------------------fire skb DMA to hardware----------------------------------
   dma_mapping_addr = dma_map_single(priv->tx_chan->device->dev, dma_buf,
-         num_dma_byte, DMA_MEM_TO_DEV);
+         num_dma_byte, DMA_TO_DEVICE);
 
   if (dma_mapping_error(priv->tx_chan->device->dev,dma_mapping_addr)) {
     // dev_err(priv->tx_chan->device->dev, "sdr,sdr openwifi_tx: WARNING TX DMA mapping error\n");
@@ -1427,7 +1429,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
   sg_init_table(&(priv->tx_sg), 1); // only need to be initialized once in openwifi_start
   sg_dma_address( &(priv->tx_sg) ) = dma_mapping_addr;
   sg_dma_len( &(priv->tx_sg) ) = num_dma_byte;
-  
+
   tx_intf_api->TX_INTF_REG_CTS_TOSELF_CONFIG_write(cts_reg);
   tx_intf_api->TX_INTF_REG_TX_CONFIG_write(tx_config);
   tx_intf_api->TX_INTF_REG_PHY_HDR_CONFIG_write(phy_hdr_config);
@@ -1465,7 +1467,7 @@ static void openwifi_tx(struct ieee80211_hw *dev,
   return;
 
 openwifi_tx_after_dma_mapping:
-  dma_unmap_single(priv->tx_chan->device->dev, dma_mapping_addr, num_dma_byte, DMA_MEM_TO_DEV);
+  dma_unmap_single(priv->tx_chan->device->dev, dma_mapping_addr, num_dma_byte, DMA_TO_DEVICE);
 
 openwifi_tx_early_out_after_lock:
   spin_unlock_irqrestore(&priv->lock, flags);
@@ -1487,7 +1489,7 @@ static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant
   u32 atten_mdb_tx0, atten_mdb_tx1;
   struct ctrl_outs_control ctrl_out;
   int ret;
-  
+
   printk("%s openwifi_set_antenna: tx_ant%d rx_ant%d\n",sdr_compatible_str,tx_ant,rx_ant);
 
   if (tx_ant >= 4 || tx_ant == 0) {
@@ -1577,11 +1579,11 @@ static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_a
 
   printk("%s openwifi_get_antenna: drv tx cfg %d offset %d drv rx cfg %d offset %d drv ctrl_out sel %x\n",sdr_compatible_str,
   priv->tx_intf_cfg, priv->tx_freq_offset_to_lo_MHz, priv->rx_intf_cfg, priv->rx_freq_offset_to_lo_MHz, priv->ctrl_out.index);
-  
-  printk("%s openwifi_get_antenna: fpga tx sel %d rx sel %d\n", sdr_compatible_str, 
+
+  printk("%s openwifi_get_antenna: fpga tx sel %d rx sel %d\n", sdr_compatible_str,
   tx_intf_api->TX_INTF_REG_ANT_SEL_read(), rx_intf_api->RX_INTF_REG_ANT_SEL_read());
-  
-  printk("%s openwifi_get_antenna: rf tx att0 %d tx att1 %d ctrl_out sel %x\n", sdr_compatible_str, 
+
+  printk("%s openwifi_get_antenna: rf tx att0 %d tx att1 %d ctrl_out sel %x\n", sdr_compatible_str,
   ad9361_get_tx_atten(priv->ad9361_phy, 1), ad9361_get_tx_atten(priv->ad9361_phy, 2), ad9361_spi_read(priv->ad9361_phy->spi, REG_CTRL_OUTPUT_POINTER));
 
   return 0;
@@ -1716,7 +1718,7 @@ err_dma:
   return ret;
 }
 
-static void openwifi_stop(struct ieee80211_hw *dev)
+static void openwifi_stop(struct ieee80211_hw *dev, bool suspend)
 {
   struct openwifi_priv *priv = dev->priv;
   u32 reg, reg1;
@@ -1814,10 +1816,10 @@ static void openwifi_beacon_work(struct work_struct *work)
   if (ieee80211_queue_stopped(dev, 0))
     goto resched;
 
-  /* grab a fresh beacon */
-  skb = ieee80211_beacon_get(dev, vif);
-  if (!skb)
-    goto resched;
+	/* grab a fresh beacon */
+	skb = ieee80211_beacon_get(dev, vif, 0);
+	if (!skb)
+		goto resched;
 
   /*
    * update beacon timestamp w/ TSF value
@@ -1868,7 +1870,7 @@ static int openwifi_add_interface(struct ieee80211_hw *dev,
     return -EBUSY;
 
   priv->vif[i] = vif;
-  
+
   /* Initialize driver private area */
   vif_priv = (struct openwifi_vif *)&vif->drv_priv;
   vif_priv->idx = i;
@@ -1896,7 +1898,7 @@ static void openwifi_remove_interface(struct ieee80211_hw *dev,
 {
   struct openwifi_vif *vif_priv;
   struct openwifi_priv *priv = dev->priv;
-  
+
   vif_priv = (struct openwifi_vif *)&vif->drv_priv;
   priv->vif[vif_priv->idx] = NULL;
   printk("%s openwifi_remove_interface vif idx %d\n", sdr_compatible_str, vif_priv->idx);
@@ -1913,7 +1915,7 @@ static int openwifi_config(struct ieee80211_hw *dev, u32 changed)
 
   if (changed & IEEE80211_CONF_CHANGE_CHANNEL) {
     if ( priv->stat.restrict_freq_mhz>0 && (conf->chandef.chan->center_freq != priv->stat.restrict_freq_mhz) ) {
-      printk("%s openwifi_config avoid Linux requested freq %dMHz (restrict freq %dMHz)\n", sdr_compatible_str, 
+      printk("%s openwifi_config avoid Linux requested freq %dMHz (restrict freq %dMHz)\n", sdr_compatible_str,
       conf->chandef.chan->center_freq, priv->stat.restrict_freq_mhz);
 
       channel_conf_tmp.chandef.chan->center_freq = priv->stat.restrict_freq_mhz;
@@ -1923,14 +1925,14 @@ static int openwifi_config(struct ieee80211_hw *dev, u32 changed)
     }
   } else
     printk("%s openwifi_config changed flag %08x\n", sdr_compatible_str, changed);
-    
+
   return 0;
 }
 
 static void openwifi_bss_info_changed(struct ieee80211_hw *dev,
-             struct ieee80211_vif *vif,
-             struct ieee80211_bss_conf *info,
-             u32 changed)
+				     struct ieee80211_vif *vif,
+				     struct ieee80211_bss_conf *info,
+				     u64 changed)
 {
   struct openwifi_priv *priv = dev->priv;
   struct openwifi_vif *vif_priv;
@@ -1967,7 +1969,7 @@ static void openwifi_bss_info_changed(struct ieee80211_hw *dev,
     printk("%s openwifi_bss_info_changed WARNING BSS_CHANGED_BASIC_RATES %x\n",sdr_compatible_str,info->basic_rates);
 
   if (changed & (BSS_CHANGED_ERP_SLOT | BSS_CHANGED_ERP_PREAMBLE)) {
-    printk("%s openwifi_bss_info_changed WARNING BSS_CHANGED_ERP_SLOT %d BSS_CHANGED_ERP_PREAMBLE %d short slot %d\n",sdr_compatible_str,
+    printk("%s openwifi_bss_info_changed WARNING BSS_CHANGED_ERP_SLOT %llu BSS_CHANGED_ERP_PREAMBLE %llu short slot %d\n",sdr_compatible_str,
     changed&BSS_CHANGED_ERP_SLOT,changed&BSS_CHANGED_ERP_PREAMBLE,info->use_short_slot);
     if (info->use_short_slot && priv->use_short_slot==false) {
       priv->use_short_slot=true;
@@ -1983,15 +1985,15 @@ static void openwifi_bss_info_changed(struct ieee80211_hw *dev,
     vif_priv->enable_beacon = info->enable_beacon;
   }
 
-  if (changed & (BSS_CHANGED_BEACON_ENABLED | BSS_CHANGED_BEACON)) {
-    cancel_delayed_work_sync(&vif_priv->beacon_work);
-    if (vif_priv->enable_beacon) {
-      schedule_work(&vif_priv->beacon_work.work);
-      printk("%s openwifi_bss_info_changed WARNING enable_beacon\n",sdr_compatible_str);
-    }
-    printk("%s openwifi_bss_info_changed WARNING BSS_CHANGED_BEACON_ENABLED %d BSS_CHANGED_BEACON %d\n",sdr_compatible_str,
-    changed&BSS_CHANGED_BEACON_ENABLED,changed&BSS_CHANGED_BEACON);
-  }
+	if (changed & (BSS_CHANGED_BEACON_ENABLED | BSS_CHANGED_BEACON)) {
+		cancel_delayed_work_sync(&vif_priv->beacon_work);
+		if (vif_priv->enable_beacon) {
+			schedule_work(&vif_priv->beacon_work.work);
+			printk("%s openwifi_bss_info_changed WARNING enable_beacon\n",sdr_compatible_str);
+		}
+		printk("%s openwifi_bss_info_changed WARNING BSS_CHANGED_BEACON_ENABLED %llu BSS_CHANGED_BEACON %llu\n",sdr_compatible_str,
+		changed&BSS_CHANGED_BEACON_ENABLED,changed&BSS_CHANGED_BEACON);
+	}
 }
 // helper function
 u32 log2val(u32 val){
@@ -2003,12 +2005,12 @@ u32 log2val(u32 val){
   return ret_val ;
 }
 
-static int openwifi_conf_tx(struct ieee80211_hw *dev, struct ieee80211_vif *vif, u16 queue,
-        const struct ieee80211_tx_queue_params *params)
+static int openwifi_conf_tx(struct ieee80211_hw *dev, struct ieee80211_vif *vif, unsigned int link_id, u16 queue,
+	      const struct ieee80211_tx_queue_params *params)
 {
   struct openwifi_priv *priv = dev->priv;
-  u32 reg_val, cw_min_exp, cw_max_exp; 
-  
+  u32 reg_val, cw_min_exp, cw_max_exp;
+
   if (priv->stat.cw_max_min_cfg == 0) {
     printk("%s openwifi_conf_tx: [queue %d], aifs: %d, cw_min: %d, cw_max: %d, txop: %d, aifs and txop ignored\n",
       sdr_compatible_str,queue,params->aifs,params->cw_min,params->cw_max,params->txop);
@@ -2017,9 +2019,9 @@ static int openwifi_conf_tx(struct ieee80211_hw *dev, struct ieee80211_vif *vif,
     cw_min_exp = (log2val(params->cw_min + 1) & 0x0F);
     cw_max_exp = (log2val(params->cw_max + 1) & 0x0F);
     switch(queue){
-      case 0: reg_val = ( (reg_val & 0xFFFFFF00) | ((cw_min_exp | (cw_max_exp << 4)) << 0) );  break; 
-      case 1: reg_val = ( (reg_val & 0xFFFF00FF) | ((cw_min_exp | (cw_max_exp << 4)) << 8) );  break; 
-      case 2: reg_val = ( (reg_val & 0xFF00FFFF) | ((cw_min_exp | (cw_max_exp << 4)) << 16) ); break; 
+      case 0: reg_val = ( (reg_val & 0xFFFFFF00) | ((cw_min_exp | (cw_max_exp << 4)) << 0) );  break;
+      case 1: reg_val = ( (reg_val & 0xFFFF00FF) | ((cw_min_exp | (cw_max_exp << 4)) << 8) );  break;
+      case 2: reg_val = ( (reg_val & 0xFF00FFFF) | ((cw_min_exp | (cw_max_exp << 4)) << 16) ); break;
       case 3: reg_val = ( (reg_val & 0x00FFFFFF) | ((cw_min_exp | (cw_max_exp << 4)) << 24) ); break;
       default: printk("%s openwifi_conf_tx: WARNING queue %d does not exist",sdr_compatible_str, queue); return(0);
     }
@@ -2027,13 +2029,13 @@ static int openwifi_conf_tx(struct ieee80211_hw *dev, struct ieee80211_vif *vif,
     reg_val = priv->stat.cw_max_min_cfg;
     printk("%s openwifi_conf_tx: override cw max min for q3 to q0: %d %d; %d %d; %d %d; %d %d\n",
       sdr_compatible_str,
-      (1<<((reg_val>>28)&0xF))-1, 
-      (1<<((reg_val>>24)&0xF))-1, 
-      (1<<((reg_val>>20)&0xF))-1, 
-      (1<<((reg_val>>16)&0xF))-1, 
-      (1<<((reg_val>>12)&0xF))-1, 
-      (1<<((reg_val>> 8)&0xF))-1, 
-      (1<<((reg_val>> 4)&0xF))-1, 
+      (1<<((reg_val>>28)&0xF))-1,
+      (1<<((reg_val>>24)&0xF))-1,
+      (1<<((reg_val>>20)&0xF))-1,
+      (1<<((reg_val>>16)&0xF))-1,
+      (1<<((reg_val>>12)&0xF))-1,
+      (1<<((reg_val>> 8)&0xF))-1,
+      (1<<((reg_val>> 4)&0xF))-1,
       (1<<((reg_val>> 0)&0xF))-1);
   }
   xpu_api->XPU_REG_CSMA_CFG_write(reg_val);
@@ -2064,7 +2066,7 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
   //filter_flag = (filter_flag|UNICAST_FOR_US|BROADCAST_ALL_ONE|BROADCAST_ALL_ZERO|MONITOR_ALL); // all pkt will be delivered to arm
 
   //if (priv->vif[0]->type == NL80211_IFTYPE_MONITOR)
-  if ((filter_flag&0xf0) == 0xf0) //FIF_BCN_PRBRESP_PROMISC/FIF_CONTROL/FIF_OTHER_BSS/FIF_PSPOLL are set means monitor mode  
+  if ((filter_flag&0xf0) == 0xf0) //FIF_BCN_PRBRESP_PROMISC/FIF_CONTROL/FIF_OTHER_BSS/FIF_PSPOLL are set means monitor mode
     filter_flag = (filter_flag|MONITOR_ALL);
   else
     filter_flag = (filter_flag&(~MONITOR_ALL));
@@ -2080,76 +2082,82 @@ static void openwifi_configure_filter(struct ieee80211_hw *dev,
   xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag|HIGH_PRIORITY_DISCARD_FLAG);
   //xpu_api->XPU_REG_FILTER_FLAG_write(filter_flag); //do not discard any pkt
 
-  printk("%s openwifi_configure_filter MON %d M_BCN %d BST0 %d BST1 %d UST %d PB_RQ %d PS_PL %d O_BSS %d CTL %d BCN_PRP %d PCP_FL %d FCS_FL %d ALL_MUT %d\n", sdr_compatible_str, 
+  printk("%s openwifi_configure_filter MON %d M_BCN %d BST0 %d BST1 %d UST %d PB_RQ %d PS_PL %d O_BSS %d CTL %d BCN_PRP %d PCP_FL %d FCS_FL %d ALL_MUT %d\n", sdr_compatible_str,
   (filter_flag>>13)&1,(filter_flag>>12)&1,(filter_flag>>11)&1,(filter_flag>>10)&1,(filter_flag>>9)&1,(filter_flag>>8)&1,(filter_flag>>7)&1,(filter_flag>>6)&1,(filter_flag>>5)&1,(filter_flag>>4)&1,(filter_flag>>3)&1,(filter_flag>>2)&1,(filter_flag>>1)&1);
 }
 
 static int openwifi_ampdu_action(struct ieee80211_hw *hw, struct ieee80211_vif *vif, struct ieee80211_ampdu_params *params)
 {
-  struct ieee80211_sta *sta = params->sta;
-  enum ieee80211_ampdu_mlme_action action = params->action;
-  // struct openwifi_priv *priv = hw->priv;
-  u16 max_tx_bytes, buf_size;
-  u32 ampdu_action_config;
+	struct ieee80211_sta *sta = params->sta;
+	struct ieee80211_link_sta *link = &(sta->deflink);
+	enum ieee80211_ampdu_mlme_action action = params->action;
+	// struct openwifi_priv *priv = hw->priv;
+	u16 max_tx_bytes, buf_size;
+	u32 ampdu_action_config;
 
   if (!AGGR_ENABLE) {
     return -EOPNOTSUPP;
   }
 
-  switch (action)
-  {
-    case IEEE80211_AMPDU_TX_START:
-      ieee80211_start_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
-      printk("%s openwifi_ampdu_action: start TX aggregation. tid %d\n", sdr_compatible_str, params->tid);
-      break;
-    case IEEE80211_AMPDU_TX_STOP_CONT:
-    case IEEE80211_AMPDU_TX_STOP_FLUSH:
-    case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
-      ieee80211_stop_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
-      printk("%s openwifi_ampdu_action: stop TX aggregation. tid %d\n", sdr_compatible_str, params->tid);
-      break;
-    case IEEE80211_AMPDU_TX_OPERATIONAL:
-      buf_size = 4;
-//      buf_size = (params->buf_size) - 1;
-      max_tx_bytes = (1 << (IEEE80211_HT_MAX_AMPDU_FACTOR + sta->ht_cap.ampdu_factor)) - 1;
-      ampdu_action_config = ( sta->ht_cap.ampdu_density<<24 | buf_size<<16 | max_tx_bytes );
-      tx_intf_api->TX_INTF_REG_AMPDU_ACTION_CONFIG_write(ampdu_action_config);
-      printk("%s openwifi_ampdu_action: TX operational. tid %d max_tx_bytes %d ampdu_density %d buf_size %d\n", 
-      sdr_compatible_str, params->tid, max_tx_bytes, sta->ht_cap.ampdu_density, buf_size);
-      break;
-    case IEEE80211_AMPDU_RX_START:
-      printk("%s openwifi_ampdu_action: start RX aggregation. tid %d\n", sdr_compatible_str, params->tid);
-      break;
-    case IEEE80211_AMPDU_RX_STOP:
-      printk("%s openwifi_ampdu_action: stop RX aggregation. tid %d\n", sdr_compatible_str, params->tid);
-      break;
-    default:
-      return -EOPNOTSUPP;
-  }
+	switch (action)
+	{
+		case IEEE80211_AMPDU_TX_START:
+			ieee80211_start_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
+			printk("%s openwifi_ampdu_action: start TX aggregation. tid %d\n", sdr_compatible_str, params->tid);
+			break;
+		case IEEE80211_AMPDU_TX_STOP_CONT:
+		case IEEE80211_AMPDU_TX_STOP_FLUSH:
+		case IEEE80211_AMPDU_TX_STOP_FLUSH_CONT:
+			ieee80211_stop_tx_ba_cb_irqsafe(vif, sta->addr, params->tid);
+			printk("%s openwifi_ampdu_action: stop TX aggregation. tid %d\n", sdr_compatible_str, params->tid);
+			break;
+		case IEEE80211_AMPDU_TX_OPERATIONAL:
+			buf_size = 4;
+//			buf_size = (params->buf_size) - 1;
+			max_tx_bytes = (1 << (IEEE80211_HT_MAX_AMPDU_FACTOR + link->ht_cap.ampdu_factor)) - 1;
+			ampdu_action_config = ( link->ht_cap.ampdu_density<<24 | buf_size<<16 | max_tx_bytes );
+			tx_intf_api->TX_INTF_REG_AMPDU_ACTION_CONFIG_write(ampdu_action_config);
+			printk("%s openwifi_ampdu_action: TX operational. tid %d max_tx_bytes %d ampdu_density %d buf_size %d\n",
+			sdr_compatible_str, params->tid, max_tx_bytes, link->ht_cap.ampdu_density, buf_size);
+			break;
+		case IEEE80211_AMPDU_RX_START:
+			printk("%s openwifi_ampdu_action: start RX aggregation. tid %d\n", sdr_compatible_str, params->tid);
+			break;
+		case IEEE80211_AMPDU_RX_STOP:
+			printk("%s openwifi_ampdu_action: stop RX aggregation. tid %d\n", sdr_compatible_str, params->tid);
+			break;
+		default:
+			return -EOPNOTSUPP;
+	}
 
   return 0;
 }
 
 static const struct ieee80211_ops openwifi_ops = {
-  .tx             = openwifi_tx,
-  .start         = openwifi_start,
-  .stop         = openwifi_stop,
-  .add_interface     = openwifi_add_interface,
-  .remove_interface  = openwifi_remove_interface,
-  .config         = openwifi_config,
-  .set_antenna       = openwifi_set_antenna,
-  .get_antenna       = openwifi_get_antenna,
-  .bss_info_changed  = openwifi_bss_info_changed,
-  .conf_tx       = openwifi_conf_tx,
-  .prepare_multicast = openwifi_prepare_multicast,
-  .configure_filter  = openwifi_configure_filter,
-  .rfkill_poll     = openwifi_rfkill_poll,
-  .get_tsf       = openwifi_get_tsf,
-  .set_tsf       = openwifi_set_tsf,
-  .reset_tsf       = openwifi_reset_tsf,
-  .set_rts_threshold = openwifi_set_rts_threshold,
-  .ampdu_action      = openwifi_ampdu_action,
-  .testmode_cmd     = openwifi_testmode_cmd,
+	.tx			       = openwifi_tx,
+  .wake_tx_queue	   = ieee80211_handle_wake_tx_queue,
+  .add_chanctx = ieee80211_emulate_add_chanctx,
+  .remove_chanctx = ieee80211_emulate_remove_chanctx,
+  .change_chanctx = ieee80211_emulate_change_chanctx,
+  .switch_vif_chanctx = ieee80211_emulate_switch_vif_chanctx,
+	.start			   = openwifi_start,
+	.stop			   = openwifi_stop,
+	.add_interface	   = openwifi_add_interface,
+	.remove_interface  = openwifi_remove_interface,
+	.config			   = openwifi_config,
+	.set_antenna       = openwifi_set_antenna,
+	.get_antenna       = openwifi_get_antenna,
+	.bss_info_changed  = openwifi_bss_info_changed,
+	.conf_tx		   = openwifi_conf_tx,
+	.prepare_multicast = openwifi_prepare_multicast,
+	.configure_filter  = openwifi_configure_filter,
+	.rfkill_poll	   = openwifi_rfkill_poll,
+	.get_tsf		   = openwifi_get_tsf,
+	.set_tsf		   = openwifi_set_tsf,
+	.reset_tsf		   = openwifi_reset_tsf,
+	.set_rts_threshold = openwifi_set_rts_threshold,
+	.ampdu_action      = openwifi_ampdu_action,
+	.testmode_cmd	   = openwifi_testmode_cmd,
 };
 
 static const struct of_device_id openwifi_dev_of_ids[] = {
@@ -2273,7 +2281,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
       err = -ENODEV;
       goto err_free_dev;
     }
-    
+
     priv->ad9361_phy = ad9361_spi_to_phy((struct spi_device*)tmp_dev);
     if (!(priv->ad9361_phy)) {
       printk(KERN_ERR "%s ad9361_spi_to_phy failed\n",sdr_compatible_str);
@@ -2333,7 +2341,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   // //-----------------------------parse the test_mode input--------------------------------
   if (test_mode&1)
     AGGR_ENABLE = true;
-  
+
   // if (test_mode&2)
   //   TX_OFFSET_TUNING_ENABLE = false;
 
@@ -2367,7 +2375,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
     // // try another antenna option
     //priv->rx_intf_cfg = RX_INTF_BW_20MHZ_AT_0MHZ_ANT1;
     //priv->tx_intf_cfg = TX_INTF_BW_20MHZ_AT_N_10MHZ_ANT0;
-    
+
     #if 0
     if (priv->rx_intf_cfg == DDC_BW_20MHZ_AT_N_10MHZ) {
       priv->rx_freq_offset_to_lo_MHz = -10;
@@ -2460,7 +2468,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
   if (test_mode&2)
     priv->band_2GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
-  
+
   if (AGGR_ENABLE) {
     priv->band_2GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
     priv->band_2GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
@@ -2479,7 +2487,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 
   if (test_mode&2)
     priv->band_5GHz.ht_cap.cap = IEEE80211_HT_CAP_SGI_20; //SGI -- short GI seems bring unnecessary stability issue
-  
+
   if (AGGR_ENABLE) {
     priv->band_5GHz.ht_cap.ampdu_factor = IEEE80211_HT_MAX_AMPDU_8K;
     priv->band_5GHz.ht_cap.ampdu_density = IEEE80211_HT_MPDU_DENSITY_2;
@@ -2513,7 +2521,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   dev->extra_tx_headroom = LEN_MPDU_DELIM;
 
   dev->vif_data_size = sizeof(struct openwifi_vif);
-  dev->wiphy->interface_modes = 
+  dev->wiphy->interface_modes =
       BIT(NL80211_IFTYPE_MONITOR)|
       BIT(NL80211_IFTYPE_P2P_GO) |
       BIT(NL80211_IFTYPE_P2P_CLIENT) |
@@ -2608,7 +2616,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
     goto err_free_dev;
 
   priv->stat.stat_enable = 0; // by default disable
-  
+
   for (i=0; i<MAX_NUM_SW_QUEUE; i++) {
     priv->stat.tx_prio_num[i] = 0;
     priv->stat.tx_prio_interrupt_num[i] = 0;
@@ -2714,7 +2722,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   // snprintf(priv->led_name[1], OPENWIFI_LED_MAX_NAME_LEN, "openwifi-%s::assoc", wiphy_name(dev->wiphy));
   // snprintf(priv->led_name[2], OPENWIFI_LED_MAX_NAME_LEN, "openwifi-%s::tx", wiphy_name(dev->wiphy));
   // snprintf(priv->led_name[3], OPENWIFI_LED_MAX_NAME_LEN, "openwifi-%s::rx", wiphy_name(dev->wiphy));
-  
+
   wiphy_info(dev->wiphy, "hwaddr %pm, FPGA %s\n",
        priv->mac_addr, priv->rf->name);
 
@@ -2727,14 +2735,23 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   return err;
 }
 
+#ifdef OPENWRT
 static int openwifi_dev_remove(struct platform_device *pdev)
+#else
+static void openwifi_dev_remove(struct platform_device *pdev)
+#endif
 {
   struct ieee80211_hw *dev = platform_get_drvdata(pdev);
   struct openwifi_priv *priv = dev->priv;
 
   if (!dev) {
     pr_info("%s openwifi_dev_remove: dev %p\n", sdr_compatible_str, (void*)dev);
+
+#ifdef OPENWRT
     return(-1);
+#else
+    return;
+#endif
   }
 
   sysfs_remove_bin_file(&pdev->dev.kobj, &priv->bin_iq);
@@ -2744,7 +2761,10 @@ static int openwifi_dev_remove(struct platform_device *pdev)
   openwifi_rfkill_exit(dev);
   ieee80211_unregister_hw(dev);
   ieee80211_free_hw(dev);
-  return(0);
+
+#ifdef OPENWRT
+  return 0;
+#endif
 }
 
 static struct platform_driver openwifi_dev_driver = {
@@ -2758,3 +2778,5 @@ static struct platform_driver openwifi_dev_driver = {
 };
 
 module_platform_driver(openwifi_dev_driver);
+
+

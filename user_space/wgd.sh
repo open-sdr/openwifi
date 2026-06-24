@@ -49,11 +49,11 @@ download_module () {
 insert_check_module () {
   TARGET_DIR_input="$1"
   MODULE_input="$2"
-  sudo rmmod $MODULE_input
+  rmmod $MODULE_input
   if [[ -n $3 ]]; then
-    (set -x; sudo insmod $TARGET_DIR_input/$MODULE_input.ko test_mode=$3)
+    (set -x; insmod $TARGET_DIR_input/$MODULE_input.ko test_mode=$3)
   else
-    (set -x; sudo insmod $TARGET_DIR_input/$MODULE_input.ko)
+    (set -x; insmod $TARGET_DIR_input/$MODULE_input.ko)
   fi
 
   checkModule $MODULE_input
@@ -64,20 +64,37 @@ insert_check_module () {
 
 print_usage
 
-# # now ad9361 driver is together with kernel. no need to load it.
-# insmod ad9361_drv.ko
+if [ -f /etc/openwrt_release ]; then
+  IS_OPENWRT="true"
+else
+  IS_OPENWRT="false"
+fi
 
-sudo insmod xilinx_dma.ko
+
+if [ "$IS_OPENWRT" = "true" ]; then
+  # These modules are missing in OpenWrt but are present by default in ADI Kuiper
+  echo "OpenWrt detected, installing ADI specific kernel modules..."
+  insmod cf_axi_dds_drv.ko
+  insmod cf_axi_adc.ko
+
+  # For OpenWrt, OpenWiFi kernel modules are packed in the image under /lib/modules/$kernel_version
+  kernel_version=$(uname -r)
+  TARGET_DIR=/lib/modules/$kernel_version
+else
+  TARGET_DIR=.
+fi
+
+insmod ad9361_drv.ko
+insmod xilinx_dma.ko
 # modprobe ad9361_drv
 # modprobe xilinx_dma
-sudo modprobe mac80211
-sudo lsmod
+modprobe mac80211
+lsmod
 
-TARGET_DIR=./
 DOWNLOAD_FLAG=0
 test_mode=0
 
-if [[ -n $1 ]]; then
+if [[ -n "$1" ]]; then
   re='^[0-9]+$'
   if ! [[ $1 =~ $re ]] ; then # not a number
     if [ "$1" == "remote" ]; then
@@ -135,25 +152,26 @@ fi
 echo " "
 
 killall hostapd
-sudo service dhcpcd stop #dhcp client. it will get secondary ip for sdr0 which causes trouble
+service dhcpcd stop #dhcp client. it will get secondary ip for sdr0 which causes trouble
 killall dhcpd 
 killall wpa_supplicant
 #service network-manager stop
-sudo ifconfig sdr0 down
+ifconfig sdr0 down
 
-sudo rmmod sdr
+rmmod sdr
 
 if [ $DOWNLOAD_FLAG -eq 1 ]; then
   download_module fpga $TARGET_DIR
 fi
 
 if [ -f "$TARGET_DIR/system_top.bit.bin" ]; then
-  sudo ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
+  ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
 else
   echo $TARGET_DIR/system_top.bit.bin not found. Skip reloading FPGA.
-  # sudo ./load_fpga_img.sh fjdo349ujtrueugjhj
+  # ./load_fpga_img.sh fjdo349ujtrueugjhj
 fi
 
+sleep 2
 ./rf_init_11n.sh
 
 MODULE_ALL="tx_intf rx_intf openofdm_tx openofdm_rx xpu sdr"

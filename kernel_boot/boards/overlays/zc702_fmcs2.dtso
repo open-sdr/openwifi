@@ -1,0 +1,130 @@
+/dts-v1/;
+/plugin/;
+
+/{
+    // Add board specific clocks
+    fragment@0{
+        target = <&clocks>;
+        __overlay__{
+            clk_40M_fixed: clock@0 {
+                #clock-cells = <0x0>;
+                compatible = "fixed-clock";
+                clock-frequency = <40000000>;
+                clock-output-names = "ad9361_ext_refclk";
+            };
+        };
+    };
+
+    // Set clock in ad9361_phy
+    fragment@1{
+        target = <&ad9361_phy>;
+        __overlay__{
+            clocks = <&clk_40M_fixed 0x0>;
+            adi,dcxo-coarse-and-fine-tune = <0x8 0x1720>;
+        };
+    };
+
+    fragment@2{
+        target-path = "/";
+        __overlay__{
+            leds {
+          		compatible = "gpio-leds";
+
+          		ds12 {
+          			label = "ds12:green";
+          			gpios = <&gpio0 0x08 0x00>;
+          		};
+
+          		ds15 {
+          			label = "ds15:green";
+          			gpios = <&gpio0 0x3a 0x00>;
+          		};
+
+          		ds16 {
+          			label = "ds16:green";
+          			gpios = <&gpio0 0x3b 0x00>;
+          		};
+
+          		ds17 {
+          			label = "ds17:green";
+          			gpios = <&gpio0 0x3c 0x00>;
+          		};
+
+          		ds18 {
+          			label = "ds18:green";
+          			gpios = <&gpio0 0x3d 0x00>;
+          		};
+
+          		ds19 {
+          			label = "ds19:green";
+          			gpios = <&gpio0 0x3e 0x00>;
+          		};
+
+          		ds20 {
+          			label = "ds20:green";
+          			gpios = <&gpio0 0x3f 0x00>;
+          		};
+
+          		ds21 {
+          			label = "ds21:green";
+          			gpios = <&gpio0 0x40 0x00>;
+          		};
+
+          		ds22 {
+          			label = "ds22:green";
+          			gpios = <&gpio0 0x41 0x00>;
+          		};
+
+          		ds23 {
+          			label = "ds23:green";
+          			gpios = <&gpio0 0x0a 0x00>;
+          		};
+          	};
+
+          	gpio_keys {
+          		compatible = "gpio-keys";
+          		#address-cells = <0x01>;
+          		#size-cells = <0x00>;
+          		autorepeat;
+
+          		sw5 {
+          			label = "Left";
+          			linux,code = <0x69>;
+          			gpios = <&gpio0 0x36 0x00>;
+          		};
+
+          		sw7 {
+          			label = "Right";
+          			linux,code = <0x6a>;
+          			gpios = <&gpio0 0x37 0x00>;
+          		};
+
+          		sw15_0 {
+          			label = "SW15_0";
+          			linux,code = <0x0d>;
+          			linux,input-type = <0x05>;
+          			gpios = <&gpio0 0x38 0x00>;
+          		};
+
+          		sw15_1 {
+          			label = "SW15_1";
+          			linux,code = <0x01>;
+          			linux,input-type = <0x05>;
+          			gpios = <&gpio0 0x39 0x00>;
+          		};
+
+          		sw13 {
+          			label = "Select";
+          			linux,code = <0x1c>;
+          			gpios = <&gpio0 0x0e 0x00>;
+          		};
+
+          		sw14 {
+          			label = "SW14";
+          			linux,code = <0x01>;
+          			gpios = <&gpio0 0x0c 0x00>;
+          		};
+          	};
+        };
+    };
+};

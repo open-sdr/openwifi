@@ -20,6 +20,8 @@
 #include <linux/slab.h>
 #include <linux/clk.h>
 #include <linux/io-64-nonatomic-lo-hi.h>
+#include <linux/types.h>
+#include <linux/platform_device.h>
 
 #include "../hw_def.h"
 
@@ -405,12 +407,12 @@ static int dev_probe(struct platform_device *pdev)
 		return PTR_ERR(base_addr);
 
 	rx_intf_api->io_start = io->start;
-	rx_intf_api->base_addr = (u32)base_addr;
+	rx_intf_api->base_addr = (uintptr_t)base_addr;
 
-	printk("%s dev_probe io start 0x%08x end 0x%08x name %s flags 0x%08x desc 0x%08x\n", rx_intf_compatible_str,io->start,io->end,io->name,(u32)io->flags,(u32)io->desc);
-	printk("%s dev_probe base_addr 0x%08x\n", rx_intf_compatible_str,(u32)base_addr);
-	printk("%s dev_probe rx_intf_driver_api_inst 0x%08x\n", rx_intf_compatible_str, (u32)(&rx_intf_driver_api_inst) );
-	printk("%s dev_probe             rx_intf_api 0x%08x\n", rx_intf_compatible_str, (u32)rx_intf_api);
+	printk("%s dev_probe io start 0x%016llx end 0x%016llx name %s flags 0x%08x desc 0x%08x\n", rx_intf_compatible_str,(long long unsigned)io->start,(long long unsigned)io->end,io->name,(u32)io->flags,(u32)io->desc);
+	printk("%s dev_probe base_addr %p\n", rx_intf_compatible_str, base_addr);
+	printk("%s dev_probe rx_intf_driver_api_inst %p\n", rx_intf_compatible_str, &rx_intf_driver_api_inst);
+	printk("%s dev_probe             rx_intf_api %p\n", rx_intf_compatible_str, rx_intf_api);
 
 	printk("%s dev_probe succeed!\n", rx_intf_compatible_str);
 
@@ -420,16 +422,22 @@ static int dev_probe(struct platform_device *pdev)
 	return err;
 }
 
+#ifdef OPENWRT
 static int dev_remove(struct platform_device *pdev)
+#else
+static void dev_remove(struct platform_device *pdev)
+#endif
 {
 	printk("\n");
 
-	printk("%s dev_remove base_addr 0x%08x\n", rx_intf_compatible_str, (u32)base_addr);
-	printk("%s dev_remove rx_intf_driver_api_inst 0x%08x\n", rx_intf_compatible_str, (u32)(&rx_intf_driver_api_inst) );
-	printk("%s dev_remove             rx_intf_api 0x%08x\n", rx_intf_compatible_str, (u32)rx_intf_api);
+	printk("%s dev_remove base_addr %p\n", rx_intf_compatible_str, base_addr);
+	printk("%s dev_remove rx_intf_driver_api_inst %p\n", rx_intf_compatible_str, &rx_intf_driver_api_inst);
+	printk("%s dev_remove             rx_intf_api %p\n", rx_intf_compatible_str, rx_intf_api);
 
 	printk("%s dev_remove succeed!\n", rx_intf_compatible_str);
+#ifdef OPENWRT
 	return 0;
+#endif
 }
 
 static struct platform_driver dev_driver = {

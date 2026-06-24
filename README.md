@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 - We remain committed to open source, which is our foundation. To access advanced features and dedicated support, consider a **SUBSCRIPTION**. More info on https://openwifi.tech
 
-[[Download img and Quick start](#Download-img-and-Quick-start)] [[known issue](doc/known_issue/notter.md)] [[**Tips for Windows users**](https://github.com/open-sdr/openwifi/discussions/341)]
+[[Download img and Quick start](#Download-img-and-Quick-start)] [[OpenWRT quick start](./doc/img_build_instruction/openwrt/README.md#quick-start-openwifi-ap-using-prebuild-openwrt-image)] [[known issue](doc/known_issue/notter.md)] [[**Tips for Windows users**](https://github.com/open-sdr/openwifi/discussions/341)]
 
 This repository includes Linux driver and software. **openwifi-hw** repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
 
@@ -237,6 +237,7 @@ Since the pre-built SD card image might not have the latest bug-fixes/updates, i
 
 ## Build openwifi Linux image from scratch
 - For the ADI Kuiper image, please check [kuiper.md](./doc/img_build_instruction/kuiper.md)
+- For OpenWrt image, please check [openwrt](./doc/img_build_instruction/openwrt/README.md#creating-an-openwrt-image-with-openwifi-installed-for-a-supported-board)
 
 ## Special note for 11b
 

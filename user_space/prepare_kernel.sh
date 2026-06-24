@@ -1,4 +1,3 @@
-  
 #!/bin/bash
 
 # Author: Xianjun Jiao
@@ -67,6 +66,12 @@ else
   ARCH_NAME="arm"
   CROSS_COMPILE_NAME="arm-linux-gnueabihf-"
   IMAGE_TYPE=uImage
+
+  # Creating uImage requires u-boot-tools package
+  if ! command -v mkimage &>/dev/null; then
+      echo "Error: mkimage not found. Install u-boot-tools." >&2
+      exit 1
+  fi
 fi
 
 home_dir=$(pwd)
@@ -83,11 +88,11 @@ cd $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME
 if false; then
   echo "Reserve for future"
 else
+  # Linux kernel v6.12
   git fetch
-  git checkout 2022_R2
-  git pull origin 2022_R2
-  # git reset --hard 2022_R2
-  git reset --hard c2f371e014f0704be4db02e5014c51ae99477c13 # save this commit for tsn
+  git checkout 2026_R1
+  git pull origin 2026_R1
+  git reset --hard 2026_R1
 fi
 
 source $XILINX_ENV_FILE
@@ -102,7 +107,7 @@ else
     # cp $OPENWIFI_DIR/driver/ad9361/ad9361.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361.c -rf
     # cp $OPENWIFI_DIR/driver/ad9361/ad9361_conv.c $OPENWIFI_DIR/$LINUX_KERNEL_SRC_DIR_NAME/drivers/iio/adc/ad9361_conv.c -rf
     git apply ../kernel_boot/axi_hdmi_crtc.patch
-    git apply ../kernel_boot/ad9361.patch
+    git apply ../kernel_boot/ad9361_v6_12.patch
     git apply ../kernel_boot/ad9361_private.patch
     git apply ../kernel_boot/ad9361_conv.patch
     # #Ignore warning in mac80211 -- NOT necessary for 2022_R2 kernel!

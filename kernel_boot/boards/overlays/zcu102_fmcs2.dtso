@@ -1,0 +1,36 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+   // Add board specific clocks
+   fragment@0{
+       target-path = "/";
+       __overlay__{
+            clocks {
+                clk_40M_fixed: clock@0 {
+                    compatible = "fixed-clock";
+                    clock-frequency = <40000000>;
+                    clock-output-names = "ad9361_ext_refclk";
+                    #clock-cells = <0>;
+                };
+            };
+       };
+   };
+
+   // Set clock in ad9361_phy
+   fragment@1{
+       target = <&ad9361_phy>;
+       __overlay__{
+           clocks = <&clk_40M_fixed 0x0>;
+           adi,dcxo-coarse-and-fine-tune = <0x8 0x1720>;
+       };
+   };
+
+    // Update ethernet compatibility string
+    fragment@2{
+        target = <&gem3>;
+        __overlay__{
+            compatible = "cdns,zynqmp-gem\0cdns,gem";
+        };
+    };
+};

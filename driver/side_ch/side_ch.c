@@ -22,6 +22,7 @@
 #include <linux/io-64-nonatomic-lo-hi.h>
 #include <linux/delay.h>
 #include <linux/dmaengine.h>
+#include <linux/platform_device.h>
 
 #include <net/sock.h>
 #include <linux/netlink.h>
@@ -382,7 +383,7 @@ static int get_side_info(int num_eq, int iq_len) {
 		return(-2);
 
 	side_info_buf_size = num_dma_symbol*8;
-	side_info_buf_dma = dma_map_single(chan_to_ps_dev->dev, side_info_buf, side_info_buf_size, DMA_DEV_TO_MEM);
+	side_info_buf_dma = dma_map_single(chan_to_ps_dev->dev, side_info_buf, side_info_buf_size, DMA_FROM_DEVICE);
 	if (dma_mapping_error(chan_to_ps_dev->dev, side_info_buf_dma)) {
 		printk("%s get_side_info WARNING chan_to_ps_dev DMA mapping error\n", side_ch_compatible_str);
 		return(-3);
@@ -422,11 +423,11 @@ static int get_side_info(int num_eq, int iq_len) {
 		goto err_dst_buf_with_unmap;
 	}
 
-	dma_unmap_single(chan_to_ps_dev->dev, side_info_buf_dma, side_info_buf_size, DMA_DEV_TO_MEM);
+	dma_unmap_single(chan_to_ps_dev->dev, side_info_buf_dma, side_info_buf_size, DMA_FROM_DEVICE);
 	return(side_info_buf_size);
 
 err_dst_buf_with_unmap:
-	dma_unmap_single(chan_to_ps_dev->dev, side_info_buf_dma, side_info_buf_size, DMA_DEV_TO_MEM);
+	dma_unmap_single(chan_to_ps_dev->dev, side_info_buf_dma, side_info_buf_size, DMA_FROM_DEVICE);
 	return(-100);
 }
 
@@ -635,7 +636,11 @@ free_chan_to_ps:
 // 	return err;
 }
 
+#ifdef OPENWRT
 static int dev_remove(struct platform_device *pdev)
+#else
+static void dev_remove(struct platform_device *pdev)
+#endif
 {
 	printk("\n");
 
@@ -661,7 +666,9 @@ static int dev_remove(struct platform_device *pdev)
 	
 	printk("%s dev_remove: base_addr 0x%p\n", side_ch_compatible_str, base_addr);
 	printk("%s dev_remove: succeed!\n", side_ch_compatible_str);
+#ifdef OPENWRT
 	return 0;
+#endif
 }
 
 static struct platform_driver dev_driver = {

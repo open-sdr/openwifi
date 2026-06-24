@@ -5,6 +5,7 @@
 import os
 import sys
 import socket
+import argparse
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
@@ -83,6 +84,16 @@ def parse_iq(iq, iq_len):
 UDP_IP = "192.168.10.1" #Local IP to listen
 UDP_PORT = 4000         #Local port to listen
 
+parser = argparse.ArgumentParser(description='openwifi IQ capture display tool')
+parser.add_argument('iq_len', nargs='?', type=int, default=8187,
+                    help='Number of IQ samples per transfer (default: 8187)')
+parser.add_argument('--ip', default=UDP_IP,
+                    help=f'Local IP to listen on (default: {UDP_IP})')
+args = parser.parse_args()
+
+UDP_IP = args.ip
+iq_len = args.iq_len
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 sock.bind((UDP_IP, UDP_PORT))
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 464) # for low latency. 464 is the minimum udp length in our case (CSI only)
@@ -90,13 +101,13 @@ sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 464) # for low latency. 464
 # align with side_ch_control.v and all related user space, remote files
 MAX_NUM_DMA_SYMBOL = 8192
 
-if len(sys.argv)<2:
+if iq_len == 8187:
     print("Assume iq_len = 8187! (Max UDP 65507 bytes; (65507/8)-1 = 8187)")
-    iq_len = 8187
 else:
-    iq_len = int(sys.argv[1])
     print(iq_len)
     # print(type(num_eq))
+
+print(f"Listening on {UDP_IP}:{UDP_PORT}")
 
 if iq_len>8187:
     iq_len = 8187

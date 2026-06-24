@@ -5,6 +5,7 @@
 import os
 import sys
 import socket
+import argparse
 import numpy as np
 import matplotlib
 matplotlib.use("TkAgg")
@@ -112,6 +113,7 @@ def parse_side_info(side_info, num_eq):
     num_trans = round(len(side_info)/num_int16_per_trans)
     # print(len(side_info), side_info.dtype, num_trans)
     side_info = side_info.reshape([num_trans, num_int16_per_trans])
+    side_info = np.astype(side_info, np.uint64)
     
     timestamp = side_info[:,0] + pow(2,16)*side_info[:,1] + pow(2,32)*side_info[:,2] + pow(2,48)*side_info[:,3]
     
@@ -141,6 +143,18 @@ def parse_side_info(side_info, num_eq):
 UDP_IP = "192.168.10.1" #Local IP to listen
 UDP_PORT = 4000         #Local port to listen
 
+parser = argparse.ArgumentParser(description='openwifi side info display tool')
+parser.add_argument('num_eq', nargs='?', type=int, default=8,
+                    help='Number of equalizer outputs (default: 8)')
+parser.add_argument('waterfall', nargs='?', default=None,
+                    help='Any value enables CSI waterfall plot')
+parser.add_argument('--ip', default=UDP_IP,
+                    help=f'Local IP to listen on (default: {UDP_IP})')
+args = parser.parse_args()
+
+UDP_IP = args.ip
+num_eq = args.num_eq
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 sock.bind((UDP_IP, UDP_PORT))
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 464) # for low latency. 464 is the minimum udp length in our case (CSI only)
@@ -151,20 +165,20 @@ CSI_LEN = 56 # length of single CSI
 EQUALIZER_LEN = (56-4) # for non HT, four {32767,32767} will be padded to achieve 52 (non HT should have 48)
 HEADER_LEN = 2 # timestamp and frequency offset
 
-if len(sys.argv)<2:
+if num_eq == 8:
     print("Assume num_eq = 8!")
-    num_eq = 8
 else:
-    num_eq = int(sys.argv[1])
     print(num_eq)
     # print(type(num_eq))
 
 waterfall_flag = 0
-if len(sys.argv)>2:
+if args.waterfall is not None:
     print("Will plot CSI in waterfall!")
     display_side_info.csi_abs_for_waterfall = np.zeros((64, CSI_LEN))
     display_side_info.csi_phase_for_waterfall = np.zeros((64, CSI_LEN))
     waterfall_flag = 1
+
+print(f"Listening on {UDP_IP}:{UDP_PORT}")
 
 num_dma_symbol_per_trans = HEADER_LEN + CSI_LEN + num_eq*EQUALIZER_LEN
 num_byte_per_trans = 8*num_dma_symbol_per_trans
