@@ -66,6 +66,12 @@ else
   ARCH_NAME="arm"
   CROSS_COMPILE_NAME="arm-linux-gnueabihf-"
   IMAGE_TYPE=uImage
+
+  # Creating uImage requires u-boot-tools package
+  if ! command -v mkimage &>/dev/null; then
+      echo "Error: mkimage not found. Install u-boot-tools." >&2
+      exit 1
+  fi
 fi
 
 home_dir=$(pwd)
