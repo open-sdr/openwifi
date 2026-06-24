@@ -173,7 +173,7 @@ static int dev_probe(struct platform_device *pdev)
 	return err;
 }
 
-#ifdef CONFIG_OPENWRT
+#ifdef OPENWRT
 static int dev_remove(struct platform_device *pdev)
 #else
 static void dev_remove(struct platform_device *pdev)
@@ -186,7 +186,7 @@ static void dev_remove(struct platform_device *pdev)
 	printk("%s dev_remove             openofdm_rx_api %p\n", openofdm_rx_compatible_str, openofdm_rx_api);
 
 	printk("%s dev_remove succeed!\n", openofdm_rx_compatible_str);
-#ifdef CONFIG_OPENWRT
+#ifdef OPENWRT
 	return 0;
 #endif
 }

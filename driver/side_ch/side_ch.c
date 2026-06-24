@@ -636,7 +636,7 @@ free_chan_to_ps:
 // 	return err;
 }
 
-#ifdef CONFIG_OPENWRT
+#ifdef OPENWRT
 static int dev_remove(struct platform_device *pdev)
 #else
 static void dev_remove(struct platform_device *pdev)
@@ -666,7 +666,7 @@ static void dev_remove(struct platform_device *pdev)
 	
 	printk("%s dev_remove: base_addr 0x%p\n", side_ch_compatible_str, base_addr);
 	printk("%s dev_remove: succeed!\n", side_ch_compatible_str);
-#ifdef CONFIG_OPENWRT
+#ifdef OPENWRT
 	return 0;
 #endif
 }

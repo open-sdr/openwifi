@@ -2735,7 +2735,7 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   return err;
 }
 
-#ifdef CONFIG_OPENWRT
+#ifdef OPENWRT
 static int openwifi_dev_remove(struct platform_device *pdev)
 #else
 static void openwifi_dev_remove(struct platform_device *pdev)
@@ -2747,7 +2747,7 @@ static void openwifi_dev_remove(struct platform_device *pdev)
   if (!dev) {
     pr_info("%s openwifi_dev_remove: dev %p\n", sdr_compatible_str, (void*)dev);
 
-#ifdef CONFIG_OPENWRT
+#ifdef OPENWRT
     return(-1);
 #else
     return;
@@ -2762,7 +2762,7 @@ static void openwifi_dev_remove(struct platform_device *pdev)
   ieee80211_unregister_hw(dev);
   ieee80211_free_hw(dev);
 
-#ifdef CONFIG_OPENWRT
+#ifdef OPENWRT
   return 0;
 #endif
 }
