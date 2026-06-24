@@ -130,9 +130,9 @@ As such, the only real prerequisite is **Docker installed** on a Linux machine (
 Vivado installation is **not** required.
 
 ## Cloning the OpenWrt source code
-The OpenWrt v24.10 (Linux kernel v6.6, mac80211 v6.12) source with openwifi support is found [here](https://github.com/open-sdr/openwrt-openwifi).
+The OpenWrt v24.10 (Linux kernel v6.6, mac80211 v6.12) source with openwifi support is found [here](https://github.com/open-sdr/openwrt-openwifi/tree/nlnet).
 ```
-git clone https://github.com/open-sdr/openwrt-openwifi.git
+git clone --branch nlnet https://github.com/open-sdr/openwrt-openwifi.git
 ```
 
 ## Building the container
