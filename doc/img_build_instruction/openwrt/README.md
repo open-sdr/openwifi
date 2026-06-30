@@ -39,7 +39,7 @@ This is the equivalent of the ./fosdem.sh demo used for kuiper but via OpenWrt i
 Instructions to use prebuild OpenWrt image with openwifi support.
 Do note that these images contain the bare minimum for openwifi to run.
 
-Download image for your board [here]() and flash it to SD card using instructions [below](#unzip-image--flash-image).
+Download image for your board [here](https://drive.google.com/drive/folders/1WPYVmLzPUZs_iNVyB7mI0ko44MRxQCDJ) and flash it to SD card using instructions [below](#unzip-image--flash-image).
 
 ## Unzip & flash image
 Flash image to SD card, assuming you downloaded the prebuild image for adrv9364z7020 (if not, beware of the paths).
