@@ -91,8 +91,22 @@ extern struct xpu_driver_api *xpu_api;
 u32 gen_mpdu_crc(u8 *data_in, u32 num_bytes);
 u8 gen_mpdu_delim_crc(u16 m);
 u32 reverse32(u32 d);
+u16 reverse16(u16 d);
+
+u32 log2val(u32 val);
+
+#ifdef OPENWRT
+static int openwifi_set_antenna(struct ieee80211_hw *dev, int radio_idx, u32 tx_ant, u32 rx_ant);
+static int openwifi_get_antenna(struct ieee80211_hw *dev, int radio_idx, u32 *tx_ant, u32 *rx_ant);
+#else
 static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant);
 static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_ant);
+#endif
+
+void openwifi_rfkill_init(struct ieee80211_hw *hw);
+void openwifi_rfkill_poll(struct ieee80211_hw *hw);
+void openwifi_rfkill_exit(struct ieee80211_hw *hw);
+
 int rssi_half_db_to_rssi_dbm(int rssi_half_db, int rssi_correction);
 int rssi_dbm_to_rssi_half_db(int rssi_dbm, int rssi_correction);
 int rssi_correction_lookup_table(u32 freq_MHz);
@@ -1482,7 +1496,7 @@ openwifi_tx_early_out:
   // printk("%s openwifi_tx: WARNING openwifi_tx_early_out phy_tx_sn %d queue %d\n", sdr_compatible_str,priv->phy_tx_sn,queue_idx);
 }
 
-static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant)
+static int openwifi_set_antenna(struct ieee80211_hw *dev, int radio_idx, u32 tx_ant, u32 rx_ant)
 {
   struct openwifi_priv *priv = dev->priv;
   u8 fpga_tx_ant_setting, target_rx_ant;
@@ -1568,7 +1582,7 @@ static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant
 
   return 0;
 }
-static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_ant)
+static int openwifi_get_antenna(struct ieee80211_hw *dev, int radio_idx, u32 *tx_ant, u32 *rx_ant)
 {
   struct openwifi_priv *priv = dev->priv;
 
@@ -1607,7 +1621,11 @@ static int openwifi_start(struct ieee80211_hw *dev)
   priv->drv_xpu_reg_val[DRV_XPU_REG_IDX_GIT_REV] = GIT_REV;*/
 
   //turn on radio
+#ifdef OPENWRT
+  openwifi_set_antenna(dev, 0, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
+#else
   openwifi_set_antenna(dev, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
+#endif
   reg = ad9361_get_tx_atten(priv->ad9361_phy, ((priv->runtime_tx_ant_cfg==1 || priv->runtime_tx_ant_cfg==3)?1:2));
   if (reg == (AD9361_RADIO_ON_TX_ATT+priv->rf_reg_val[RF_TX_REG_IDX_ATT])) {
     priv->rfkill_off = 1;// 0 off, 1 on
@@ -1796,7 +1814,7 @@ static void openwifi_reset_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vi
   printk("%s openwifi_reset_tsf\n", sdr_compatible_str);
 }
 
-static int openwifi_set_rts_threshold(struct ieee80211_hw *hw, u32 value)
+static int openwifi_set_rts_threshold(struct ieee80211_hw *hw, int radio_idx, u32 value)
 {
   printk("%s openwifi_set_rts_threshold WARNING value %d\n", sdr_compatible_str,value);
   return(0);
@@ -1904,7 +1922,7 @@ static void openwifi_remove_interface(struct ieee80211_hw *dev,
   printk("%s openwifi_remove_interface vif idx %d\n", sdr_compatible_str, vif_priv->idx);
 }
 
-static int openwifi_config(struct ieee80211_hw *dev, u32 changed)
+static int openwifi_config(struct ieee80211_hw *dev, int radio_idx, u32 changed)
 {
   struct openwifi_priv *priv = dev->priv;
   struct ieee80211_conf *conf = &dev->conf;
@@ -2409,7 +2427,11 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   priv->rf_reg_val[RF_TX_REG_IDX_ATT] = init_tx_att;
 
   //let's by default turn radio on when probing
+#ifdef OPENWRT
+  err = openwifi_set_antenna(dev, 0, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
+#else
   err = openwifi_set_antenna(dev, priv->runtime_tx_ant_cfg, priv->runtime_rx_ant_cfg);
+#endif
   if (err) {
     printk("%s openwifi_dev_probe: WARNING openwifi_set_antenna FAIL %d\n",sdr_compatible_str, err);
     err = -EIO;
@@ -2735,23 +2757,15 @@ static int openwifi_dev_probe(struct platform_device *pdev)
   return err;
 }
 
-#ifdef OPENWRT
-static int openwifi_dev_remove(struct platform_device *pdev)
-#else
+
 static void openwifi_dev_remove(struct platform_device *pdev)
-#endif
 {
   struct ieee80211_hw *dev = platform_get_drvdata(pdev);
   struct openwifi_priv *priv = dev->priv;
 
   if (!dev) {
     pr_info("%s openwifi_dev_remove: dev %p\n", sdr_compatible_str, (void*)dev);
-
-#ifdef OPENWRT
-    return(-1);
-#else
     return;
-#endif
   }
 
   sysfs_remove_bin_file(&pdev->dev.kobj, &priv->bin_iq);
@@ -2761,10 +2775,6 @@ static void openwifi_dev_remove(struct platform_device *pdev)
   openwifi_rfkill_exit(dev);
   ieee80211_unregister_hw(dev);
   ieee80211_free_hw(dev);
-
-#ifdef OPENWRT
-  return 0;
-#endif
 }
 
 static struct platform_driver openwifi_dev_driver = {
