@@ -71,7 +71,7 @@ Run (first argument is interface with internet access, second one to board):
 If you want to deploy the board, ensure that its ```eth0``` interface is in the **wan** zone and is **DHCP client** instead of DHCP server, the wireless network can be assigned to lan.
 
 ### Extra: Access LuCi, OpenWrt's web interface
-Open the web browser and surf to ```http://192.168.10.122``` on your PC, or to ```http://192.168.13.1``` on a device connected to 'openwrt-openwifi'.
+Open the web browser and surf to ```http://192.168.10.122``` (```http://openwrt.lan``` should work as well) on your PC, or to ```http://192.168.13.1``` on a device connected to 'openwrt-openwifi'.
 The following webpage should appear (first login, by default there is no password set, I recommend to change this for use in actual deployment):
 
 <img src="./img/luci_status_page.png" width="900">
