@@ -132,7 +132,7 @@ Vivado installation is **not** required.
 ## Cloning the OpenWrt source code
 The OpenWrt v25.12.5 (Linux kernel v6.12, mac80211 v6.18) source with openwifi support is found [here](https://github.com/open-sdr/openwrt-openwifi/tree/openwrt-openwifi_v25.12.5).
 ```
-git clone --branch nlnet https://github.com/open-sdr/openwrt-openwifi.git
+git clone --branch openwrt-openwifi_v25.12.5 https://github.com/open-sdr/openwrt-openwifi.git
 ```
 
 ## Building the container
