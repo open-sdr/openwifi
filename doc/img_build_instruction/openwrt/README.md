@@ -41,6 +41,8 @@ Do note that these images contain the bare minimum for openwifi to run.
 
 Download image for your board [here](https://drive.google.com/drive/folders/1WPYVmLzPUZs_iNVyB7mI0ko44MRxQCDJ) and flash it to SD card using instructions [below](#unzip-image--flash-image).
 
+(Want to recreate these images? Go [here](#recreate-prebuild-images).)
+
 ## Unzip & flash image
 Flash image to SD card, assuming you downloaded the prebuild image for adrv9364z7020 (if not, beware of the paths).
 
@@ -208,6 +210,16 @@ See [Unzip & flash image](#unzip--flash-image) (mind the different paths).
 
 
 # Tips and tricks for openwifi on OpenWrt
+
+## Recreate prebuild images
+Follow [Creating an OpenWrt image with openwifi installed for a supported board](#creating-an-openwrt-image-with-openwifi-installed-for-a-supported-board) until [Update package feeds](#update-package-feeds).
+
+To build all images, run (this may take a while):
+```
+./build_all_images.sh
+```
+
+The generated images are found under ```./output_images```.
 
 ## Using userspace tools
 The openwifi kernel package inside the openwifi packages feed for OpenWrt does the following:
