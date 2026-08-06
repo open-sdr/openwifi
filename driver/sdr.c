@@ -1496,7 +1496,11 @@ openwifi_tx_early_out:
   // printk("%s openwifi_tx: WARNING openwifi_tx_early_out phy_tx_sn %d queue %d\n", sdr_compatible_str,priv->phy_tx_sn,queue_idx);
 }
 
+#ifdef OPENWRT
 static int openwifi_set_antenna(struct ieee80211_hw *dev, int radio_idx, u32 tx_ant, u32 rx_ant)
+#else
+static int openwifi_set_antenna(struct ieee80211_hw *dev, u32 tx_ant, u32 rx_ant)
+#endif
 {
   struct openwifi_priv *priv = dev->priv;
   u8 fpga_tx_ant_setting, target_rx_ant;
@@ -1582,7 +1586,11 @@ static int openwifi_set_antenna(struct ieee80211_hw *dev, int radio_idx, u32 tx_
 
   return 0;
 }
+#ifdef OPENWRT
 static int openwifi_get_antenna(struct ieee80211_hw *dev, int radio_idx, u32 *tx_ant, u32 *rx_ant)
+#else
+static int openwifi_get_antenna(struct ieee80211_hw *dev, u32 *tx_ant, u32 *rx_ant)
+#endif
 {
   struct openwifi_priv *priv = dev->priv;
 
@@ -1814,7 +1822,11 @@ static void openwifi_reset_tsf(struct ieee80211_hw *hw, struct ieee80211_vif *vi
   printk("%s openwifi_reset_tsf\n", sdr_compatible_str);
 }
 
+#ifdef OPENWRT
 static int openwifi_set_rts_threshold(struct ieee80211_hw *hw, int radio_idx, u32 value)
+#else
+static int openwifi_set_rts_threshold(struct ieee80211_hw *hw, u32 value)
+#endif
 {
   printk("%s openwifi_set_rts_threshold WARNING value %d\n", sdr_compatible_str,value);
   return(0);
@@ -1922,7 +1934,11 @@ static void openwifi_remove_interface(struct ieee80211_hw *dev,
   printk("%s openwifi_remove_interface vif idx %d\n", sdr_compatible_str, vif_priv->idx);
 }
 
+#ifdef OPENWRT
 static int openwifi_config(struct ieee80211_hw *dev, int radio_idx, u32 changed)
+#else
+static int openwifi_config(struct ieee80211_hw *dev, u32 changed)
+#endif
 {
   struct openwifi_priv *priv = dev->priv;
   struct ieee80211_conf *conf = &dev->conf;
@@ -2761,12 +2777,14 @@ static int openwifi_dev_probe(struct platform_device *pdev)
 static void openwifi_dev_remove(struct platform_device *pdev)
 {
   struct ieee80211_hw *dev = platform_get_drvdata(pdev);
-  struct openwifi_priv *priv = dev->priv;
+  struct openwifi_priv *priv;
 
   if (!dev) {
     pr_info("%s openwifi_dev_remove: dev %p\n", sdr_compatible_str, (void*)dev);
     return;
   }
+
+  priv = dev->priv;
 
   sysfs_remove_bin_file(&pdev->dev.kobj, &priv->bin_iq);
   sysfs_remove_group(&pdev->dev.kobj, &tx_intf_attribute_group);
