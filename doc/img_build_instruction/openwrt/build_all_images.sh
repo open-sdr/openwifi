@@ -9,7 +9,9 @@ MAKE_FLAGS="V=sc"
 
 mkdir -p "$OUTPUT_DIR"
 
+shopt -s nullglob
 configs=("$CONFIGS_DIR"/*_defconfig)
+shopt -u nullglob
 if [[ ${#configs[@]} -eq 0 ]]; then
     echo "No *_defconfig files found in $CONFIGS_DIR"
     exit 1
