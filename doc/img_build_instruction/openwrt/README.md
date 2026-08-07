@@ -41,6 +41,8 @@ Do note that these images contain the bare minimum for openwifi to run.
 
 Download image for your board [here](https://drive.google.com/drive/folders/1WPYVmLzPUZs_iNVyB7mI0ko44MRxQCDJ) and flash it to SD card using instructions [below](#unzip-image--flash-image).
 
+(Want to recreate these images? Go [here](#recreate-prebuild-images).)
+
 ## Unzip & flash image
 Flash image to SD card, assuming you downloaded the prebuild image for adrv9364z7020 (if not, beware of the paths).
 
@@ -71,7 +73,7 @@ Run (first argument is interface with internet access, second one to board):
 If you want to deploy the board, ensure that its ```eth0``` interface is in the **wan** zone and is **DHCP client** instead of DHCP server, the wireless network can be assigned to lan.
 
 ### Extra: Access LuCi, OpenWrt's web interface
-Open the web browser and surf to ```http://192.168.10.122``` on your PC, or to ```http://192.168.13.1``` on a device connected to 'openwrt-openwifi'.
+Open the web browser and surf to ```http://192.168.10.122``` (```http://openwrt.lan``` should work as well) on your PC, or to ```http://192.168.13.1``` on a device connected to 'openwrt-openwifi'.
 The following webpage should appear (first login, by default there is no password set, I recommend to change this for use in actual deployment):
 
 <img src="./img/luci_status_page.png" width="900">
@@ -130,9 +132,9 @@ As such, the only real prerequisite is **Docker installed** on a Linux machine (
 Vivado installation is **not** required.
 
 ## Cloning the OpenWrt source code
-The OpenWrt v24.10 (Linux kernel v6.6, mac80211 v6.12) source with openwifi support is found [here](https://github.com/open-sdr/openwrt-openwifi/tree/nlnet).
+The OpenWrt v25.12.5 (Linux kernel v6.12, mac80211 v6.18) source with openwifi support is found [here](https://github.com/open-sdr/openwrt-openwifi/tree/openwrt-openwifi_v25.12.5).
 ```
-git clone --branch nlnet https://github.com/open-sdr/openwrt-openwifi.git
+git clone --branch openwrt-openwifi_v25.12.5 https://github.com/open-sdr/openwrt-openwifi.git
 ```
 
 ## Building the container
@@ -208,6 +210,16 @@ See [Unzip & flash image](#unzip--flash-image) (mind the different paths).
 
 
 # Tips and tricks for openwifi on OpenWrt
+
+## Recreate prebuild images
+Follow [Creating an OpenWrt image with openwifi installed for a supported board](#creating-an-openwrt-image-with-openwifi-installed-for-a-supported-board) until [Update package feeds](#update-package-feeds).
+
+To build all images, run (this may take a while):
+```
+./build_all_images.sh
+```
+
+The generated images are found under ```./output_images```.
 
 ## Using userspace tools
 The openwifi kernel package inside the openwifi packages feed for OpenWrt does the following:

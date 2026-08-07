@@ -422,11 +422,8 @@ static int dev_probe(struct platform_device *pdev)
 	return err;
 }
 
-#ifdef OPENWRT
-static int dev_remove(struct platform_device *pdev)
-#else
+
 static void dev_remove(struct platform_device *pdev)
-#endif
 {
 	printk("\n");
 
@@ -435,9 +432,6 @@ static void dev_remove(struct platform_device *pdev)
 	printk("%s dev_remove             rx_intf_api %p\n", rx_intf_compatible_str, rx_intf_api);
 
 	printk("%s dev_remove succeed!\n", rx_intf_compatible_str);
-#ifdef OPENWRT
-	return 0;
-#endif
 }
 
 static struct platform_driver dev_driver = {

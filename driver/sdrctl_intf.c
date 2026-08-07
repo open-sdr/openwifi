@@ -300,7 +300,11 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
     else if (reg_cat==SDRCTL_REG_CAT_DRV_RX) {
       if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
         if (reg_addr_idx==DRV_RX_REG_IDX_ANT_CFG) {
+#ifdef OPENWRT
+          tmp = openwifi_set_antenna(hw, 0, (priv->drv_tx_reg_val[reg_addr_idx]==0?1:2), (reg_val==0?1:2));
+#else
           tmp = openwifi_set_antenna(hw, (priv->drv_tx_reg_val[reg_addr_idx]==0?1:2), (reg_val==0?1:2));
+#endif
           if (tmp) {
             printk("%s WARNING openwifi_set_antenna return %d!\n", sdr_compatible_str, tmp);
             return -EIO;
@@ -326,7 +330,11 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
           return -EOPNOTSUPP;
         } else {
           if (reg_addr_idx==DRV_TX_REG_IDX_ANT_CFG) {
+#ifdef OPENWRT
+            tmp = openwifi_set_antenna(hw, 0, reg_val+1, priv->drv_rx_reg_val[reg_addr_idx]+1);
+#else
             tmp = openwifi_set_antenna(hw, reg_val+1, priv->drv_rx_reg_val[reg_addr_idx]+1);
+#endif
             if (tmp) {
               printk("%s WARNING openwifi_set_antenna return %d!\n", sdr_compatible_str, tmp);
               return -EIO;
@@ -401,7 +409,11 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
       if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
         tmp = priv->drv_rx_reg_val[reg_addr_idx];
         if (reg_addr_idx==DRV_RX_REG_IDX_ANT_CFG)
+#ifdef OPENWRT
+          openwifi_get_antenna(hw, 0, &tsft_high, &tsft_low);
+#else
           openwifi_get_antenna(hw, &tsft_high, &tsft_low);
+#endif
       } else {
         printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
         return -EOPNOTSUPP;
@@ -411,7 +423,11 @@ static int openwifi_testmode_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *
       if (reg_addr_idx>=0 && reg_addr_idx<MAX_NUM_DRV_REG) {
         tmp = priv->drv_tx_reg_val[reg_addr_idx];
         if (reg_addr_idx==DRV_TX_REG_IDX_ANT_CFG)
+#ifdef OPENWRT
+          openwifi_get_antenna(hw, 0, &tsft_high, &tsft_low);
+#else
           openwifi_get_antenna(hw, &tsft_high, &tsft_low);
+#endif
       } else {
         printk("%s WARNING reg_addr_idx %d is out of range!\n", sdr_compatible_str, reg_addr_idx);
         return -EOPNOTSUPP;
