@@ -16,6 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 This repository includes Linux driver and software. **openwifi-hw** repository has the FPGA design. It is **YOUR RESPONSIBILITY** to follow your **LOCAL SPECTRUM REGULATION** or use **CABLE** to avoid potential interference over the air.
 
 [[Project document](doc/README.md)]
+[[WiKi](https://thomas-montano.github.io/OpenWifi-Wiki/)]
 [[Application notes](doc/app_notes/README.md)]
 [[Videos](doc/videos.md)]
 [[Publications and How to Cite](doc/publications.md)]
