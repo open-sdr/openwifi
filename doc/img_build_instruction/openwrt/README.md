@@ -216,7 +216,18 @@ Follow [Creating an OpenWrt image with openwifi installed for a supported board]
 
 To build all images, run (this may take a while):
 ```
-./build_all_images.sh
+./build_images.sh
+```
+
+To build only specific boards, pass their names (matching the
+`configs/<board>_defconfig` files):
+```
+./build_images.sh zed_fmcs2 zc706_fmcs2
+```
+
+To build a single board directly:
+```
+./build_image_for_board.sh zed_fmcs2
 ```
 
 The generated images are found under ```./output_images```.
