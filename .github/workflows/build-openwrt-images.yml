@@ -1,0 +1,297 @@
+name: Build OpenWrt Images
+
+on:
+  push:
+    branches: ["master"]
+    # Version tags trigger a full build. Tag triggers are intentionally not
+    # combined with a paths filter: GitHub applies paths filtering to tag
+    # pushes too, which would skip tags whose commit doesn't touch those paths.
+    tags:
+      - "openwrt-openwifi_v*"
+  pull_request:
+    branches: ["master"]
+    types: [opened, reopened, synchronize, labeled]
+  workflow_dispatch:
+
+env:
+  # Default openwrt-openwifi ref. Pushing a tag openwrt-openwifi_vX.Y.Z builds
+  # that branch instead (resolved in the gate job).
+  OPENWRT_OPENWIFI_REF: openwrt-openwifi_v25.12.5
+  # Follow whoever runs this workflow: your fork when testing, the upstream org
+  # on PRs/merges. Requires an openwrt-openwifi repo under the same owner.
+  OPENWRT_OPENWIFI_REPO: https://github.com/${{ github.repository_owner }}/openwrt-openwifi.git
+  # Bump this to invalidate all cached toolchains.
+  TOOLCHAIN_CACHE_VERSION: v1
+
+jobs:
+  # Decide whether the (expensive) image build should run. A single workflow
+  # reacts to several situations with OR semantics that the built-in event
+  # filters cannot express together:
+  #   - push of a version tag openwrt-openwifi_v*        -> build
+  #   - manual workflow_dispatch                         -> build
+  #   - push to master touching the openwrt build files  -> build
+  #   - pull request that touches those files OR carries  -> build
+  #     the 'openwrt-version' label
+  gate:
+    name: Decide whether to build
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+      ref: ${{ steps.decide.outputs.ref }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EVENT: ${{ github.event_name }}
+      REF: ${{ github.ref }}
+      REPO: ${{ github.repository }}
+      BEFORE: ${{ github.event.before }}
+      SHA: ${{ github.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      # Untrusted (user-controlled) label names are passed as JSON via env and
+      # parsed with jq, never interpolated into the shell, to avoid injection.
+      PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+      PATHS_REGEX: '^(doc/img_build_instruction/openwrt/|[.]github/workflows/build-openwrt-images[.]yml$)'
+    steps:
+      - name: Decide
+        id: decide
+        run: |
+          set -euo pipefail
+          run=false
+          case "$EVENT" in
+            workflow_dispatch)
+              run=true ;;
+            push)
+              if [[ "$REF" == refs/tags/* ]]; then
+                run=true
+              elif gh api "repos/$REPO/compare/$BEFORE...$SHA" --jq '.files[].filename' \
+                     | grep -qE "$PATHS_REGEX"; then
+                run=true
+              fi ;;
+            pull_request)
+              if printf '%s' "$PR_LABELS" | jq -e 'any(. == "openwrt-version")' >/dev/null; then
+                run=true
+              elif gh api "repos/$REPO/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename' \
+                     | grep -qE "$PATHS_REGEX"; then
+                run=true
+              fi ;;
+          esac
+          # A version tag overrides the pinned default so pushing
+          # openwrt-openwifi_vX.Y.Z builds that openwrt-openwifi branch.
+          if [[ "$REF" == refs/tags/openwrt-openwifi_v* ]]; then
+            resolved_ref="${REF#refs/tags/}"
+          else
+            resolved_ref="$OPENWRT_OPENWIFI_REF"
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          echo "ref=$resolved_ref" >> "$GITHUB_OUTPUT"
+          echo "event=$EVENT ref=$REF -> run=$run openwrt-ref=$resolved_ref"
+
+  # Discover boards from the *_defconfig files. Emits:
+  #   boards   - JSON array of every board name (drives the build matrix)
+  #   prepare  - JSON array of {arch, board}, one representative board per
+  #              target architecture (drives the toolchain-warming matrix)
+  # Fanning boards out into parallel jobs avoids the GitHub Actions 6-hour
+  # per-job limit that a single serial build of all boards would hit.
+  discover:
+    name: Discover boards
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    env:
+      RESOLVED_REF: ${{ needs.gate.outputs.ref }}
+    outputs:
+      boards: ${{ steps.set.outputs.boards }}
+      prepare: ${{ steps.set.outputs.prepare }}
+      ref: ${{ needs.gate.outputs.ref }}
+    steps:
+      - name: Clone openwrt-openwifi
+        run: |
+          git clone --depth 1 --branch "$RESOLVED_REF" \
+            "$OPENWRT_OPENWIFI_REPO" openwrt-openwifi
+
+      - name: Build matrices
+        id: set
+        run: |
+          cd openwrt-openwifi/configs
+          boards=$(ls *_defconfig | sed 's/_defconfig$//' | jq -R . | jq -sc .)
+          echo "boards=$boards" >> "$GITHUB_OUTPUT"
+          echo "Boards: $boards"
+
+          # One representative board per target architecture. All boards of the
+          # same arch share an identical toolchain, so it only needs building
+          # once.
+          declare -A rep
+          for f in *_defconfig; do
+            board="${f%_defconfig}"
+            arch=$(grep -oE 'CONFIG_TARGET_[a-z0-9]+=y' "$f" | head -1 \
+              | sed -E 's/CONFIG_TARGET_(.+)=y/\1/')
+            [[ -n "${rep[$arch]:-}" ]] || rep[$arch]="$board"
+          done
+          prepare=$(for a in "${!rep[@]}"; do
+            printf '{"arch":"%s","board":"%s"}\n' "$a" "${rep[$a]}"
+          done | jq -sc .)
+          echo "prepare=$prepare" >> "$GITHUB_OUTPUT"
+          echo "Prepare: $prepare"
+
+  # Build each distinct toolchain exactly once and store it in the Actions
+  # cache. Board jobs restore this instead of rebuilding the toolchain.
+  prepare:
+    name: Toolchain ${{ matrix.entry.arch }}
+    needs: discover
+    runs-on: ubuntu-latest
+    env:
+      RESOLVED_REF: ${{ needs.discover.outputs.ref }}
+    strategy:
+      fail-fast: false
+      matrix:
+        entry: ${{ fromJson(needs.discover.outputs.prepare) }}
+
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.0
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Checkout openwifi
+        uses: actions/checkout@v4
+
+      - name: Clone openwrt-openwifi
+        run: |
+          git clone --depth 1 --branch "$RESOLVED_REF" \
+            "$OPENWRT_OPENWIFI_REPO" \
+            doc/img_build_instruction/openwrt/openwrt-openwifi
+
+      - name: Toolchain cache
+        uses: actions/cache@v4
+        with:
+          key: openwrt-toolchain-${{ needs.discover.outputs.ref }}-${{ matrix.entry.arch }}-${{ env.TOOLCHAIN_CACHE_VERSION }}
+          path: |
+            doc/img_build_instruction/openwrt/openwrt-openwifi/staging_dir/toolchain-*
+            doc/img_build_instruction/openwrt/openwrt-openwifi/staging_dir/host*
+            doc/img_build_instruction/openwrt/openwrt-openwifi/build_dir/toolchain-*
+            doc/img_build_instruction/openwrt/openwrt-openwifi/build_dir/host*
+
+      - name: Build Docker image
+        working-directory: doc/img_build_instruction/openwrt
+        run: docker build -t openwrt:debian_12 .
+
+      - name: Initialize OpenWrt feeds
+        working-directory: doc/img_build_instruction/openwrt
+        run: |
+          docker run --user "$(id -u):$(id -g)" --rm --ulimit 'nofile=1024:262144' \
+            --volume "$PWD/openwrt-openwifi:/workdir" \
+            --workdir /workdir openwrt:debian_12 /bin/bash -c \
+            "./scripts/feeds update && ./scripts/feeds install -a"
+
+      - name: Build toolchain
+        working-directory: doc/img_build_instruction/openwrt
+        env:
+          BOARD: ${{ matrix.entry.board }}
+        run: |
+          # If the cache already provided the toolchain, make skips the work.
+          docker run --user "$(id -u):$(id -g)" --rm --ulimit 'nofile=1024:262144' \
+            --volume "$PWD/openwrt-openwifi:/workdir" \
+            --workdir /workdir openwrt:debian_12 /bin/bash -c \
+            "cp ./configs/${BOARD}_defconfig .config && make defconfig && \
+             make -j\$(nproc) V=sc tools/install toolchain/install"
+
+  build:
+    name: Build ${{ matrix.board }}
+    needs: [discover, prepare]
+    runs-on: ubuntu-latest
+    env:
+      RESOLVED_REF: ${{ needs.discover.outputs.ref }}
+    # Boards build independently; a failure on one does not abort the others.
+    strategy:
+      fail-fast: false
+      matrix:
+        board: ${{ fromJson(needs.discover.outputs.boards) }}
+
+    steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.0
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Check available disk space
+        run: df -h /
+
+      - name: Checkout openwifi
+        uses: actions/checkout@v4
+
+      - name: Clone openwrt-openwifi
+        run: |
+          git clone --depth 1 --branch "$RESOLVED_REF" \
+            "$OPENWRT_OPENWIFI_REPO" \
+            doc/img_build_instruction/openwrt/openwrt-openwifi
+
+      - name: Point openwifi feed at this owner
+        working-directory: doc/img_build_instruction/openwrt/openwrt-openwifi
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          # OpenWrt uses feeds.conf if present, otherwise feeds.conf.default.
+          feeds_file=feeds.conf
+          [ -f "$feeds_file" ] || feeds_file=feeds.conf.default
+          sed -i -E "s#(src-git openwifi https://github.com/)[^/]+/#\1${OWNER}/#" "$feeds_file"
+          grep '^src-git openwifi' "$feeds_file"
+
+      - name: Determine target architecture
+        id: meta
+        working-directory: doc/img_build_instruction/openwrt/openwrt-openwifi
+        run: |
+          arch=$(grep -oE 'CONFIG_TARGET_[a-z0-9]+=y' \
+            "configs/${{ matrix.board }}_defconfig" | head -1 \
+            | sed -E 's/CONFIG_TARGET_(.+)=y/\1/')
+          echo "arch=$arch" >> "$GITHUB_OUTPUT"
+          echo "Architecture: $arch"
+
+      - name: Restore toolchain cache
+        uses: actions/cache/restore@v4
+        with:
+          key: openwrt-toolchain-${{ needs.discover.outputs.ref }}-${{ steps.meta.outputs.arch }}-${{ env.TOOLCHAIN_CACHE_VERSION }}
+          path: |
+            doc/img_build_instruction/openwrt/openwrt-openwifi/staging_dir/toolchain-*
+            doc/img_build_instruction/openwrt/openwrt-openwifi/staging_dir/host*
+            doc/img_build_instruction/openwrt/openwrt-openwifi/build_dir/toolchain-*
+            doc/img_build_instruction/openwrt/openwrt-openwifi/build_dir/host*
+
+      - name: Build Docker image
+        working-directory: doc/img_build_instruction/openwrt
+        run: docker build -t openwrt:debian_12 .
+
+      - name: Initialize OpenWrt feeds
+        working-directory: doc/img_build_instruction/openwrt
+        run: |
+          docker run --user "$(id -u):$(id -g)" --rm --ulimit 'nofile=1024:262144' \
+            --volume "$PWD/openwrt-openwifi:/workdir" \
+            --workdir /workdir openwrt:debian_12 /bin/bash -c \
+            "./scripts/feeds update && ./scripts/feeds install -a"
+
+      - name: Build image
+        working-directory: doc/img_build_instruction/openwrt
+        env:
+          OPENWIFI_GITHUB_OWNER: ${{ github.repository_owner }}
+        run: |
+          bash build_image_for_board.sh "${{ matrix.board }}"
+          # Show disk usage after the build
+          df -h /
+
+      - name: Upload images as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwrt-images-${{ matrix.board }}
+          path: doc/img_build_instruction/openwrt/output_images/*.img.gz
+          if-no-files-found: error
+          retention-days: 30
