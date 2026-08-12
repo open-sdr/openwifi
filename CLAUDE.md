@@ -1,46 +1,15 @@
-# Claude Code Notes
+# CLAUDE.md
 
-This repository already contains reusable AI helper guidance under `.github/skills/`.
-Claude Code users should follow the same conventions when suggesting branch names,
-commit messages, and release versions.
+General agent guidance for this repository lives in `AGENTS.md`, the single
+source of truth for all coding agents. It is imported below.
 
-## Branch naming
+@AGENTS.md
 
-- Use lowercase conventional branch names like `feature/...`, `fix/...`, `chore/...`, or `release/...`.
-- Use hyphen-separated descriptions.
-- Keep branch names short and purpose-driven.
+## Claude Code specifics
 
-Examples:
-
-- `feature/add-openwrt-ci-cache`
-- `fix/kuiper-driver-build`
-- `chore/update-agent-skills`
-
-See `.github/skills/conventional-branch/SKILL.md` for the full convention.
-
-## Commit messages
-
-- Use Conventional Commits.
-- Prefer forms like `feat: ...`, `fix: ...`, `ci: ...`, `build: ...`, `docs: ...`, or `chore: ...`.
-- Add a scope when it improves clarity, for example `fix(driver): ...`.
-
-Examples:
-
-- `ci: add Kuiper build workflow`
-- `fix(driver): keep legacy ieee80211_ops signatures for adi builds`
-- `docs(openwrt): update build instructions`
-
-See `.github/skills/conventional-commits/SKILL.md` for the full convention.
-
-## Versioning
-
-- Use Semantic Versioning for releases and release planning.
-- Tag names may use a leading `v`, but the version itself should remain `MAJOR.MINOR.PATCH`.
-
-Examples:
-
-- `1.5.0`
-- `2.0.0-rc.1`
-- `git tag v1.5.0`
-
-See `.github/skills/semantic-versioning/SKILL.md` for the full convention.
+- `AGENTS.md` above is the whole contract: follow those conventions whenever the
+  user asks you to branch, commit, tag, or open a pull request.
+- The detailed, conditionally loaded convention skills currently live under
+  `.github/skills/` for GitHub Copilot. Their essentials are always-on here via
+  the `AGENTS.md` import. To expose them to Claude Code as conditional skills,
+  mirror them under `.claude/skills/`.
