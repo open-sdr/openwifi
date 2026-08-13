@@ -1,0 +1,6 @@
+diff --git a/drivers/iio/adc/ad9361.h b/drivers/iio/adc/ad9361.h
+--- a/drivers/iio/adc/ad9361.h
++++ b/drivers/iio/adc/ad9361.h
+@@ -144 +144 @@ struct ad9361_rf_phy {
+-	struct ad9361_debugfs_entry debugfs_entry[182];
++	struct ad9361_debugfs_entry debugfs_entry[183];

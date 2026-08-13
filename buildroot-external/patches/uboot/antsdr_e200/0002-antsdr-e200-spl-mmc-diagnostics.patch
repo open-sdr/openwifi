@@ -1,0 +1,223 @@
+From 0000000000000000000000000000000000000002 Mon Sep 17 00:00:00 2001
+From: OpenWiFi Buildroot <openwifi@localhost>
+Date: Tue, 11 Aug 2026 20:00:00 +0800
+Subject: [PATCH] zynq: add ANTSDR E200 SPL MMC diagnostics
+
+The ANTSDR E200 currently resets while entering the SPL MMC loader.  Make
+each early operation visible and give the UART FIFO enough time to drain
+before the next operation.  Also report and stop a PS watchdog left enabled
+by an earlier boot stage, since such a reset otherwise looks exactly like an
+MMC crash.
+
+This is intentionally an SPL-only bring-up aid.  U-Boot proper is unchanged.
+---
+ arch/arm/mach-zynq/spl.c | 16 ++++++++++++++++
+ common/spl/spl_mmc.c     | 25 +++++++++++++++++++++++++
+ drivers/mmc/zynq_sdhci.c | 26 +++++++++++++++++++++++++-
+ 3 files changed, 67 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-zynq/spl.c b/arch/arm/mach-zynq/spl.c
+index 5b86b23f7e..ec46e9c0e4 100644
+--- a/arch/arm/mach-zynq/spl.c
++++ b/arch/arm/mach-zynq/spl.c
+@@ -17,6 +17,12 @@
+ #include <asm/arch/sys_proto.h>
+ #include <asm/arch/ps7_init_gpl.h>
+ 
++#define ZYNQ_SWDT_ZMR		((void __iomem *)0xf8005000)
++#define ZYNQ_SWDT_ZMR_WDEN	BIT(0)
++#define ZYNQ_SWDT_ZMR_ZKEY	0x00abc000
++
++static u32 spl_reboot_status;
++
+ #if defined(CONFIG_DEBUG_UART_BOARD_INIT)
+ void board_debug_uart_init(void)
+ {
+@@ -35,6 +41,16 @@ void board_init_f(ulong dummy)
+ void spl_board_init(void)
+ {
+ 	preloader_console_init();
++	/* Read this before later code has a chance to alter the reset cause. */
++	spl_reboot_status = readl(&slcr_base->reboot_status);
++	printf("[SPL] reset_status=%08x swdt_zmr=%08x\n",
++	       spl_reboot_status, readl(ZYNQ_SWDT_ZMR));
++	udelay(20000);
++	if (readl(ZYNQ_SWDT_ZMR) & ZYNQ_SWDT_ZMR_WDEN) {
++		writel(ZYNQ_SWDT_ZMR_ZKEY, ZYNQ_SWDT_ZMR);
++		puts("[SPL] PS watchdog disabled\n");
++		udelay(20000);
++	}
+ #if defined(CONFIG_ARCH_EARLY_INIT_R) && defined(CONFIG_SPL_FPGA)
+ 	arch_early_init_r();
+ #endif
+diff --git a/common/spl/spl_mmc.c b/common/spl/spl_mmc.c
+index 3b83f23e75..d5280bbab0 100644
+--- a/common/spl/spl_mmc.c
++++ b/common/spl/spl_mmc.c
+@@ -17,6 +17,20 @@
+ #include <image.h>
+ #include <imx_container.h>
+ 
++#ifdef CONFIG_ARCH_ZYNQ
++#define SPL_MMC_TRACE(_msg) do { \
++	puts("[SPL MMC] " _msg "\n"); \
++	udelay(20000); \
++} while (0)
++#define SPL_MMC_TRACE_RET(_msg, _ret) do { \
++	printf("[SPL MMC] " _msg " ret=%d\n", (_ret)); \
++	udelay(20000); \
++} while (0)
++#else
++#define SPL_MMC_TRACE(_msg) do { } while (0)
++#define SPL_MMC_TRACE_RET(_msg, _ret) do { } while (0)
++#endif
++
+ static int mmc_load_legacy(struct spl_image_info *spl_image,
+ 			   struct spl_boot_device *bootdev,
+ 			   struct mmc *mmc,
+@@ -163,11 +177,13 @@ static int spl_mmc_find_device(struct mmc **mmcp, u32 boot_device)
+ 	if (mmc_dev < 0)
+ 		return mmc_dev;
+ 
++	SPL_MMC_TRACE("find: before mmc_init_device");
+ #if CONFIG_IS_ENABLED(DM_MMC)
+ 	err = mmc_init_device(mmc_dev);
+ #else
+ 	err = mmc_initialize(NULL);
+ #endif /* DM_MMC */
++	SPL_MMC_TRACE_RET("find: mmc_init_device", err);
+ 	if (err) {
+ #ifdef CONFIG_SPL_LIBCOMMON_SUPPORT
+ 		printf("spl: could not initialize mmc. error: %d\n", err);
+@@ -175,6 +191,8 @@ static int spl_mmc_find_device(struct mmc **mmcp, u32 boot_device)
+ 		return err;
+ 	}
++	SPL_MMC_TRACE("find: before find_mmc_device");
+ 	*mmcp = find_mmc_device(mmc_dev);
++	SPL_MMC_TRACE("find: after find_mmc_device");
+ 	err = *mmcp ? 0 : -ENODEV;
+ 	if (err) {
+ #ifdef CONFIG_SPL_LIBCOMMON_SUPPORT
+@@ -293,6 +313,7 @@ static int spl_mmc_do_fs_boot(struct spl_image_info *spl_image,
+ {
+ 	int err = -ENOSYS;
+ 
++	SPL_MMC_TRACE("fs: enter");
+ 	__maybe_unused int partition = CONFIG_SYS_MMCSD_FS_BOOT_PARTITION;
+ 
+ #if CONFIG_SYS_MMCSD_FS_BOOT_PARTITION == -1
+@@ -322,8 +343,10 @@ static int spl_mmc_do_fs_boot(struct spl_image_info *spl_image,
+ 	}
+ #ifdef CONFIG_SPL_FS_LOAD_PAYLOAD_NAME
++	SPL_MMC_TRACE("fs: before FAT payload load");
+ 	err = spl_load_image_fat(spl_image, bootdev, mmc_get_blk_desc(mmc),
+ 				 partition,
+ 				 filename);
++	SPL_MMC_TRACE_RET("fs: FAT payload load", err);
+ 	if (!err)
+ 		return err;
+ #endif
+@@ -431,6 +454,7 @@ int spl_mmc_load(struct spl_image_info *spl_image,
+ 	int mmc_dev;
+ 
+ 	/* Perform peripheral init only once for an mmc device */
++	SPL_MMC_TRACE("loader: enter");
+ 	mmc_dev = spl_mmc_get_device_index(bootdev->boot_device);
+ 	if (!mmc || spl_mmc_get_mmc_devnum(mmc) != mmc_dev) {
+ 		err = spl_mmc_find_device(&mmc, bootdev->boot_device);
+@@ -438,7 +462,9 @@ int spl_mmc_load(struct spl_image_info *spl_image,
+ 		if (err)
+ 			return err;
+ 
++		SPL_MMC_TRACE("loader: before card init");
+ 		err = mmc_init(mmc);
++		SPL_MMC_TRACE_RET("loader: card init", err);
+ 		if (err) {
+ 			mmc = NULL;
+ #ifdef CONFIG_SPL_LIBCOMMON_SUPPORT
+@@ -448,6 +474,7 @@ int spl_mmc_load(struct spl_image_info *spl_image,
+ 	}
+ 
+ 	boot_mode = spl_mmc_boot_mode(mmc, bootdev->boot_device);
++	SPL_MMC_TRACE("loader: boot mode selected");
+ 	err = -EINVAL;
+ 	switch (boot_mode) {
+ 	case MMCSD_MODE_EMMCBOOT:
+diff --git a/drivers/mmc/zynq_sdhci.c b/drivers/mmc/zynq_sdhci.c
+index 15fdd6aae2..71e85c7cfb 100644
+--- a/drivers/mmc/zynq_sdhci.c
++++ b/drivers/mmc/zynq_sdhci.c
+@@ -73,6 +73,15 @@
+ #define VERSAL_NET_EMMC_ICLK_PHASE_DDR52_DLL		146
+ #define VERSAL_NET_PHY_CTRL_STRB90_STRB180_VAL		0X77
+ 
++#ifdef CONFIG_SPL_BUILD
++#define ZYNQ_MMC_TRACE(_msg) do { \
++	puts("[SPL SDHCI] " _msg "\n"); \
++	udelay(20000); \
++} while (0)
++#else
++#define ZYNQ_MMC_TRACE(_msg) do { } while (0)
++#endif
++
+ struct arasan_sdhci_clk_data {
+ 	int clk_phase_in[MMC_TIMING_MMC_HS400 + 1];
+ 	int clk_phase_out[MMC_TIMING_MMC_HS400 + 1];
+@@ -1113,6 +1121,7 @@ static int arasan_sdhci_probe(struct udevice *dev)
+ 
+ 	host = priv->host;
+ 
++	ZYNQ_MMC_TRACE("probe: enter");
+ #if defined(CONFIG_ARCH_ZYNQMP) && defined(CONFIG_ZYNQMP_FIRMWARE)
+ 	if (arasan_sdhci_is_compatible(dev, SDHCI_COMPATIBLE_SDHCI_89A)) {
+ 		ret = zynqmp_pm_is_function_supported(PM_IOCTL,
+@@ -1135,6 +1144,7 @@ static int arasan_sdhci_probe(struct udevice *dev)
+ 		dev_err(dev, "failed to get clock\n");
+ 		return ret;
+ 	}
++	ZYNQ_MMC_TRACE("probe: clock acquired");
+ 
+ 	clock = clk_get_rate(&clk);
+ 	if (IS_ERR_VALUE(clock)) {
+@@ -1142,6 +1152,7 @@ static int arasan_sdhci_probe(struct udevice *dev)
+ 		return clock;
+ 	}
+ 
++	ZYNQ_MMC_TRACE("probe: clock rate read");
+ 	dev_dbg(dev, "%s: CLK %ld\n", __func__, clock);
+ 
+ 	ret = clk_enable(&clk);
+@@ -1149,6 +1160,7 @@ static int arasan_sdhci_probe(struct udevice *dev)
+ 		dev_err(dev, "failed to enable clock\n");
+ 		return ret;
+ 	}
++	ZYNQ_MMC_TRACE("probe: clock enabled");
+ 
+ 	host->quirks = SDHCI_QUIRK_WAIT_SEND_CMD |
+ 		       SDHCI_QUIRK_BROKEN_R1B;
+@@ -1171,19 +1183,23 @@ static int arasan_sdhci_probe(struct udevice *dev)
+ 	plat->cfg.f_max = CONFIG_ZYNQ_SDHCI_MAX_FREQ;
+ 
++	ZYNQ_MMC_TRACE("probe: before mmc_of_parse");
+ 	ret = mmc_of_parse(dev, &plat->cfg);
+ 	if (ret)
+ 		return ret;
++	ZYNQ_MMC_TRACE("probe: mmc_of_parse done");
+ 
+ 	host->max_clk = clock;
+ 
+ 	host->mmc = &plat->mmc;
+ 	host->mmc->dev = dev;
+ 	host->mmc->priv = host;
+ 
++	ZYNQ_MMC_TRACE("probe: before sdhci_setup_cfg");
+ 	ret = sdhci_setup_cfg(&plat->cfg, host, plat->cfg.f_max,
+ 			      CONFIG_ZYNQ_SDHCI_MIN_FREQ);
+ 	if (ret)
+ 		return ret;
++	ZYNQ_MMC_TRACE("probe: sdhci_setup_cfg done");
+ 	upriv->mmc = host->mmc;
+ 
+ 	/*
+-- 
+2.43.0

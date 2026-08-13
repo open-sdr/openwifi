@@ -1,0 +1,9 @@
+config BR2_PACKAGE_OPENWIFI
+	bool "openwifi driver and user-space tools"
+	depends on BR2_LINUX_KERNEL
+	select BR2_PACKAGE_BASH
+	select BR2_PACKAGE_LIBNL
+	select BR2_PACKAGE_LIBPCAP
+	help
+	  Build the OpenWiFi mac80211 modules and target-side tools from
+	  the source repository containing this Buildroot external tree.

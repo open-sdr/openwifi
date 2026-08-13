@@ -1,0 +1,3 @@
+#!/bin/sh
+# Compatibility name used by the upstream OpenWiFi fosdem*.sh scripts.
+exec /etc/init.d/S80dhcp-server "$@"

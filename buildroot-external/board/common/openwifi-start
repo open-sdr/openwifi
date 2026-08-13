@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+cd /root/openwifi
+exec ./wgd.sh "$@"

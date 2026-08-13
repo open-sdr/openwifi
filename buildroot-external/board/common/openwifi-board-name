@@ -1,0 +1,9 @@
+#!/bin/sh
+
+model=$(tr -d '\000' </proc/device-tree/model 2>/dev/null || true)
+case "$model" in
+	ANTSDR-E200) echo antsdr_e200 ;;
+	ANTSDR-E310V2) echo e310v2 ;;
+	*ANTSDR-E310*) echo antsdr ;;
+	*) echo unknown ;;
+esac

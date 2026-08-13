@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBAD9361_IIO
+	bool "libad9361-iio"
+	select BR2_PACKAGE_LIBIIO
+	help
+	  Analog Devices AD9361 helper library built on top of libiio.
+
+	  This provides the user-space clock-chain, filter and multi-chip
+	  synchronization helpers used by AD9361 applications.

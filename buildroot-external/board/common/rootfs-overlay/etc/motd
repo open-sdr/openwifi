@@ -1,0 +1,11 @@
+
+                                 _  __ _
+  ___  _ __   ___ _ ____      _(_)/ _(_)
+ / _ \| '_ \ / _ \ '_ \ \ /\ / / | |_| |
+| (_) | |_) |  __/ | | \ V  V /| |  _| |
+ \___/| .__/ \___|_| |_|\_/\_/ |_|_| |_|
+      |_|
+
+Official repository: https://github.com/open-sdr/openwifi
+openwifi: Linux mac80211 compatible full-stack IEEE802.11/Wi-Fi design
+          based on SDR (Software Defined Radio).

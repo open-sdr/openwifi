@@ -1,0 +1,21 @@
+#!/bin/sh
+
+KEY_STORE=/boot/.openwifi/dropbear
+
+case "$1" in
+	start)
+		# On first boot there is no saved identity yet. S50dropbear has generated
+		# it in /var/run; save it once for subsequent boots and system updates.
+		[ -d "${KEY_STORE}" ] && exit 0
+		mount -o remount,rw /boot || exit 1
+		mkdir -p "${KEY_STORE}"
+		for key in /etc/dropbear/dropbear_*_host_key; do
+			[ -f "${key}" ] || continue
+			cp "${key}" "${KEY_STORE}/$(basename "${key}")"
+		done
+		sync
+		mount -o remount,ro /boot
+		;;
+	stop) ;;
+	*) echo "Usage: $0 {start|stop}"; exit 1 ;;
+esac

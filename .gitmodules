@@ -4,3 +4,6 @@
 [submodule "adi-linux-64"]
 	path = adi-linux-64
 	url = https://github.com/analogdevicesinc/linux.git
+[submodule "buildroot"]
+	path = buildroot
+	url = https://gitlab.com/buildroot.org/buildroot.git

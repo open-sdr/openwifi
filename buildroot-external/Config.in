@@ -1,0 +1,38 @@
+menu "OpenWiFi platform"
+
+choice
+	prompt "Target board"
+	optional
+
+config BR2_OPENWIFI_BOARD_ANTSDR_E200
+	bool "ANTSDR-E200"
+
+config BR2_OPENWIFI_BOARD_ANTSDR
+	bool "ANTSDR-E310"
+
+config BR2_OPENWIFI_BOARD_E310V2
+	bool "ANTSDR-E310V2"
+
+endchoice
+
+config BR2_OPENWIFI_MULTI_BOARD
+	bool "Build a shared system image for all supported boards"
+	default y if !BR2_OPENWIFI_BOARD_ANTSDR_E200 && !BR2_OPENWIFI_BOARD_ANTSDR && !BR2_OPENWIFI_BOARD_E310V2
+	help
+	  Build one kernel, module set and root filesystem shared by all
+	  supported Zynq-7000 OpenWiFi boards. Board-specific U-Boot, DTB and
+	  FPGA files are assembled separately by buildroot-build.sh.
+
+config BR2_OPENWIFI_BOARD_NAME
+	string
+	default "antsdr_e200" if BR2_OPENWIFI_BOARD_ANTSDR_E200
+	default "antsdr" if BR2_OPENWIFI_BOARD_ANTSDR
+	default "e310v2" if BR2_OPENWIFI_BOARD_E310V2
+	default "multi" if BR2_OPENWIFI_MULTI_BOARD
+
+endmenu
+
+menu "OpenWiFi packages"
+	source "$BR2_EXTERNAL_OPENWIFI_PATH/package/libad9361-iio/Config.in"
+	source "$BR2_EXTERNAL_OPENWIFI_PATH/package/openwifi/Config.in"
+endmenu

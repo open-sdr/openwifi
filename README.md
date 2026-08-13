@@ -78,6 +78,7 @@ LibreSDR|[Low cost Zynq 7020 + AD9361 board (Unofficial!)](https://github.com/pa
 [[Update Misc Helpers](#Update-Misc-Helpers)]
 
 [[Build openwifi Linux img from scratch](#Build-openwifi-Linux-img-from-scratch)]
+[[Build small Buildroot SD images](doc/img_build_instruction/buildroot/README.md)]
 [[Special note for 11b](#Special-note-for-11b)]
 [[Porting guide](#Porting-guide)]
 [[Project document](doc/README.md)]
@@ -272,4 +273,3 @@ This project is available as open source under the terms of the AGPL 3.0 Or late
 This project received funding through [ORCA project](https://www.orca-project.eu/). ORCA project is funded by the EU's Horizon2020 programme under agreement number 732174.
 
 This project received funding through [NGI Zero Core](https://nlnet.nl/core/), a fund established by [NLnet](https://nlnet.nl/) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu/) program. Learn more at the NLnet project pages: [802.11n feature of openwifi](https://nlnet.nl/project/OpenWifi-80211n/), [openwifi: 802.11a/g/n maturity](https://nlnet.nl/project/OpenWifi-maturity/), [Extensive openwifi support for OpenWRT](https://nlnet.nl/project/OpenWifi-OpenWRT/)
-

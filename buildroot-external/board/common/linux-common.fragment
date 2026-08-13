@@ -1,0 +1,8 @@
+# The console and earlycon UART are selected by each board's DT and bootargs.
+# A fixed DEBUG_LL UART would make one common kernel unsafe for the other UART.
+# CONFIG_DEBUG_LL is not set
+
+# The complete system updater replaces the active ext4 partition and must be
+# able to reboot without loading another executable from that partition.
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE=0x0
