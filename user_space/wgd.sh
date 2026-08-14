@@ -16,7 +16,72 @@ print_usage () {
   echo "  - 2nd argument (if exist) is the value for test_mode"
   echo "  1st argument: a .tar.gz file, it will be unpacked then load from that unpacked directory"
   echo "  - 2nd argument (if exist) is the value for test_mode"
+  echo "  OPENWIFI_RELOAD_FPGA=0/1 can be used to explicitly skip/force FPGA reload."
   echo " "
+}
+
+fpga_rf_chain_ready () {
+  if [ -d /sys/bus/spi/drivers/ad9361/spi0.0 ]; then
+    ADC_DEVNAME="79020000.cf-ad9361-lpc"
+    DDS_DEVNAME="79024000.cf-ad9361-dds-core-lpc"
+  elif [ -d /sys/bus/spi/drivers/ad9361/spi1.0 ]; then
+    ADC_DEVNAME="99020000.cf-ad9361-lpc"
+    DDS_DEVNAME="99024000.cf-ad9361-dds-core-lpc"
+  else
+    return 1
+  fi
+
+  [ -d "/sys/bus/platform/drivers/cf_axi_adc/$ADC_DEVNAME" ] &&
+    [ -d "/sys/bus/platform/drivers/cf_axi_dds/$DDS_DEVNAME" ]
+}
+
+is_buildroot_system () {
+  # This marker and init script are installed only by the OpenWiFi Buildroot
+  # external tree. Keep the historical Kuiper/OpenWrt default of reloading the
+  # local FPGA image, while Buildroot normally keeps the image loaded by U-Boot.
+  [ -f /etc/openwifi-board ] && [ -x /etc/init.d/S02openwifi-board ]
+}
+
+ensure_debugfs () {
+  if ! grep -qs '[[:space:]]/sys/kernel/debug[[:space:]]debugfs[[:space:]]' /proc/mounts; then
+    mkdir -p /sys/kernel/debug
+    if ! mount -t debugfs debugfs /sys/kernel/debug; then
+      echo "ERROR: unable to mount debugfs at /sys/kernel/debug" >&2
+      return 1
+    fi
+  fi
+}
+
+ensure_sdr_interface () {
+  retry_count=0
+
+  while [ "$retry_count" -lt 50 ]; do
+    if [ -e /sys/class/net/sdr0 ]; then
+      return 0
+    fi
+
+    for netdev_path in /sys/class/net/*; do
+      [ -f "$netdev_path/address" ] || continue
+      netdev_name=${netdev_path##*/}
+      netdev_addr=$(cat "$netdev_path/address")
+      case "$netdev_addr" in
+        66:55:44:33:22:*)
+          ip link set dev "$netdev_name" down 2>/dev/null || true
+          if ip link set dev "$netdev_name" name sdr0; then
+            echo "Renamed OpenWiFi interface $netdev_name to sdr0."
+            return 0
+          fi
+          ;;
+      esac
+    done
+
+    sleep 0.1
+    retry_count=$((retry_count + 1))
+  done
+
+  echo "ERROR: OpenWiFi phy was registered but no 66:55:44:33:22:* network interface appeared." >&2
+  iw dev >&2 || true
+  return 1
 }
 
 checkModule () {
@@ -92,6 +157,7 @@ modprobe mac80211
 lsmod
 
 DOWNLOAD_FLAG=0
+EXPLICIT_FPGA_IMAGE=0
 test_mode=0
 
 if [[ -n "$1" ]]; then
@@ -99,6 +165,7 @@ if [[ -n "$1" ]]; then
   if ! [[ $1 =~ $re ]] ; then # not a number
     if [ "$1" == "remote" ]; then
       DOWNLOAD_FLAG=1
+      EXPLICIT_FPGA_IMAGE=1
       if [[ -n $2 ]]; then
         TARGET_DIR=$2
       fi
@@ -107,6 +174,7 @@ if [[ -n "$1" ]]; then
       fi
     else
       if [[ "$1" == *".tar.gz"* ]]; then
+	EXPLICIT_FPGA_IMAGE=1
 	set -x
         tar_gz_filename=$1
         TARGET_DIR=${tar_gz_filename%".tar.gz"}
@@ -117,6 +185,7 @@ if [[ -n "$1" ]]; then
         find $TARGET_DIR/ -name \*.bit.bin -exec cp {} $TARGET_DIR/ \;
 	set +x
       else
+        EXPLICIT_FPGA_IMAGE=1
         TARGET_DIR=$1
       fi
       if [[ -n $2 ]]; then
@@ -165,9 +234,36 @@ if [ $DOWNLOAD_FLAG -eq 1 ]; then
 fi
 
 if [ -f "$TARGET_DIR/system_top.bit.bin" ]; then
-  ./load_fpga_img.sh $TARGET_DIR/system_top.bit.bin
+  RELOAD_FPGA=0
+  case "${OPENWIFI_RELOAD_FPGA:-auto}" in
+    1|yes|true)
+      RELOAD_FPGA=1
+      ;;
+    0|no|false)
+      echo "OPENWIFI_RELOAD_FPGA=${OPENWIFI_RELOAD_FPGA}: skip FPGA reload."
+      ;;
+    auto)
+      if [ "$EXPLICIT_FPGA_IMAGE" -eq 1 ]; then
+        RELOAD_FPGA=1
+      elif is_buildroot_system && fpga_rf_chain_ready; then
+        echo "FPGA, AD9361, DDS and ADC are already initialized; skip duplicate FPGA reload."
+        echo "Set OPENWIFI_RELOAD_FPGA=1 to force a dynamic reload."
+      else
+        echo "Use the historical FPGA reload behavior for this system."
+        RELOAD_FPGA=1
+      fi
+      ;;
+    *)
+      echo "ERROR: OPENWIFI_RELOAD_FPGA must be auto, 0 or 1." >&2
+      exit 1
+      ;;
+  esac
+
+  if [ "$RELOAD_FPGA" -eq 1 ]; then
+    ./load_fpga_img.sh "$TARGET_DIR/system_top.bit.bin" || exit 1
+  fi
 else
-  echo $TARGET_DIR/system_top.bit.bin not found. Skip reloading FPGA.
+  echo "$TARGET_DIR/system_top.bit.bin not found. Skip reloading FPGA."
   # ./load_fpga_img.sh fjdo349ujtrueugjhj
 fi
 
@@ -190,7 +286,9 @@ done
 # [ -e /tmp/check_calib_inf.pid ] && kill -0 $(</tmp/check_calib_inf.pid)
 # ./check_calib_inf.sh
 
-./agc_settings.sh 1
+ensure_sdr_interface || exit 1
+ensure_debugfs || exit 1
+./agc_settings.sh 1 || exit 1
 
 echo the end
 # dmesg

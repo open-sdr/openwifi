@@ -1,0 +1,8 @@
+auto lo
+iface lo inet loopback
+
+# Direct host link used by the upstream OpenWiFi instructions.
+auto eth0
+iface eth0 inet static
+	address 192.168.10.122
+	netmask 255.255.255.0

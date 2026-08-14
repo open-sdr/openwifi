@@ -1,0 +1,45 @@
+# Stable module ABI and a recognizable release name.
+CONFIG_LOCALVERSION="-openwifi"
+# CONFIG_LOCALVERSION_AUTO is not set
+
+# OpenWiFi target boards do not use these large multimedia stacks.
+# CONFIG_MEDIA_SUPPORT is not set
+# CONFIG_DRM is not set
+# CONFIG_SOUND is not set
+
+# Probe PL-side AXI DMA only after U-Boot has configured the FPGA.
+CONFIG_XILINX_DMA=m
+# CONFIG_XILINX_DMATEST is not set
+
+# Load the wireless stack from userspace after the SD rootfs is available.
+CONFIG_CFG80211=m
+CONFIG_MAC80211=m
+
+# Layer-2 mesh routing for OpenWiFi networking experiments. Use the in-tree
+# Linux implementation together with Buildroot's batctl userspace utility;
+# do not also select Buildroot's external batman-adv kernel module.
+CONFIG_BATMAN_ADV=y
+CONFIG_BATMAN_ADV_BLA=y
+CONFIG_BATMAN_ADV_DAT=y
+CONFIG_BATMAN_ADV_MCAST=y
+
+# The upstream development kernel config enables remotely-triggerable
+# mac80211 MLME/HT tracing. It floods a production console with internal BA
+# negotiation messages (including the expected -EOPNOTSUPP result when
+# OpenWiFi aggregation is disabled). Keep debugfs available for diagnostics,
+# but compile out the verbose printk paths selected by the debug menu.
+# CONFIG_MAC80211_DEBUG_MENU is not set
+# CONFIG_MAC80211_VERBOSE_DEBUG is not set
+# CONFIG_MAC80211_MLME_DEBUG is not set
+# CONFIG_MAC80211_STA_DEBUG is not set
+# CONFIG_MAC80211_HT_DEBUG is not set
+# CONFIG_MAC80211_PS_DEBUG is not set
+# CONFIG_MAC80211_DEBUG_COUNTERS is not set
+
+# Use Buildroot's wireless-regdb package.
+# CONFIG_CFG80211_REQUIRE_SIGNED_REGDB is not set
+# CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS is not set
+
+# Keep the deployed image small.
+# CONFIG_DEBUG_INFO is not set
+CONFIG_DEBUG_INFO_NONE=y

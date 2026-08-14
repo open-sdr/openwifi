@@ -1,0 +1,19 @@
+CONFIG_DEFAULT_DEVICE_TREE="devicetree"
+CONFIG_OF_LIST="devicetree"
+CONFIG_CMD_FPGA=y
+CONFIG_FPGA=y
+CONFIG_FPGA_XILINX=y
+CONFIG_FPGA_ZYNQPL=y
+CONFIG_CMD_FS_GENERIC=y
+CONFIG_CMD_FAT=y
+CONFIG_CMD_EXT4=y
+CONFIG_USE_BOOTCOMMAND=y
+CONFIG_BOOTCOMMAND="if mmc dev 0; then if fatload mmc 0:1 0x03000000 uEnv.txt; then env import -t 0x03000000 ${filesize}; if env exists uenvcmd; then run uenvcmd; fi; else echo OpenWiFi: uEnv.txt not found; fi; fi"
+CONFIG_SPL_SHOW_ERRORS=y
+CONFIG_AUTOBOOT_KEYED=y
+CONFIG_AUTOBOOT_FLUSH_STDIN=y
+CONFIG_AUTOBOOT_PROMPT="Autoboot in %d seconds - type stop to abort\n"
+CONFIG_AUTOBOOT_STOP_STR="stop"
+# CONFIG_ENV_IS_IN_FAT is not set
+# CONFIG_ENV_IS_IN_NAND is not set
+# CONFIG_ENV_IS_IN_SPI_FLASH is not set

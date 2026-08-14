@@ -1,0 +1,21 @@
+#!/bin/sh
+
+KEY_STORE=/boot/.openwifi/dropbear
+RUNTIME_DIR=/etc/dropbear
+
+case "$1" in
+	start)
+		# Buildroot normally makes /etc/dropbear a symlink to /var/run/dropbear.
+		# Replace it before S50dropbear runs so that S50 does not discard keys
+		# restored from the persistent BOOT partition.
+		[ ! -L "${RUNTIME_DIR}" ] || rm -f "${RUNTIME_DIR}"
+		mkdir -p "${RUNTIME_DIR}"
+		for key in "${KEY_STORE}"/dropbear_*_host_key; do
+			[ -f "${key}" ] || continue
+			cp "${key}" "${RUNTIME_DIR}/$(basename "${key}")"
+			chmod 0600 "${RUNTIME_DIR}/$(basename "${key}")"
+		done
+		;;
+	stop) ;;
+	*) echo "Usage: $0 {start|stop}"; exit 1 ;;
+esac

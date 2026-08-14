@@ -1,0 +1,49 @@
+#!/bin/sh
+set -eu
+
+# Buildroot's wget backend always supplies "-O output URL".  curl is much
+# more reliable than GnuTLS wget behind the proxy used by the build host, so
+# translate that small, stable interface while ignoring wget-only options.
+output=
+url=
+
+while [ "$#" -gt 0 ]; do
+	case "$1" in
+		-O)
+			[ "$#" -ge 2 ] || exit 2
+			output=$2
+			shift 2
+			;;
+		-t|--tries|--connect-timeout)
+			[ "$#" -ge 2 ] || exit 2
+			shift 2
+			;;
+		-q|-nd|--no-directories|--connect-timeout=*)
+			shift
+			;;
+		-*)
+			echo "curl-wget: unsupported option: $1" >&2
+			exit 2
+			;;
+		*)
+			url=$1
+			shift
+			;;
+	esac
+done
+
+[ -n "${output}" ] && [ -n "${url}" ] || exit 2
+
+# The GNU redirector occasionally selects mirrors that are unreachable from
+# mainland networks.  The canonical GNU host is slower to connect but has
+# proven stable here and serves identical, hash-checked archives.
+case "${url}" in
+	https://ftpmirror.gnu.org/*)
+		url="https://ftp.gnu.org/gnu/${url#https://ftpmirror.gnu.org/}"
+		;;
+esac
+
+exec curl --fail --location --http1.1 \
+	--retry 8 --retry-delay 2 --retry-all-errors \
+	--connect-timeout 15 --speed-time 60 --speed-limit 1024 \
+	--output "${output}" "${url}"

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+case "$1" in
+	start)
+		# Upstream OpenWiFi scripts use this stable path for optional FPGA
+		# hot reloads. Point it at the BOOT partition bitstream.
+		if [ -d /root/openwifi ]; then
+			ln -snf /boot/system_top.bit.bin \
+				/root/openwifi/system_top.bit.bin
+		fi
+		;;
+	stop) ;;
+	*) echo "Usage: $0 {start|stop}"; exit 1 ;;
+esac

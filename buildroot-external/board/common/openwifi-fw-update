@@ -1,0 +1,288 @@
+#!/bin/sh
+set -eu
+set -o pipefail
+
+BOOT_FILES="BOOT.BIN u-boot.img uEnv.txt uImage devicetree.dtb system_top.bit.bin"
+ROOTFS_FILE=rootfs.ext4.gz
+ROOTFS_PARTITION=${OPENWIFI_ROOTFS_PARTITION:-/dev/mmcblk0p2}
+REBOOT_BUSYBOX=/tmp/busybox
+REBOOT_LOADER=/tmp/openwifi-reboot-loader
+WORK_DIR=
+STAGE_DIR=
+RESTORE_BOOT_RO=0
+ARCHIVE_FILE=
+
+usage()
+{
+	cat <<'EOF'
+Usage:
+  openwifi-fw-update status
+  openwifi-fw-update check <firmware.frm>
+  openwifi-fw-update install --reboot <firmware.frm>
+
+The system package updates the complete BOOT partition firmware and the ext4
+root filesystem. Updating the mounted root filesystem requires --reboot and
+the board reboots immediately after the write completes.
+EOF
+}
+
+cleanup()
+{
+	[ -z "${STAGE_DIR}" ] || rm -rf "${STAGE_DIR}"
+	if [ "${RESTORE_BOOT_RO}" -eq 1 ]; then
+		mount -o remount,ro /boot 2>/dev/null || true
+	fi
+	[ -z "${WORK_DIR}" ] || rm -rf "${WORK_DIR}"
+}
+trap cleanup EXIT HUP INT TERM
+
+manifest_value()
+{
+	awk -F= -v wanted="$1" '
+		$1 == wanted { sub(/^[^=]*=/, ""); print; count++ }
+		END { if (count != 1) exit 1 }
+	' "${WORK_DIR}/manifest"
+}
+
+validate_number()
+{
+	case "$1" in *[!0-9]*|'') return 1 ;; esac
+}
+
+validate_sha256()
+{
+	case "$1" in *[!0-9a-f]*|'') return 1 ;; esac
+	[ "${#1}" -eq 64 ]
+}
+
+verify_payload_file()
+{
+	file=$1
+	path="${WORK_DIR}/files/${file}"
+	[ -f "${path}" ] && [ ! -L "${path}" ] || {
+		echo "ERROR: missing firmware file: ${file}" >&2
+		return 1
+	}
+	expected_size=$(manifest_value "file.${file}.size")
+	expected_sha=$(manifest_value "file.${file}.sha256")
+	validate_number "${expected_size}" || {
+		echo "ERROR: invalid size for ${file}" >&2; return 1; }
+	validate_sha256 "${expected_sha}" || {
+		echo "ERROR: invalid SHA-256 for ${file}" >&2; return 1; }
+	actual_size=$(wc -c < "${path}")
+	[ "${actual_size}" = "${expected_size}" ] || {
+		echo "ERROR: size mismatch for ${file}" >&2; return 1; }
+	actual_sha=$(sha256sum "${path}")
+	actual_sha=${actual_sha%% *}
+	[ "${actual_sha}" = "${expected_sha}" ] || {
+		echo "ERROR: SHA-256 mismatch for ${file}" >&2; return 1; }
+}
+
+check_package()
+{
+	package=$1
+	[ -s "${package}" ] || {
+		echo "ERROR: firmware package not found: ${package}" >&2
+		return 1
+	}
+
+	WORK_DIR=$(mktemp -d /tmp/openwifi-fw.XXXXXX)
+	ARCHIVE_FILE="${WORK_DIR}/firmware.tar"
+	gzip -dc "${package}" > "${ARCHIVE_FILE}"
+	tar -tf "${ARCHIVE_FILE}" > "${WORK_DIR}/archive.list"
+	while IFS= read -r entry; do
+		case "${entry}" in
+			manifest|files|files/|files/BOOT.BIN|files/u-boot.img|files/uEnv.txt|\
+			files/uImage|files/devicetree.dtb|files/system_top.bit.bin|\
+			files/rootfs.ext4.gz) ;;
+			*) echo "ERROR: unexpected archive entry: ${entry}" >&2; return 1 ;;
+		esac
+	done < "${WORK_DIR}/archive.list"
+	for entry in manifest files/ files/BOOT.BIN files/u-boot.img \
+		files/uEnv.txt files/uImage files/devicetree.dtb \
+		files/system_top.bit.bin files/rootfs.ext4.gz; do
+		entry_count=$(awk -v wanted="${entry}" \
+			'$0 == wanted { count++ } END { print count + 0 }' \
+			"${WORK_DIR}/archive.list")
+		[ "${entry_count}" -eq 1 ] || {
+			echo "ERROR: missing or duplicate archive entry: ${entry}" >&2
+			return 1
+		}
+	done
+
+	mkdir "${WORK_DIR}/files"
+	tar -xOf "${ARCHIVE_FILE}" manifest > "${WORK_DIR}/manifest"
+	for file in ${BOOT_FILES} ${ROOTFS_FILE}; do
+		tar -xOf "${ARCHIVE_FILE}" "files/${file}" > \
+			"${WORK_DIR}/files/${file}"
+	done
+
+	[ "$(manifest_value format)" = openwifi-zynq-system-v1 ] || {
+		echo "ERROR: unsupported firmware package format" >&2; return 1; }
+	[ "$(manifest_value mode)" = system ] || {
+		echo "ERROR: this updater accepts complete system packages only" >&2
+		return 1
+	}
+	device_board=$(openwifi-board-name)
+	package_board=$(manifest_value board)
+	[ "${device_board}" != unknown ] || {
+		echo "ERROR: unable to identify this board" >&2; return 1; }
+	[ "${package_board}" = "${device_board}" ] || {
+		echo "ERROR: board mismatch: device=${device_board}, package=${package_board}" >&2
+		return 1
+	}
+
+	for file in ${BOOT_FILES} ${ROOTFS_FILE}; do
+		verify_payload_file "${file}"
+	done
+	expected_rootfs_size=$(manifest_value rootfs.uncompressed_size)
+	expected_rootfs_sha=$(manifest_value rootfs.uncompressed_sha256)
+	validate_number "${expected_rootfs_size}" || {
+		echo "ERROR: invalid uncompressed rootfs size" >&2; return 1; }
+	validate_sha256 "${expected_rootfs_sha}" || {
+		echo "ERROR: invalid uncompressed rootfs SHA-256" >&2; return 1; }
+	echo "Verifying complete ext4 root filesystem..."
+	actual_rootfs_size=$(gzip -dc "${WORK_DIR}/files/${ROOTFS_FILE}" | wc -c)
+	[ "${actual_rootfs_size}" = "${expected_rootfs_size}" ] || {
+		echo "ERROR: uncompressed rootfs size mismatch" >&2; return 1; }
+	actual_rootfs_sha=$(gzip -dc "${WORK_DIR}/files/${ROOTFS_FILE}" | sha256sum)
+	actual_rootfs_sha=${actual_rootfs_sha%% *}
+	[ "${actual_rootfs_sha}" = "${expected_rootfs_sha}" ] || {
+		echo "ERROR: uncompressed rootfs SHA-256 mismatch" >&2; return 1; }
+
+	echo "Firmware package is valid"
+	echo "board=${package_board}"
+	echo "mode=system"
+	echo "version=$(manifest_value version)"
+	echo "rootfs_bytes=${expected_rootfs_size}"
+}
+
+rootfs_is_current()
+{
+	root_arg=$(sed -n 's/.*root=\([^ ]*\).*/\1/p' /proc/cmdline | tail -n 1)
+	root_mount=$(awk '$2 == "/" { print $1; exit }' /proc/mounts)
+	[ "${root_arg}" = "${ROOTFS_PARTITION}" ] || \
+		[ "${root_mount}" = "${ROOTFS_PARTITION}" ] || \
+		{ [ "${root_mount}" = /dev/root ] && \
+		  [ "${root_arg}" = "${ROOTFS_PARTITION}" ]; }
+}
+
+install_package()
+{
+	package=$1
+	reboot_after=$2
+	if rootfs_is_current && [ "${reboot_after}" -ne 1 ]; then
+		echo "ERROR: refusing to overwrite the mounted rootfs without --reboot" >&2
+		return 1
+	fi
+	check_package "${package}"
+	[ -b "${ROOTFS_PARTITION}" ] || {
+		echo "ERROR: missing rootfs partition: ${ROOTFS_PARTITION}" >&2
+		return 1
+	}
+	rootfs_bytes=$(manifest_value rootfs.uncompressed_size)
+	partition_sectors=$(cat "/sys/class/block/$(basename "${ROOTFS_PARTITION}")/size")
+	partition_bytes=$((partition_sectors * 512))
+	[ "${rootfs_bytes}" -le "${partition_bytes}" ] || {
+		echo "ERROR: rootfs image is larger than ${ROOTFS_PARTITION}" >&2
+		return 1
+	}
+	if ! mountpoint -q /boot; then mount /boot; fi
+	boot_options=$(awk '$2 == "/boot" { print $4; exit }' /proc/mounts)
+	case ",${boot_options}," in
+		*,ro,*) mount -o remount,rw /boot; RESTORE_BOOT_RO=1 ;;
+	esac
+	[ -w /boot ] || { echo "ERROR: /boot is not writable" >&2; return 1; }
+
+	# Preserve the generated SSH identity outside the rootfs. The new image
+	# restores it before Dropbear starts, so a system update does not look like
+	# a different device to existing SSH clients.
+	mkdir -p /boot/.openwifi/dropbear
+	for key in /etc/dropbear/dropbear_*_host_key; do
+		[ -f "${key}" ] || continue
+		cp "${key}" "/boot/.openwifi/dropbear/$(basename "${key}")"
+	done
+
+	STAGE_DIR="/boot/.openwifi-update.$$"
+	[ ! -e "${STAGE_DIR}" ] || {
+		echo "ERROR: stale staging path exists: ${STAGE_DIR}" >&2; return 1; }
+	mkdir "${STAGE_DIR}"
+	for file in ${BOOT_FILES}; do
+		cp "${WORK_DIR}/files/${file}" "${STAGE_DIR}/${file}"
+	done
+	sync
+	for file in uImage devicetree.dtb system_top.bit.bin uEnv.txt \
+		u-boot.img BOOT.BIN; do
+		mv -f "${STAGE_DIR}/${file}" "/boot/${file}"
+	done
+	rmdir "${STAGE_DIR}"
+	STAGE_DIR=
+	sync
+	if [ "${RESTORE_BOOT_RO}" -eq 1 ]; then
+		mount -o remount,ro /boot
+		RESTORE_BOOT_RO=0
+	fi
+
+	# Stop processes that may write to the old rootfs before replacing it.
+	killall hostapd dhcpd wpa_supplicant iiod 2>/dev/null || true
+
+	# Stage a reboot executable and its musl loader on tmpfs before replacing
+	# the filesystem that contains /sbin/reboot. Invoking BusyBox through the
+	# staged loader remains reliable even on an older kernel without SysRq.
+	cp /bin/busybox "${REBOOT_BUSYBOX}"
+	cp -L /lib/ld-musl-armhf.so.1 "${REBOOT_LOADER}"
+	chmod 0755 "${REBOOT_BUSYBOX}" "${REBOOT_LOADER}"
+	"${REBOOT_LOADER}" "${REBOOT_BUSYBOX}" true
+	sync
+	if rootfs_is_current; then
+		mount -o remount,ro / || {
+			echo "ERROR: could not remount the current rootfs read-only" >&2
+			return 1
+		}
+	fi
+	echo "Writing complete ext4 rootfs to ${ROOTFS_PARTITION}..."
+	gzip -dc "${WORK_DIR}/files/${ROOTFS_FILE}" | \
+		dd of="${ROOTFS_PARTITION}" bs=1M conv=fsync
+	echo "SYSTEM_FIRMWARE_INSTALLED"
+	echo "System firmware installed; rebooting immediately"
+
+	trap - EXIT HUP INT TERM
+	# The production kernel exposes Magic SysRq so shell builtins can ask the
+	# kernel to sync and reboot without loading an executable from the rootfs
+	# that was just replaced. Test the nodes for compatibility with older
+	# deployed kernels, which did not enable CONFIG_MAGIC_SYSRQ.
+	if [ -w /proc/sys/kernel/sysrq ] && [ -w /proc/sysrq-trigger ]; then
+		echo 1 > /proc/sys/kernel/sysrq
+		echo s > /proc/sysrq-trigger
+		echo b > /proc/sysrq-trigger
+	fi
+
+	# Compatibility fallback for an older kernel without Magic SysRq. Both the
+	# executable and its loader were staged on tmpfs before the rootfs write.
+	"${REBOOT_LOADER}" "${REBOOT_BUSYBOX}" reboot -f 2>/dev/null || true
+	echo "ERROR: automatic reboot failed; power-cycle the board now" >&2
+	while :; do :; done
+}
+
+operation=${1:-}
+case "${operation}" in
+	status)
+		[ "$#" -eq 1 ] || { usage >&2; exit 2; }
+		echo "format=openwifi-fw-update-status-v3"
+		echo "board=$(openwifi-board-name)"
+		echo "supported_modes=system"
+		echo "auth=ssh"
+		;;
+	check)
+		[ "$#" -eq 2 ] || { usage >&2; exit 2; }
+		check_package "$2"
+		;;
+	install)
+		shift
+		reboot_after=0
+		if [ "${1:-}" = --reboot ]; then reboot_after=1; shift; fi
+		[ "$#" -eq 1 ] || { usage >&2; exit 2; }
+		install_package "$1" "${reboot_after}"
+		;;
+	*) usage >&2; exit 2 ;;
+esac

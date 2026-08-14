@@ -1,0 +1,8 @@
+# OpenWiFi standard BOOT partition layout
+kernel_image=uImage
+devicetree_image=devicetree.dtb
+bitstream_image=system_top.bit.bin
+kernel_load_address=0x02080000
+devicetree_load_address=0x02000000
+bitstream_load_address=0x04000000
+uenvcmd=echo OpenWiFi: booting @BOARD_LABEL@; if fatload mmc 0:1 ${bitstream_load_address} ${bitstream_image}; then if fpga load 0 ${bitstream_load_address} ${filesize}; then echo OpenWiFi: FPGA configured; if fatload mmc 0:1 ${kernel_load_address} ${kernel_image}; then if fatload mmc 0:1 ${devicetree_load_address} ${devicetree_image}; then setenv bootargs console=@CONSOLE@,115200 earlycon root=/dev/mmcblk0p2 rootwait rw rootfstype=ext4 clk_ignore_unused cpuidle.off=1 ignore_loglevel loglevel=8; bootm ${kernel_load_address} - ${devicetree_load_address}; fi; fi; else echo OpenWiFi: FPGA configuration failed; fi; else echo OpenWiFi: FPGA image not found; fi
