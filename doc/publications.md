@@ -81,6 +81,7 @@ Publications in category:
 - [Ingrid Moerman, et al. Deterministic communications - An end-to-end system point of view (invited presentation). Symposium on Future Network/6G challenges, Future Networks World Forum 2025](http://hdl.handle.net/1854/LU-01K9YE9V3NNKFTBDBW1D09EM6A)
 - [Ingrid Moerman, et al. The role of wireless in end-to-end Deterministic Connected Systems. Plenary talk at Workshop on Communication Networks and Power Systems, 28 Nov. 2025 (WCNPS’25)](http://hdl.handle.net/1854/LU-01KBCXDFS273CRGHB8TZTS8YB8)
 - [Jetmir Haxhibeqiri, et al. Distributed Multi-link Operation (MLO) for Frame Replication in Wireless Time-Sensitive Networking. The 8th International Conference on Advanced Communication Technologies and Networking (CommNet) 2025](https://ieeexplore.ieee.org/abstract/document/11288880)
+- [Pablo Avila-Campos, et al. A Digital Twin-Enabled Management Framework for Low-Latency and Low-Jitter Wireless TSN. IEEE Access (Volume: 14), 05 August 2026](https://ieeexplore.ieee.org/document/11643373)
 
 ## CSI Sensing and Security
 - [Marco Cominelli, et al. CSI MURDER. ORCA project opencall 2019](https://ans.unibs.it/projects/csi-murder/)
