@@ -113,6 +113,7 @@ Publications in category:
 - [Stepan Mazokha, et al. Real-time Device Fingerprinting and Re-identification in GNUradio, Proceedings of the 15th GNU Radio Conference, 2025](https://events.gnuradio.org/event/26/contributions/773/attachments/229/665/gr-mobrffi_paper_v1.2.pdf)
 - [Jiamu Guo, et al. Hiding Secrets in the CSI Quotient: A Robust Wi-Fi CSI Steganography System, arxiv, 22 Apr 2026](https://arxiv.org/abs/2604.20521v1)
 - [Anton Lambrecht, et al. A comparison between ceiling-mounted FMCW, IR-UWB and Wi-Fi radar for in-bedroom human activity monitoring and sleep interruption detection. IEEE Access, August 2026](https://arxiv.org/abs/2608.20322)
+- [Bowen Lv, et al. An OpenWiFi-Based Single-Station Integrated Sensing and Communication System for Respiration Detection. 5th International Joint Conference on Information and Communication Engineering (JCICE), 2026](https://ieeexplore.ieee.org/abstract/document/11682346)
 
 ## WiFi and Cellular 5G 6G
 - [Luca Baldesi, et al. ChARM: NextG Spectrum Sharing Through Data-Driven Real-Time O-RAN Dynamic Control. INFOCOM 2022](https://ece.northeastern.edu/wineslab/papers/BaldesiInfocom22.pdf)
