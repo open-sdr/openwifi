@@ -2,6 +2,7 @@
 
 model=$(tr -d '\000' </proc/device-tree/model 2>/dev/null || true)
 case "$model" in
+	'Analog Devices PlutoSDR Rev.C (Z7020/AD9361)') echo plutosky_r2 ;;
 	ANTSDR-E200) echo antsdr_e200 ;;
 	ANTSDR-E310V2) echo e310v2 ;;
 	*ANTSDR-E310*) echo antsdr ;;

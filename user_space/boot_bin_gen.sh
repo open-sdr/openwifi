@@ -65,15 +65,21 @@ elif [ "$BOARD_NAME" == "antsdr" ] || [ "$BOARD_NAME" == "antsdr_e200" ] || [ "$
   ./build_boot_bin.sh $XSA_FILE boards/$BOARD_NAME/u-boot.elf
   ARCH="zynq"
   ARCH_BIT=32
+elif [ "$BOARD_NAME" == "plutosky_r2" ]; then
+  echo "PlutoSky R2 keeps the vendor BOOT.BIN; generating only the reloadable bitstream."
+  ARCH="zynq"
+  ARCH_BIT=32
 else
   echo "$BOARD_NAME is not correct. Please check!"
   cd $home_dir
   exit 1
 fi
 
-rm -rf build_boot_bin
-rm -rf boards/$BOARD_NAME/output_boot_bin
-mv output_boot_bin boards/$BOARD_NAME/
+if [ "$BOARD_NAME" != "plutosky_r2" ]; then
+  rm -rf build_boot_bin
+  rm -rf boards/$BOARD_NAME/output_boot_bin
+  mv output_boot_bin boards/$BOARD_NAME/
+fi
 
 cd $home_dir
 

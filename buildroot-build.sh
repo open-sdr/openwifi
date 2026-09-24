@@ -10,6 +10,7 @@ Boards:
   antsdr_e200  ANTSDR-E200
   antsdr       ANTSDR-E310
   e310v2       ANTSDR-E310V2
+  plutosky_r2  Pluto R2 Sky (XC7Z020/AD9361)
 
 Commands:
   build        Build/update the shared system, then assemble this board (default)
@@ -31,7 +32,7 @@ BOARD=$1
 COMMAND=${2:-build}
 
 case "${BOARD}" in
-	antsdr_e200|antsdr|e310v2) ;;
+	antsdr_e200|antsdr|e310v2|plutosky_r2) ;;
 	*) echo "Unsupported board: ${BOARD}" >&2; usage >&2; exit 2 ;;
 esac
 case "${COMMAND}" in

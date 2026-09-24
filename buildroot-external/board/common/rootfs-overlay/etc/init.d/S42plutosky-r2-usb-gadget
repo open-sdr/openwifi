@@ -1,0 +1,43 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 Fu Wenbo
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+case "$(tr -d '\000' </proc/device-tree/model 2>/dev/null)" in
+*"Pluto R2 Sky"*|*"PlutoSDR Rev.C (Z7020/AD9361)"*) ;;
+*) exit 0 ;;
+esac
+
+CONFIGFS=/sys/kernel/config
+GADGET=${CONFIGFS}/usb_gadget/openwifi
+
+[ -d "${CONFIGFS}" ] || exit 0
+grep -qs " ${CONFIGFS} " /proc/mounts || mount -t configfs none "${CONFIGFS}" || exit 0
+[ -d "${GADGET}" ] && exit 0
+
+mkdir -p "${GADGET}"
+echo 0x0456 >"${GADGET}/idVendor"
+echo 0xb673 >"${GADGET}/idProduct"
+mkdir -p "${GADGET}/strings/0x409"
+echo "Analog Devices" >"${GADGET}/strings/0x409/manufacturer"
+echo "PlutoSDR OpenWiFi RNDIS + Serial" >"${GADGET}/strings/0x409/product"
+echo "plutosky-r2-openwifi" >"${GADGET}/strings/0x409/serialnumber"
+
+mkdir -p "${GADGET}/configs/c.1/strings/0x409"
+echo "OpenWiFi RNDIS + Serial" >"${GADGET}/configs/c.1/strings/0x409/configuration"
+mkdir -p "${GADGET}/functions/rndis.0"
+echo "00:0a:35:00:01:22" >"${GADGET}/functions/rndis.0/host_addr"
+echo "00:0a:35:00:01:23" >"${GADGET}/functions/rndis.0/dev_addr"
+(
+	cd "${GADGET}"
+	ln -s functions/rndis.0 configs/c.1/rndis.0
+)
+mkdir -p "${GADGET}/functions/acm.usb0"
+(
+	cd "${GADGET}"
+	ln -s functions/acm.usb0 configs/c.1/acm.usb0
+)
+
+echo 500 >"${GADGET}/configs/c.1/MaxPower"
+echo ci_hdrc.0 >"${GADGET}/UDC"
+ip link set usb0 up
+ip addr add 192.168.2.1/24 dev usb0 2>/dev/null || true

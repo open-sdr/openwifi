@@ -6,12 +6,12 @@
 
 if [ "$#" -ne 1 ]; then
     echo "You must enter the \$BOARD_NAME as argument"
-    echo "Like: sdrpi antsdr antsdr_e200 e310v2 adrv9364z7020 adrv9361z7035 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 zcu102_fmcs2 zcu102_9371 neptunesdr"
+    echo "Like: sdrpi antsdr antsdr_e200 e310v2 adrv9364z7020 adrv9361z7035 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 zcu102_fmcs2 zcu102_9371 neptunesdr plutosky_r2"
     exit 1
 fi
 BOARD_NAME=$1
 
-if [ "$BOARD_NAME" != "neptunesdr" ] && [ "$BOARD_NAME" != "antsdr" ] && [ "$BOARD_NAME" != "antsdr_e200" ] && [ "$BOARD_NAME" != "e310v2" ] && [ "$BOARD_NAME" != "sdrpi" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ]; then
+if [ "$BOARD_NAME" != "neptunesdr" ] && [ "$BOARD_NAME" != "antsdr" ] && [ "$BOARD_NAME" != "antsdr_e200" ] && [ "$BOARD_NAME" != "e310v2" ] && [ "$BOARD_NAME" != "sdrpi" ] && [ "$BOARD_NAME" != "zc706_fmcs2" ] && [ "$BOARD_NAME" != "zc702_fmcs2" ] && [ "$BOARD_NAME" != "zed_fmcs2" ] && [ "$BOARD_NAME" != "adrv9361z7035" ] && [ "$BOARD_NAME" != "adrv9364z7020" ] && [ "$BOARD_NAME" != "zcu102_fmcs2" ] && [ "$BOARD_NAME" != "zcu102_9371" ] && [ "$BOARD_NAME" != "plutosky_r2" ]; then
     echo "\$BOARD_NAME is not correct. Please check!"
     exit 1
 else
@@ -35,17 +35,20 @@ echo $image_filename
 
 set -x
 
-mv BOOT.BIN BOOT.BIN.bak
-sync
-wget ftp://192.168.10.1/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN
-if [ -f "./BOOT.BIN" ]; then
-    echo "BOOT.BIN downloaded!"
+if [ "$BOARD_NAME" != "plutosky_r2" ]; then
+    mv BOOT.BIN BOOT.BIN.bak
+    sync
+    wget ftp://192.168.10.1/kernel_boot/boards/$BOARD_NAME/output_boot_bin/BOOT.BIN
+    if [ -f "./BOOT.BIN" ]; then
+        echo "BOOT.BIN downloaded!"
+    else
+        echo "WARNING! BOOT.BIN not downloaded! Old file used!"
+        mv BOOT.BIN.bak BOOT.BIN
+    fi
+    sync
 else
-    echo "WARNING! BOOT.BIN not downloaded! Old file used!"
-    mv BOOT.BIN.bak BOOT.BIN
-#    exit 1
+    echo "PlutoSky R2 keeps the vendor BOOT.BIN."
 fi
-sync
 
 mv $image_filename $image_filename.bak
 sync
@@ -76,7 +79,9 @@ sync
 mount /dev/mmcblk0p1  /mnt
 sync
 #sleep 0.5
-cp BOOT.BIN /mnt/ -f
+if [ "$BOARD_NAME" != "plutosky_r2" ]; then
+    cp BOOT.BIN /mnt/ -f
+fi
 rm /mnt/Image -f
 rm /mnt/uImage -f
 cp $image_filename /mnt/ -f
