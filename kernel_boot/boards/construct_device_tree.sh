@@ -54,6 +54,7 @@ openwifi_name_to_kernel_dts=(
   ["zed_fmcs2"]="zynq-zed.dts"
   ["zc702_fmcs2"]="zynq-zc702.dts"
   ["zc706_fmcs2"]="zynq-zc706.dts"
+  ["plutosky_r2"]="zynq-plutosky-r2.dts"
   ["zcu102_fmcs2"]="zynqmp-zcu102-rev1.1.dts"
 )
 DEFAULT_DTS_FILENAME=${openwifi_name_to_kernel_dts[$BOARD_NAME]}

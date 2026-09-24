@@ -7,8 +7,9 @@ CONFIG_FPGA_ZYNQPL=y
 CONFIG_CMD_FS_GENERIC=y
 CONFIG_CMD_FAT=y
 CONFIG_CMD_EXT4=y
+CONFIG_CMD_SF=y
 CONFIG_USE_BOOTCOMMAND=y
-CONFIG_BOOTCOMMAND="if mmc dev 0; then if fatload mmc 0:1 0x03000000 uEnv.txt; then env import -t 0x03000000 ${filesize}; if env exists uenvcmd; then run uenvcmd; fi; else echo OpenWiFi: uEnv.txt not found; fi; fi"
+CONFIG_BOOTCOMMAND="if mmc dev 0; then if fatload mmc 0:1 0x03000000 uEnv.txt; then env import -t 0x03000000 ${filesize}; if env exists uenvcmd; then run uenvcmd; fi; else echo OpenWiFi: uEnv.txt not found; fi; fi; echo OpenWiFi: no SD boot, trying QSPI; if sf probe 0; then if sf read 0x10000000 0x200000 0x1e00000; then echo OpenWiFi: booting the QSPI FIT image; bootm 0x10000000; fi; else echo OpenWiFi: no QSPI flash; fi"
 CONFIG_SPL_SHOW_ERRORS=y
 CONFIG_AUTOBOOT_KEYED=y
 CONFIG_AUTOBOOT_FLUSH_STDIN=y
@@ -17,3 +18,20 @@ CONFIG_AUTOBOOT_STOP_STR="stop"
 # CONFIG_ENV_IS_IN_FAT is not set
 # CONFIG_ENV_IS_IN_NAND is not set
 # CONFIG_ENV_IS_IN_SPI_FLASH is not set
+
+# The QSPI boot partition on PlutoSky R2 is 1 MiB
+# (qspi-fsbl-uboot, reg = <0x00 0x100000>), and the boot chain written there
+# is FSBL + U-Boot in a single bootgen image. The xilinx_zynq_virt defconfig
+# builds a ~1.01 MB U-Boot, which does not leave room for the FSBL. None of
+# the features below are used by any OpenWiFi board: the boards boot from SD
+# or from a raw QSPI FIT, and Linux - not U-Boot - drives USB and UBI.
+# CONFIG_RSA stays enabled: board/xilinx/zynq/cmds.c links against it.
+# CONFIG_EFI_LOADER is not set
+# CONFIG_CMD_BOOTEFI is not set
+# CONFIG_CMD_UBI is not set
+# CONFIG_CMD_UBIFS is not set
+# CONFIG_CMD_ZYNQ_RSA is not set
+# CONFIG_CMD_ZYNQ_AES is not set
+# CONFIG_USB is not set
+# CONFIG_CMD_USB is not set
+# CONFIG_CMD_SF_TEST is not set

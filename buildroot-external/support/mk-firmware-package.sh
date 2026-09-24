@@ -14,7 +14,7 @@ WORK_DIR=$(mktemp -d)
 trap 'rm -rf "${WORK_DIR}"' EXIT HUP INT TERM
 
 case "${BOARD}" in
-	antsdr_e200|antsdr|e310v2) ;;
+	antsdr_e200|antsdr|e310v2|plutosky_r2) ;;
 	*) echo "Unsupported board: ${BOARD}" >&2; exit 1 ;;
 esac
 

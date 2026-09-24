@@ -11,6 +11,8 @@ define OPENWIFI_LINUX_INSTALL_DTS
 		$(@D)/arch/arm/boot/dts/xilinx/antsdr.dts
 	cp -f $(BR2_EXTERNAL_OPENWIFI_PATH)/../kernel_boot/boards/e310v2/devicetree.dts \
 		$(@D)/arch/arm/boot/dts/xilinx/e310v2.dts
+	cp -f $(BR2_EXTERNAL_OPENWIFI_PATH)/../kernel_boot/boards/plutosky_r2/devicetree.dts \
+		$(@D)/arch/arm/boot/dts/xilinx/plutosky_r2.dts
 	$(BR2_EXTERNAL_OPENWIFI_PATH)/support/fix-linux-dts-console.py \
 		$(@D)/arch/arm/boot/dts/xilinx/antsdr_e200.dts \
 		/amba/serial@e0000000
@@ -20,6 +22,9 @@ define OPENWIFI_LINUX_INSTALL_DTS
 	$(BR2_EXTERNAL_OPENWIFI_PATH)/support/fix-linux-dts-console.py \
 		$(@D)/arch/arm/boot/dts/xilinx/e310v2.dts \
 		/axi/serial@e0001000
+	$(BR2_EXTERNAL_OPENWIFI_PATH)/support/fix-linux-dts-console.py \
+		$(@D)/arch/arm/boot/dts/xilinx/plutosky_r2.dts \
+		/amba/serial@e0001000
 endef
 
 LINUX_POST_PATCH_HOOKS += OPENWIFI_LINUX_INSTALL_DTS

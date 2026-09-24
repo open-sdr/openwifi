@@ -25,7 +25,7 @@ if [ "$#" -gt 3 ]; then
     echo SKIP_rootfs $SKIP_rootfs
 fi
 
-BOARD_NAME_ALL="sdrpi antsdr antsdr_e200 e310v2 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 neptunesdr"
+BOARD_NAME_ALL="sdrpi antsdr antsdr_e200 e310v2 zc706_fmcs2 zed_fmcs2 zc702_fmcs2 adrv9361z7035 adrv9364z7020 zcu102_fmcs2 neptunesdr plutosky_r2"
 if [ "$#" -gt 4 ]; then
     BOARD_NAME_ALL=$5
     echo BOARD_NAME_ALL $BOARD_NAME_ALL

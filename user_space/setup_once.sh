@@ -27,7 +27,9 @@ fi
 
 # Decide board name
 DEVICE_TREE_MODEL_STRING=$(cat /proc/device-tree/model)
-if [[ $DEVICE_TREE_MODEL_STRING == *"ADRV9361-Z7035"* ]]; then
+if [[ ${OPENWIFI_BOARD_NAME:-} == "plutosky_r2" ]] || [[ $DEVICE_TREE_MODEL_STRING == *"Rev.C (Z7020/AD9361)"* ]]; then
+  BOARD_NAME=plutosky_r2
+elif [[ $DEVICE_TREE_MODEL_STRING == *"ADRV9361-Z7035"* ]]; then
   BOARD_NAME=adrv9361z7035
 elif [[ $DEVICE_TREE_MODEL_STRING == *"ADRV9364-Z7020"* ]]; then
   BOARD_NAME=adrv9364z7020
