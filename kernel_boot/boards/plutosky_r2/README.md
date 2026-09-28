@@ -71,9 +71,29 @@ trimming U-Boot; see the `CONFIG_*` block at the end of
 
 ## Flashing
 
+The normal path writes only the `qspi-linux` partition (offset `0x200000`,
+`/dev/mtd3`) and leaves the boot chain untouched. Over USB from a host, with
+the board in DFU mode:
+
+```
+dfu-util -d 0456:b673,0456:b674 -D openwifi-plutosky_r2-qspi.dfu -a firmware.dfu
+```
+
+On a board that already runs Linux the same image can be written from the board
+itself with `tools/mtd_flash_write`, which erases, writes and verifies by
+reading back:
+
+```
+mtd_flash_write openwifi-plutosky_r2-qspi.dfu /dev/mtd3
+```
+
+### Boot chain experiment and recovery (not part of normal use)
+
 `flash_plutosky_r2_qspi.tcl` programs QSPI from offset 0 over JTAG using
-`program_flash`. It refuses to run unless `OPENWIFI_FLASH_ACK=I_UNDERSTAND` is
-set, because it overwrites the boot chain.
+`program_flash`, that is, it overwrites the boot chain with the from-source
+image that the section above describes as *not booting*. It refuses to run
+unless `OPENWIFI_FLASH_ACK=I_UNDERSTAND` is set. It is kept for work on that
+problem, not for updating OpenWiFi.
 
 `restore_factory_qspi_boot.tcl` and `restore_factory_dfu.cmd` put the board
 back to its factory firmware.
@@ -81,29 +101,16 @@ back to its factory firmware.
 ## USB OTG gadget
 
 `buildroot-external/board/common/rootfs-overlay/etc/init.d/S42plutosky-r2-usb-gadget`
-brings up RNDIS + ACM on the OTG port. Two details are load-bearing:
+brings up RNDIS + ACM on the OTG port with the Analog Devices PlutoSDR USB IDs
+(`0456:b673`), so the host-side PlutoSDR RNDIS driver claims it.
 
-- **MS OS descriptors are published before the UDC is bound.** Kernel 6.12's
-  `f_rndis` reports the interface as class 02 / subclass 06 / protocol 00, and
-  no Windows INF claims the compatible IDs that Windows derives from that. The
-  device shows up with Code 28 and no network adapter. Publishing MS OS
-  descriptors makes Windows synthesise
-  `USB\MS_COMP_RNDIS&MS_SUBCOMP_5162001`, which the in-box `rndiscmp.inf`
-  claims.
-- **`bcdDevice` is 0x0613, not the kernel default 0x0612.** Windows caches
-  whether a device has MS OS descriptors under
-  `usbflags\<VID><PID><bcdDevice>` and never asks again once the answer is
-  cached as "no". Changing `bcdDevice` changes the key, so Windows re-queries.
+`S43plutosky-r2-usb-console` starts a serial console on the same OTG port and
+respawns it after each logout.
 
-`S43plutosky-r2-usb-console` starts a serial console on the same OTG port.
-
-A DHCP server bound only to `usb0` hands out `192.168.2.10-20`. It runs from a
-copy of `dhcpd` named `/tmp/dhcpd-usb0` because `wgd.sh` calls `killall dhcpd`,
-and `killall` matches on `/proc/PID/comm`, which is the name of the executed
-file. A symlink does not work: the kernel resolves it and `comm` is still
-`dhcpd`. The board is `192.168.2.1` on that link. No router or DNS option is
-advertised, because announcing a default gateway on a point-to-point debug
-link would send the host's real traffic to a board that does not route.
+The board is `192.168.2.1` on that link. Nothing on the board hands out
+addresses, so configure the host adapter with a static address in the same /24
+(`192.168.2.2`, mask `255.255.255.0`, gateway empty). A default gateway must not
+be set on this point-to-point debug link, because the board does not route.
 
 ## Known limitation
 

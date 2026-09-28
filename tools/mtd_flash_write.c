@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
     int source;
     int target;
     off_t offset;
+    uint32_t erase_offset;
 
     if (argc != 3) {
         fprintf(stderr, "usage: %s <image> <mtd-device>\n", argv[0]);
@@ -67,8 +68,12 @@ int main(int argc, char **argv) {
     if (source < 0) {
         fail(argv[1]);
     }
-    if (fstat(source, &source_stat) != 0 || source_stat.st_size <= 0) {
-        fail("image size");
+    if (fstat(source, &source_stat) != 0) {
+        fail(argv[1]);
+    }
+    if (source_stat.st_size <= 0) {
+        fprintf(stderr, "%s: image is empty\n", argv[1]);
+        return EXIT_FAILURE;
     }
 
     target = open(argv[2], O_RDWR | O_SYNC);
@@ -84,9 +89,9 @@ int main(int argc, char **argv) {
     }
 
     printf("Erasing %u-byte %s partition...\n", mtd.size, argv[2]);
-    for (offset = 0; offset < mtd.size; offset += mtd.erasesize) {
+    for (erase_offset = 0; erase_offset < mtd.size; erase_offset += mtd.erasesize) {
         struct erase_info_user erase = {
-            .start = (uint32_t)offset,
+            .start = erase_offset,
             .length = mtd.erasesize,
         };
         if (ioctl(target, MEMERASE, &erase) != 0) {

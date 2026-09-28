@@ -115,9 +115,14 @@ cp -Lf "${BINARIES_DIR}/rootfs.ext4" "${BOOT_FILES_DIR}/rootfs.ext4"
 
 ln -snf sdcard.img "${BINARIES_DIR}/openwifi-${BOARD}-sdcard.img"
 
-VERSION=$(git -C "${REPO_DIR}" describe --always --dirty 2>/dev/null || echo unknown)
-"${EXTERNAL_DIR}/support/mk-firmware-package.sh" \
-	"${BOARD}" "${BOOT_FILES_DIR}" \
-	"${BINARIES_DIR}/openwifi-${BOARD}-system.frm" "${VERSION}"
+# The SD-system package is applied on the board by openwifi-fw-update, which
+# needs /boot and /dev/mmcblk0p2. PlutoSky R2 boots from QSPI and has neither,
+# so its release artefact is openwifi-plutosky_r2-qspi.dfu instead.
+if [ "${BOARD}" != plutosky_r2 ]; then
+	VERSION=$(git -C "${REPO_DIR}" describe --always --dirty 2>/dev/null || echo unknown)
+	"${EXTERNAL_DIR}/support/mk-firmware-package.sh" \
+		"${BOARD}" "${BOOT_FILES_DIR}" \
+		"${BINARIES_DIR}/openwifi-${BOARD}-system.frm" "${VERSION}"
+fi
 
 echo "OpenWiFi ${BOARD} SD image: ${BINARIES_DIR}/openwifi-${BOARD}-sdcard.img"

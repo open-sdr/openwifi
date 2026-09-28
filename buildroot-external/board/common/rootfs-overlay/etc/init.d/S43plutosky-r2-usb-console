@@ -2,8 +2,41 @@
 # SPDX-FileCopyrightText: 2026 Fu Wenbo
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-[ -c /dev/ttyGS0 ] || exit 0
+PIDFILE=/var/run/plutosky-r2-usb-console.pid
 
-# The ACM function is created by S42. Keep this process in the background so
-# the remaining system init scripts can continue.
-/sbin/getty -L 115200 ttyGS0 vt100 &
+case "$1" in
+	start)
+		# The ACM function is created by S42.
+		[ -c /dev/ttyGS0 ] || exit 0
+		[ -f "${PIDFILE}" ] && kill -0 "$(cat "${PIDFILE}")" 2>/dev/null && exit 0
+		# getty execs login and exits on logout, so it has to be respawned.
+		# Backgrounded so the remaining init scripts can continue.
+		(
+			while :; do
+				/sbin/getty -L 115200 ttyGS0 vt100
+				sleep 1
+			done
+		) &
+		echo $! >"${PIDFILE}"
+		;;
+	stop)
+		if [ -f "${PIDFILE}" ]; then
+			kill "$(cat "${PIDFILE}")" 2>/dev/null
+			rm -f "${PIDFILE}"
+		fi
+		# The supervisor's getty child is not in the pidfile, so find it by the
+		# tty it was started on. Only ttyGS0 is matched, never another console.
+		for proc in /proc/[0-9]*; do
+			grep -q ttyGS0 "${proc}/cmdline" 2>/dev/null || continue
+			kill "${proc#/proc/}" 2>/dev/null
+		done
+		;;
+	restart|reload)
+		"$0" stop
+		"$0" start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+		;;
+esac
