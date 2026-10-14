@@ -94,6 +94,8 @@ if [ "${BOARD}" = plutosky_r2 ]; then
 	MKIMAGE_DTC_COMMAND="${HOST_DIR}/bin/dtc" \
 		"${EXTERNAL_DIR}/support/mk-plutosky-r2-qspi-firmware.sh" \
 		"${BINARIES_DIR}" "${BINARIES_DIR}/openwifi-${BOARD}-qspi.dfu"
+	echo "OpenWiFi ${BOARD} QSPI firmware: ${BINARIES_DIR}/openwifi-${BOARD}-qspi.dfu"
+	exit 0
 fi
 
 export BUILD_DIR HOST_DIR BINARIES_DIR

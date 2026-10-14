@@ -102,7 +102,8 @@ back to its factory firmware.
 
 `buildroot-external/board/common/rootfs-overlay/etc/init.d/S42plutosky-r2-usb-gadget`
 brings up RNDIS + ACM on the OTG port with the Analog Devices PlutoSDR USB IDs
-(`0456:b673`), so the host-side PlutoSDR RNDIS driver claims it.
+(`0456:b673`). It publishes the RNDIS MS OS descriptors and uses
+`bcdDevice=0x0613` so Windows can bind the inbox RNDIS driver.
 
 `S43plutosky-r2-usb-console` starts a serial console on the same OTG port and
 respawns it after each logout.

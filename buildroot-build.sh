@@ -47,6 +47,9 @@ COMMON_OUTPUT_DIR="${SCRIPT_DIR}/output/common"
 BOARD_OUTPUT_DIR="${SCRIPT_DIR}/output/${BOARD}"
 GENERATED_DIR="${BOARD_OUTPUT_DIR}/generated"
 DL_DIR="${SCRIPT_DIR}/dl"
+COMMON_DEFCONFIG="${EXTERNAL_DIR}/configs/openwifi_common_defconfig"
+PLUTOSKY_CONFIG_FRAGMENT="${EXTERNAL_DIR}/configs/openwifi_plutosky_r2.fragment"
+CONFIG_PROFILE_MARKER="${COMMON_OUTPUT_DIR}/.openwifi-config-profile"
 
 if [ ! -f "${BUILDROOT_DIR}/Makefile" ]; then
 	echo "Buildroot submodule is not initialized." >&2
@@ -110,27 +113,57 @@ run_make()
 	make -C "${BUILDROOT_DIR}" ${MAKE_ARGS} "$@"
 }
 
+load_system_defconfig()
+{
+	if [ "${BOARD}" = plutosky_r2 ]; then
+		BOARD_DEFCONFIG="${COMMON_OUTPUT_DIR}/.openwifi-plutosky_r2_defconfig"
+		mkdir -p "${COMMON_OUTPUT_DIR}"
+		sed '/^BR2_LINUX_KERNEL_INTREE_DTS_NAME=/d' \
+			"${COMMON_DEFCONFIG}" >"${BOARD_DEFCONFIG}"
+		cat "${PLUTOSKY_CONFIG_FRAGMENT}" >>"${BOARD_DEFCONFIG}"
+		run_make defconfig BR2_DEFCONFIG="${BOARD_DEFCONFIG}"
+		printf '%s\n' plutosky_r2 >"${CONFIG_PROFILE_MARKER}"
+	else
+		run_make openwifi_common_defconfig
+		printf '%s\n' common >"${CONFIG_PROFILE_MARKER}"
+	fi
+}
+
+ensure_system_config()
+{
+	desired_profile=common
+	[ "${BOARD}" = plutosky_r2 ] && desired_profile=plutosky_r2
+	current_profile=
+	if [ -f "${CONFIG_PROFILE_MARKER}" ]; then
+		current_profile=$(cat "${CONFIG_PROFILE_MARKER}")
+	fi
+	if [ ! -f "${COMMON_OUTPUT_DIR}/.config" ] || \
+		[ "${current_profile}" != "${desired_profile}" ]; then
+		load_system_defconfig
+		return 0
+	fi
+	return 1
+}
+
 build_common()
 {
 	new_config=0
-	if [ ! -f "${COMMON_OUTPUT_DIR}/.config" ]; then
-		run_make openwifi_common_defconfig
+	if ensure_system_config; then
 		new_config=1
 	fi
-	if [ ! -f "${COMMON_OUTPUT_DIR}/.openwifi-common-ready" ] || \
+	if [ "${new_config}" -eq 1 ] || \
+		[ ! -f "${COMMON_OUTPUT_DIR}/.openwifi-common-ready" ] || \
 		[ ! -f "${COMMON_OUTPUT_DIR}/images/rootfs.ext4" ] || \
 		[ ! -f "${COMMON_OUTPUT_DIR}/images/uImage" ]; then
-		# Local packages and overlays can change without Buildroot stamp
-		# invalidation. Force their installation when configuration marked the
-		# shared system stale.
+		if [ "${new_config}" -eq 1 ]; then
+			run_make linux-dirclean
+		fi
 		run_make openwifi-dirclean
 		run_make
 		touch "${COMMON_OUTPUT_DIR}/.openwifi-common-ready"
-	else
-		new_config=0
 	fi
-	# The first complete build already used the selected board inputs. For a
-	# later board, rebuild only U-Boot; Linux/rootfs remain shared.
+	# When the system profile is unchanged, Linux/rootfs remain reusable and a
+	# later board build only needs a board-specific U-Boot rebuild.
 	if [ "${new_config}" -eq 0 ]; then
 		run_make uboot-dirclean
 		run_make uboot
@@ -147,14 +180,12 @@ assemble_board()
 case "${COMMAND}" in
 	configure)
 		prepare_board
-		run_make openwifi_common_defconfig
+		load_system_defconfig
 		rm -f "${COMMON_OUTPUT_DIR}/.openwifi-common-ready"
 		;;
 	menuconfig)
 		prepare_board
-		if [ ! -f "${COMMON_OUTPUT_DIR}/.config" ]; then
-			run_make openwifi_common_defconfig
-		fi
+		ensure_system_config || true
 		run_make menuconfig
 		rm -f "${COMMON_OUTPUT_DIR}/.openwifi-common-ready"
 		;;
@@ -169,9 +200,7 @@ case "${COMMAND}" in
 		;;
 	rebuild-system)
 		prepare_board
-		if [ ! -f "${COMMON_OUTPUT_DIR}/.config" ]; then
-			run_make openwifi_common_defconfig
-		fi
+		ensure_system_config || true
 		# Buildroot stamps do not track every change inside local packages,
 		# kernel patches or external package recipes. Rebuild the common
 		# OpenWiFi stack explicitly while retaining the expensive toolchain.
