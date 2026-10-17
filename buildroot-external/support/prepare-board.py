@@ -31,6 +31,12 @@ BOARDS = {
         "console": "ttyPS0",
         "label": "ANTSDR-E310V2",
     },
+    "plutosky_r2": {
+        "bus": "amba",
+        "uart": "e0001000",
+        "console": "ttyPS0",
+        "label": "Pluto R2 Sky (XC7Z020/AD9361)",
+    },
 }
 
 

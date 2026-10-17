@@ -23,6 +23,7 @@ case "${BOARD}" in
 	antsdr_e200) bus=amba; uart=e0000000 ;;
 	antsdr) bus=amba; uart=e0001000 ;;
 	e310v2) bus=axi; uart=e0001000 ;;
+	plutosky_r2) bus=amba; uart=e0001000 ;;
 	*) echo "Unsupported board: ${BOARD}" >&2; exit 1 ;;
 esac
 
@@ -58,6 +59,12 @@ mkdir -p "${BINARIES_DIR}" "${BUILD_DIR}"
 cp -f "${COMMON_IMAGES}/boot.bin" "${BINARIES_DIR}/BOOT.BIN"
 cp -f "${COMMON_IMAGES}/u-boot.img" "${BINARIES_DIR}/u-boot.img"
 cp -f "${COMMON_IMAGES}/${BOARD}.dtb" "${BINARIES_DIR}/devicetree.dtb"
+if [ "${BOARD}" = plutosky_r2 ]; then
+	# Build the Linux DTB from the current board DTS. The shared Buildroot image
+	# can otherwise retain an older DTB after a board-specific DTS update.
+	"${HOST_DIR}/bin/dtc" -I dts -O dtb \
+		-o "${BINARIES_DIR}/devicetree.dtb" "${GENERATED_DIR}/devicetree.dts"
+fi
 cp -Lf "${COMMON_IMAGES}/uImage" "${BINARIES_DIR}/uImage"
 cp -Lf "${COMMON_IMAGES}/rootfs.ext4" "${BINARIES_DIR}/rootfs.ext4"
 cp -f "${GENERATED_DIR}/uEnv.txt" "${BINARIES_DIR}/uEnv.txt"
@@ -70,6 +77,26 @@ sed 's|@BITFILE@|system_top.bit|' "${EXTERNAL_DIR}/board/common/system_top.bif.i
 	"${HOST_DIR}/bin/bootgen" -arch zynq -image system_top.bif \
 		-process_bitstream bin -w on
 )
+
+if [ "${BOARD}" = plutosky_r2 ]; then
+	ZIMAGE=$(find "${COMMON_OUTPUT}/build" -type f -path '*/arch/arm/boot/zImage' -print -quit)
+	[ -n "${ZIMAGE}" ] && [ -s "${ZIMAGE}" ] || {
+		echo "Missing raw zImage for Pluto R2 Sky QSPI firmware" >&2
+		exit 1
+	}
+	[ -s "${COMMON_IMAGES}/rootfs.cpio.gz" ] || {
+		echo "Missing rootfs.cpio.gz for Pluto R2 Sky QSPI firmware" >&2
+		exit 1
+	}
+	cp -Lf "${ZIMAGE}" "${BINARIES_DIR}/zImage"
+	cp -Lf "${COMMON_IMAGES}/rootfs.cpio.gz" "${BINARIES_DIR}/rootfs.cpio.gz"
+	MKIMAGE="${HOST_DIR}/bin/mkimage" \
+	MKIMAGE_DTC_COMMAND="${HOST_DIR}/bin/dtc" \
+		"${EXTERNAL_DIR}/support/mk-plutosky-r2-qspi-firmware.sh" \
+		"${BINARIES_DIR}" "${BINARIES_DIR}/openwifi-${BOARD}-qspi.dfu"
+	echo "OpenWiFi ${BOARD} QSPI firmware: ${BINARIES_DIR}/openwifi-${BOARD}-qspi.dfu"
+	exit 0
+fi
 
 export BUILD_DIR HOST_DIR BINARIES_DIR
 export TARGET_DIR="${COMMON_OUTPUT}/target"
@@ -90,9 +117,14 @@ cp -Lf "${BINARIES_DIR}/rootfs.ext4" "${BOOT_FILES_DIR}/rootfs.ext4"
 
 ln -snf sdcard.img "${BINARIES_DIR}/openwifi-${BOARD}-sdcard.img"
 
-VERSION=$(git -C "${REPO_DIR}" describe --always --dirty 2>/dev/null || echo unknown)
-"${EXTERNAL_DIR}/support/mk-firmware-package.sh" \
-	"${BOARD}" "${BOOT_FILES_DIR}" \
-	"${BINARIES_DIR}/openwifi-${BOARD}-system.frm" "${VERSION}"
+# The SD-system package is applied on the board by openwifi-fw-update, which
+# needs /boot and /dev/mmcblk0p2. PlutoSky R2 boots from QSPI and has neither,
+# so its release artefact is openwifi-plutosky_r2-qspi.dfu instead.
+if [ "${BOARD}" != plutosky_r2 ]; then
+	VERSION=$(git -C "${REPO_DIR}" describe --always --dirty 2>/dev/null || echo unknown)
+	"${EXTERNAL_DIR}/support/mk-firmware-package.sh" \
+		"${BOARD}" "${BOOT_FILES_DIR}" \
+		"${BINARIES_DIR}/openwifi-${BOARD}-system.frm" "${VERSION}"
+fi
 
 echo "OpenWiFi ${BOARD} SD image: ${BINARIES_DIR}/openwifi-${BOARD}-sdcard.img"
