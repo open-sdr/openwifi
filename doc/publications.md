@@ -120,5 +120,5 @@ Publications in category:
 - [Christian Arendt, et al. Empowering the Convergence of Wi-Fi and 5G for Future Private 6G Networks. 28th European Wireless Conference 2023](https://ieeexplore.ieee.org/document/10461434)
 - [Liangdong Wei, et al. An Experimental Evaluation of ACK-based Passive Bandwidth Estimation Methods in Ad Hoc Networks, 9th International Conference on Computer and Communications (ICCC) 2023](https://ieeexplore.ieee.org/document/10507541)
 - [Robbe Gaeremynck, et al. A tutorial on joint transmission in next-generation Wi-Fi, Journal of Communications and Networks, Volume: 28, Issue: 5, October 2026](https://ieeexplore.ieee.org/document/11793437)
-- 
+
 **Openwifi was born in ORCA project (EU's Horizon2020 programme under agreement number 732174).**
